@@ -22,24 +22,36 @@ LeaderPro é uma plataforma de IA que amplifica a inteligência de liderança, m
 ```
 src/
 ├── app/                 # Next.js 14 App Router
-│   ├── (auth)/          # Rotas que requerem autenticação
-│   ├── onboarding/      # Setup inicial e criação de empresa
-│   ├── dashboard/       # Dashboard principal
-│   ├── person/          # Perfis individuais
-│   ├── settings/        # Configurações de empresa e usuário
-│   └── api/             # API routes (quando necessário)
+│   ├── page.tsx         # Dashboard principal
+│   └── profile/[id]/    # Perfis individuais
+│       └── page.tsx     # Página de perfil detalhado
 ├── components/          # Componentes reutilizáveis
-│   ├── ui/              # Componentes shadcn/ui
+│   ├── ui/              # Componentes shadcn/ui (button, card, etc.)
 │   ├── company/         # Componentes relacionados a empresa
+│   │   └── CompanySelector.tsx
 │   ├── person/          # Componentes de perfil de pessoas
-│   ├── oneononoe/       # Componentes de 1:1
+│   │   └── PersonCard.tsx
+│   ├── profile/         # Componentes específicos do perfil
+│   │   ├── PersonInfoTab.tsx
+│   │   ├── PersonHistoryTab.tsx
+│   │   ├── PersonFeedbackTab.tsx
+│   │   ├── PersonChatTab.tsx
+│   │   ├── MentionSuggestions.tsx
+│   │   └── CreatePersonDialog.tsx
 │   └── layout/          # Layout e navegação
+│       ├── AppHeader.tsx
+│       └── ThemeToggle.tsx
 ├── lib/                 # Utilitários e helpers
-│   ├── stores/          # Zustand stores
+│   ├── stores/          # Zustand stores (companyStore, peopleStore)
 │   ├── types/           # Definições TypeScript
 │   ├── utils/           # Funções utilitárias
+│   │   ├── dates.ts     # Formatação de datas
+│   │   └── names.ts     # Utilitários de nomes
 │   └── data/            # Dados mockados (temporário)
+│       └── mockData.ts
 └── hooks/               # Custom React hooks
+    ├── useMentions.ts   # Hook para sistema de @menções
+    └── useCreatePerson.ts # Hook para criação de pessoas
 ```
 
 ## Funcionalidades Principais
@@ -84,10 +96,15 @@ type Person = {
   startDate: Date
   personalInfo: {
     hasChildren?: boolean
+    hasPets?: boolean
     location?: string
     interests?: string[]
+    hobbies?: string[]
+    pets?: string[]
+    personalNotes?: string
   }
   nextOneOnOne?: Date
+  avatar?: string
 }
 
 // 1:1 Session
@@ -137,26 +154,55 @@ const usePeopleStore = create((set) => ({
 ## Componentes Principais
 
 ### Layout e Navegação
-- `AppHeader` - Header com seletor de empresa e navegação
-- `CompanySelector` - Dropdown para trocar empresa ativa
-- `Sidebar` - Navegação lateral (dashboard, pessoas, configurações)
+- `AppHeader` - Header com seletor de empresa, navegação e tema
+- `CompanySelector` - Dropdown para trocar empresa ativa (com persistência)
+- `ThemeToggle` - Alternador de tema claro/escuro
 
 ### Dashboard
-- `DashboardOverview` - Visão geral de próximos 1:1s e métricas
-- `PersonCard` - Card compacto de cada pessoa
-- `UpcomingOneOnOnes` - Lista de próximas reuniões
+- `Dashboard` (page.tsx) - Página principal com cards de pessoas e métricas
+- `PersonCard` - Card clicável de cada pessoa com informações básicas
 
 ### Perfil de Pessoa
-- `PersonProfile` - Perfil completo com timeline
-- `PersonTimeline` - Timeline de eventos e feedbacks
-- `OneOnOneHistory` - Histórico de 1:1s
-- `CrossReferenceFeedback` - Feedbacks vindos de @mentions
+- `ProfilePage` - Layout principal da página de perfil
+- `PersonInfoTab` - Aba de informações pessoais + formulário de registro
+- `PersonHistoryTab` - Aba do histórico de 1:1s da pessoa
+- `PersonFeedbackTab` - Aba de feedbacks recebidos (diretos + @menções)
+- `PersonChatTab` - Aba de chat com IA para insights
 
-### 1:1 Sessions
-- `OneOnOneSession` - Interface principal para conduzir reunião
-- `AISuggestions` - Sugestões contextuais da IA
-- `MentionInput` - Input que detecta @mentions automaticamente
-- `SessionNotes` - Área de anotações estruturadas
+### Sistema de @Menções
+- `MentionSuggestions` - Dropdown de sugestões ao digitar @
+- `CreatePersonDialog` - Dialog para criar pessoa inexistente
+- `useMentions` - Hook para detectar e gerenciar @menções
+- `useCreatePerson` - Hook para criação de pessoas
+
+### Utilitários
+- `dates.ts` - Formatação de datas (formatTimeAgo, formatShortDate, etc.)
+- `names.ts` - Utilitários de nomes (getInitials)
+
+## Arquitetura e Boas Práticas Implementadas
+
+### Separação de Responsabilidades
+- **Componentes de UI** - Focados apenas na apresentação
+- **Hooks personalizados** - Lógica de negócio reutilizável
+- **Utils** - Funções puras sem estado
+- **Stores** - Gerenciamento de estado global
+
+### Padrões Adotados
+- **Composição sobre herança** - Componentes pequenos e compostos
+- **Single Responsibility** - Cada componente tem uma função específica
+- **Custom Hooks** - Abstração de lógica complexa (useMentions, useCreatePerson)
+- **Utils centralizados** - Evita duplicação de código
+- **TypeScript estrito** - Tipagem completa em todos os componentes
+
+### Performance
+- **Componentes otimizados** - Componentes pequenos carregam mais rápido
+- **Memoização** - useMemo para cálculos pesados
+- **Lazy loading** - Componentes carregados sob demanda
+- **Estados locais** - Evita re-renders desnecessários
+
+### Exemplo de Refatoração Realizada
+**Antes:** ProfilePage tinha 676 linhas com tudo misturado
+**Depois:** ProfilePage tem ~150 linhas + 6 componentes especializados
 
 ## Boas Práticas de Desenvolvimento
 
@@ -227,25 +273,35 @@ npx shadcn@latest list             # Lista componentes disponíveis
 
 ### Pessoas por Empresa
 **TechCorp:**
-- Maria Santos (Senior Developer)
-- João Silva (Mid-level Developer)
+- Maria Santos (Analista de Sistemas)
+- João Silva (Coordenador de Projetos)
 
 **StartupXYZ:**
-- Pedro Costa (Tech Lead)
-- Ana Lima (Junior Developer)
+- Pedro Costa (Gerente de Projetos)
+- Ana Lima (Analista Junior)
 
-## Próximos Passos
+## Status de Implementação
 
 1. ✅ Setup inicial do projeto
 2. ✅ Configuração do shadcn/ui
-3. 🔄 Implementação da estrutura básica
-4. ⏳ Criação dos stores Zustand
-5. ⏳ Componentes de layout
-6. ⏳ Dashboard principal
-7. ⏳ Sistema de multi-empresas
-8. ⏳ Perfis de pessoas
-9. ⏳ Sistema de 1:1s
-10. ⏳ Sistema de @mentions
+3. ✅ Estrutura básica implementada
+4. ✅ Stores Zustand (Company + People)
+5. ✅ Componentes de layout (AppHeader, ThemeToggle)
+6. ✅ Dashboard principal com métricas e cards
+7. ✅ Sistema de multi-empresas com persistência
+8. ✅ Perfis de pessoas com abas completas
+9. ✅ Sistema de registro de 1:1s
+10. ✅ Sistema de @mentions com autocomplete
+11. ✅ Refatoração arquitetural (hooks + componentes modulares)
+12. ✅ Sistema de feedbacks cruzados
+
+## Próximos Passos
+1. ⏳ Integração com backend real
+2. ⏳ Sistema de autenticação
+3. ⏳ IA contextual real (OpenAI/Claude API)
+4. ⏳ Sistema de notificações
+5. ⏳ Mobile responsiveness
+6. ⏳ Testes unitários e E2E
 
 ## Notas Importantes
 

@@ -12,8 +12,7 @@ import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
 import { useActiveCompany, useLoadCompanies } from '@/lib/stores/companyStore'
 import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { getMockDaysAgo, getMockAverageDays } from '@/lib/utils/dates'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -70,14 +69,10 @@ export default function Dashboard() {
   const oldestMeeting = React.useMemo(() => {
     if (people.length === 0) return null
     
-    const lastMeetings = people.map(person => {
-      // For now, use mock data for last meeting. In real app, this would come from sessions
-      const daysSinceLastMeeting = Math.floor(Math.random() * 30) + 1
-      return {
-        person,
-        daysSince: daysSinceLastMeeting
-      }
-    })
+    const lastMeetings = people.map(person => ({
+      person,
+      daysSince: getMockDaysAgo()
+    }))
     
     return lastMeetings.reduce((oldest, current) => 
       current.daysSince > oldest.daysSince ? current : oldest
@@ -86,8 +81,7 @@ export default function Dashboard() {
 
   const averageDaysBetweenMeetings = React.useMemo(() => {
     if (people.length === 0) return 0
-    // Mock calculation - in real app this would be based on actual meeting history
-    return Math.floor(Math.random() * 14) + 7 // 7-21 days average
+    return getMockAverageDays()
   }, [people])
 
   useEffect(() => {

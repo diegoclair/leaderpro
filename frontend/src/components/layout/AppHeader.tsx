@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Building2, User, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,12 +20,17 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ className }: AppHeaderProps) {
+  const router = useRouter()
+
   return (
     <header className={`border-b bg-background px-6 py-4 ${className || ''}`}>
       <div className="flex items-center justify-between">
         {/* Logo and Company Selector */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => router.push('/')}
+          >
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg">
               <span className="text-lg font-bold text-white">LP</span>
             </div>

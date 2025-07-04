@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Person } from '@/lib/types'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { formatTimeAgoWithoutSuffix, getMockDaysAgo } from '@/lib/utils/dates'
+import { getInitials } from '@/lib/utils/names'
 
 interface PersonCardProps {
   person: Person
@@ -20,16 +20,6 @@ export function PersonCard({
   className = '',
   onClick
 }: PersonCardProps) {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-
   return (
     <Card 
       className={`hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer ${className}`}
@@ -81,8 +71,7 @@ export function PersonCard({
               Último 1:1:
             </p>
             <p className="text-sm font-medium">
-              {/* Mock data - in real app this would come from actual sessions */}
-              {Math.floor(Math.random() * 30) + 1} dias atrás
+              {getMockDaysAgo()} dias atrás
             </p>
           </div>
         </div>
@@ -94,10 +83,7 @@ export function PersonCard({
             <p className="text-sm text-muted-foreground">
               Na empresa há{' '}
               <span className="font-medium">
-                {formatDistanceToNow(person.startDate, { 
-                  locale: ptBR,
-                  addSuffix: false 
-                })}
+                {formatTimeAgoWithoutSuffix(person.startDate)}
               </span>
             </p>
           </div>
