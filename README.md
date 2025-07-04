@@ -114,3 +114,16 @@ Coach de 1:1s com IA contextual
 - **TAM**: 4.4M novos tech leads/ano globalmente
 - **Concorrentes**: Fellow.app, Culture Amp, 15Five
 - **Diferencial**: Único com IA contextual + modelo B2C
+
+## 📁 Documentação do Projeto
+
+### Arquivos Principais
+- `/plan/000001-projeto-techlead.md` - Plano de negócio completo e análise de mercado
+- `/CLAUDE.md` - Diretrizes técnicas gerais e arquitetura do projeto
+- `/frontend/README.md` - **Documentação específica do frontend** (arquitetura, componentes, boas práticas)
+- `/backend/README.md` - Documentação da API e backend (a ser criado)
+
+### Para Desenvolvedores
+**⚠️ Importante**: Sempre leia a documentação específica de cada módulo antes de fazer alterações:
+- Frontend: Consulte `/frontend/README.md` para arquitetura, tipos TypeScript, stores Zustand e componentes
+- Backend: Consulte `/backend/README.md` para APIs, estrutura Go e banco de dados

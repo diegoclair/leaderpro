@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Product Context
 
-- **Problema**: 70% dos tech leads promovidos sem treinamento, resultando em 1:1s ineficazes e performance reviews superficiais
+- **Problema**: 70% dos líderes são promovidos sem treinamento adequado, resultando em 1:1s ineficazes e performance reviews superficiais
 - **Solução**: IA contextual multidimensional que combina dados pessoais + temporais + geográficos + histórico
 - **Diferencial**: Coach virtual que lembra tudo e sugere ações baseadas em contexto completo
 - **Modelo**: B2C (R$ 49,90/mês) - líder paga individualmente
@@ -230,7 +230,7 @@ frontend/
 
 - Parte do ecossistema Smart (SmartBuy, SmartBank, LeaderPro)
 - Modelo B2C: dados pertencem ao usuário, não à empresa
-- Foco inicial: líderes técnicos, expansão futura para qualquer líder
+- Foco: líderes de qualquer área, adaptável a diferentes contextos organizacionais
 - Validação contínua com early adopters essencial
 - **Current Status**: Planning phase - no code implementation yet
 - Directories `/backend/` and `/frontend/` are currently empty
@@ -241,3 +241,13 @@ frontend/
 - `/plan/000001-projeto-techlead.md` - Complete business plan and market analysis
 - `/README.md` - Project overview and product vision
 - This file contains technical architecture and development guidelines
+- **`/frontend/README.md`** - Frontend-specific documentation (architecture, TypeScript types, Zustand stores, components)
+- `/backend/README.md` - Backend API documentation (to be created)
+
+## Important for AI Development
+
+When working on this codebase:
+1. **Always read module-specific documentation first**
+2. **Frontend work**: Start by reading `/frontend/README.md` for current architecture
+3. **Backend work**: Consult `/backend/README.md` for API structure
+4. **Updates**: Keep documentation updated when adding new features
