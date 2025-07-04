@@ -48,6 +48,20 @@ Não apenas lembramos que "João tem filhos" - nossa IA combina:
 - Exemplos concretos para cada avaliação
 - Economize 2+ horas por pessoa
 
+## 🌐 Protótipo Online
+
+**[🔗 Acesse o protótipo funcionando](https://diegoclair.github.io/leaderpro/)**
+
+O protótipo atual demonstra:
+- ✅ Interface completa com design moderno
+- ✅ Sistema de multi-empresas 
+- ✅ Gestão de perfis de pessoas
+- ✅ Sistema de @menções com feedback cruzado
+- ✅ Histórico de 1:1s e anotações
+- ✅ Dados mockados para demonstração
+
+> **Nota**: Este é um protótipo frontend-only com dados simulados. A integração com IA e backend está no roadmap.
+
 ## 🚀 Visão de Produto
 
 ### MVP (Atual)

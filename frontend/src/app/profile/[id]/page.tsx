@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -29,13 +29,20 @@ import { getInitials } from '@/lib/utils/names'
 export default function ProfilePage() {
   const params = useParams()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const allPeople = useAllPeopleFromStore()
   
-  // Get tab from URL or default to 'info'
-  const [activeTab, setActiveTab] = useState(() => {
-    return searchParams.get('tab') || 'info'
-  })
+  // Get tab from URL or default to 'info' (using window for static export compatibility)
+  const [activeTab, setActiveTab] = useState('info')
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const tab = urlParams.get('tab')
+      if (tab) {
+        setActiveTab(tab)
+      }
+    }
+  }, [])
 
   // Update URL when tab changes
   const handleTabChange = (tab: string) => {
