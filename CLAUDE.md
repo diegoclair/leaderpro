@@ -77,6 +77,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Conquistas e observações
    - Performance reviews automatizadas
 
+4. **Sistema de Menções e Feedback Cruzado**
+   - Durante 1:1s, use `@nome` para referenciar outras pessoas
+   - Exemplo: "Maria disse que @João é muito atencioso e ajuda bastante"
+   - Automaticamente cria feedback no perfil do João: "Feedback de Maria via 1:1"
+   - Se a pessoa não existir, sugere criar perfil básico
+   - Constrói rede de percepções e relacionamentos do time
+
 ## Development Guidelines
 
 - **Backend**: Siga padrões Go idiomáticos, use interfaces para abstração
@@ -156,7 +163,7 @@ backend/
 ├── cmd/api/          # Application entrypoints
 ├── internal/         # Private application code
 │   ├── domain/       # Business entities and interfaces
-│   ├── service/      # Business logic
+│   ├── service/      # Business logic (includes @mention parsing)
 │   ├── repository/   # Data access layer
 │   ├── handler/      # HTTP handlers
 │   └── ai/           # AI integration (prompts, vector storage)
@@ -211,6 +218,7 @@ frontend/
 3. **AI Integration** - OpenAI/Claude API
 4. **Basic Profile Management** - Team member profiles
 5. **Note-taking System** - Structured feedback capture
+6. **@Mention System** - Cross-reference parsing and profile linking
 
 ### Phase 3: Advanced Features
 1. **Contextual AI Suggestions** - Temporal + personal data analysis

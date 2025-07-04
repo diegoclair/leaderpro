@@ -37,6 +37,12 @@ Não apenas lembramos que "João tem filhos" - nossa IA combina:
 - Lembretes inteligentes: "Faz 3 semanas sem 1:1 com Carlos"
 - Insights temporais: "Equipe trabalhou extra ontem, reconheça o esforço"
 
+🔗 **Sistema de Menções e Feedback Cruzado**
+- Use `@nome` durante 1:1s para referenciar outras pessoas
+- Exemplo: "Maria disse que @João é muito atencioso"
+- Automaticamente cria feedback no perfil do João
+- Constrói rede de percepções e relacionamentos do time
+
 📊 **Performance Reviews Facilitadas**
 - Compilação automática dos dados do período
 - Exemplos concretos para cada avaliação

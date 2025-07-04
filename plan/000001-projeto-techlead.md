@@ -79,7 +79,14 @@ Um coach de liderança pessoal com IA que transforma líderes técnicos em gesto
      - "Equipe terminou sprint ontem + todos trabalharam extra = reconheça o esforço"
    - **Conexões temporais**: Liga eventos passados com situação atual
 
-5. **Performance Review Facilitada**
+5. **Sistema de Menções e Feedback Cruzado**
+   - Durante 1:1s, use `@nome` para referenciar outras pessoas
+   - Exemplo: "Maria disse que @João é muito atencioso e ajuda bastante"
+   - Automaticamente cria feedback no perfil do João: "Feedback de Maria via 1:1"
+   - Se a pessoa não existir, sugere criar perfil básico
+   - Constrói rede de percepções e relacionamentos do time
+
+6. **Performance Review Facilitada**
    - Compilação automática dos dados do período
    - Identificação de pontos fortes e de melhoria
 
