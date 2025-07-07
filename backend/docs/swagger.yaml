@@ -1,0 +1,599 @@
+definitions:
+  github_com_diegoclair_leaderpro_internal_transport_rest_routes_pingroute.pingResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AccountResponse:
+    properties:
+      balance:
+        type: number
+      cpf:
+        type: string
+      create_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AddAccount:
+    properties:
+      cpf:
+        maxLength: 11
+        minLength: 11
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - cpf
+    - name
+    - password
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AddBalance:
+    properties:
+      amount:
+        type: number
+    required:
+    - amount
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.Login:
+    properties:
+      cpf:
+        maxLength: 11
+        minLength: 11
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - cpf
+    - password
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        type: string
+    type: object
+  ? github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_AccountResponse
+  : properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AccountResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.ReturnPagination'
+    type: object
+  ? github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_TransferResp
+  : properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.TransferResp'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.ReturnPagination'
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.RefreshTokenResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.ReturnPagination:
+    properties:
+      current_page:
+        type: integer
+      records_per_page:
+        type: integer
+      total_pages:
+        type: integer
+      total_records:
+        type: integer
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.TransferReq:
+    properties:
+      account_destination_id:
+        type: string
+      amount:
+        type: number
+    required:
+    - account_destination_id
+    - amount
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.TransferResp:
+    properties:
+      account_destination_id:
+        type: string
+      account_origin_id:
+        type: string
+      amount:
+        type: number
+      create_at:
+        type: string
+      id:
+        type: string
+    type: object
+  resterrors.restErr:
+    properties:
+      causes: {}
+      error:
+        type: string
+      message:
+        type: string
+      status_code:
+        type: integer
+    type: object
+host: localhost:5000
+info:
+  contact:
+    email: diego93rodrigues@gmail.com
+    name: Email
+  description: This is an API documentation for go boilerplate
+  title: Go Boilerplate API
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: Get all accounts with paginated response
+      parameters:
+      - description: number of page you want
+        in: query
+        name: page
+        type: string
+      - description: quantity of items per page
+        in: query
+        name: quantity
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Get all accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Add a new account
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AddAccount'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Add a new account
+      tags:
+      - accounts
+  /accounts/:account_uuid/:
+    get:
+      description: Get account by it UUID value
+      parameters:
+      - description: account uuid
+        in: path
+        name: account_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Get account by ID
+      tags:
+      - accounts
+  /accounts/:account_uuid/balance:
+    post:
+      consumes:
+      - application/json
+      description: Add balance to an account by account_uuid
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AddBalance'
+      - description: account uuid
+        in: path
+        name: account_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Add balance to an account
+      tags:
+      - accounts
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the user
+      parameters:
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Generate a new token using the refresh token
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.RefreshTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Refresh Token
+      tags:
+      - auth
+  /ping/:
+    get:
+      description: Ping the server to check if it is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_routes_pingroute.pingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Ping the server
+      tags:
+      - ping
+  /transfers:
+    get:
+      description: Get all transfers with paginated response
+      parameters:
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_TransferResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Get all transfers
+      tags:
+      - transfers
+    post:
+      consumes:
+      - application/json
+      description: Add a new transfer
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.TransferReq'
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Add a new transfer
+      tags:
+      - transfers
+schemes:
+- http
+swagger: "2.0"

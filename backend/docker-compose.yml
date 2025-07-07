@@ -1,0 +1,93 @@
+services:
+
+  app:
+    container_name: go-boilerplate-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    environment:
+      WAIT_HOSTS: db:3306
+      WAIT_HOSTS_TIMEOUT: 60
+    volumes:
+      - ./:/app   #use this volume to set the live reload
+    depends_on:
+      - db
+      - cache
+    networks:
+      - app-network
+
+  cache:
+    container_name: go-boilerplate-cache-redis
+    image: redis:7.4.2-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - ./.docker/volumes/cachedata:/data
+    networks:
+      - app-network
+  
+  db:
+    container_name: go-boilerplate-mysql
+    image: mysql:8.0.32
+    command: bash -c "usermod -u 1000 mysql && docker-entrypoint.sh mysqld --innodb-use-native-aio=0 --disable-log-bin"
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE - this is to not show the error 'mbind: Operation not permitted' in database docker log
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.docker/volumes/dbdata:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=leaderpro_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=root
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus
+    container_name: go-boilerplate-prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+        - app-network
+
+  grafana:
+    # to configure host on grafana inside datasource, we can use the container name, for example: http://prometheus:9090
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    container_name: go-boilerplate-grafana
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - 5775:5775/udp
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 14268:14268
+      - 9411:9411
+    networks:
+      - app-network
+   
+networks:
+  app-network:
+    driver: bridge

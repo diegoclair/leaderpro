@@ -1,4 +1,4 @@
-# Plano 000001 - Projeto TechLead
+# Plano 000001 - Projeto Leader Pro
 
 ## Resumo Executivo
 

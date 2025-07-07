@@ -1,0 +1,33 @@
+[app]
+name = "leaderpro"
+environment = "local"
+port = "5000"
+
+  [app.auth]
+  access-token-duration = "15m"
+  refresh-token-duration = "24h"
+  paseto-symmetric-key = "dFRpaeCkdLuKpv65vN7QDSGm5M4H6EWe"
+
+[cache]
+  [cache.redis]
+  host = "cache" # redis container name
+  port = 6379
+  db = 0
+  pass = "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+  default-expiration = "24h"
+  
+[db]
+  [db.mysql]
+  username = "root"
+  password = "root"
+  host = "db" # mysql container name
+  port = 3306
+  db-name = "leaderpro_db"
+  max-life-in-minutes = 1
+  max-idle-connections = 5
+  max-open-connections = 100
+
+[log]
+debug = true
+log-to-file = false
+path = "leaderpro.log"
