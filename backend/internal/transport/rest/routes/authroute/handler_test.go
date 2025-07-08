@@ -38,14 +38,14 @@ func TestHandler_handleLogin(t *testing.T) {
 			name: "Should complete request with no error",
 			args: args{
 				body: viewmodel.Login{
-					CPF:      "01234567890",
+					Email:    "test@test.com",
 					Password: "12345678",
 				},
 			},
 			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
-				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.Account{ID: 1, UUID: "uuid"}, nil).Times(1)
+				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateAccessToken(ctx, gomock.Any()).Return("a123", contract.TokenPayload{}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateRefreshToken(ctx, gomock.Any()).Return("r123", contract.TokenPayload{ExpiredAt: time.Now()}, nil).Times(1)
 				m.AuthAppMock.EXPECT().CreateSession(ctx, gomock.Any()).DoAndReturn(
@@ -78,14 +78,14 @@ func TestHandler_handleLogin(t *testing.T) {
 			name: "Should return error when login fails",
 			args: args{
 				body: viewmodel.Login{
-					CPF:      "01234567890",
+					Email:    "test@test.com",
 					Password: "12345678",
 				},
 			},
 			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
-				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.Account{}, fmt.Errorf("error to login")).Times(1)
+				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{}, fmt.Errorf("error to login")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusServiceUnavailable, resp.Code)
@@ -96,14 +96,14 @@ func TestHandler_handleLogin(t *testing.T) {
 			name: "Should return error when create access token fails",
 			args: args{
 				body: viewmodel.Login{
-					CPF:      "01234567890",
+					Email:    "test@test.com",
 					Password: "12345678",
 				},
 			},
 			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
-				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.Account{ID: 1, UUID: "uuid"}, nil).Times(1)
+				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateAccessToken(ctx, gomock.Any()).Return("", contract.TokenPayload{}, fmt.Errorf("error to create access token")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
@@ -115,14 +115,14 @@ func TestHandler_handleLogin(t *testing.T) {
 			name: "Should return error when create refresh token fails",
 			args: args{
 				body: viewmodel.Login{
-					CPF:      "01234567890",
+					Email:    "test@test.com",
 					Password: "12345678",
 				},
 			},
 			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
-				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.Account{ID: 1, UUID: "uuid"}, nil).Times(1)
+				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateAccessToken(ctx, gomock.Any()).Return("a123", contract.TokenPayload{}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateRefreshToken(ctx, gomock.Any()).Return("", contract.TokenPayload{}, fmt.Errorf("error to create refresh token")).Times(1)
 			},
@@ -135,14 +135,14 @@ func TestHandler_handleLogin(t *testing.T) {
 			name: "Should return error when create session fails",
 			args: args{
 				body: viewmodel.Login{
-					CPF:      "01234567890",
+					Email:    "test@test.com",
 					Password: "12345678",
 				},
 			},
 			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
-				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.Account{ID: 1, UUID: "uuid"}, nil).Times(1)
+				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateAccessToken(ctx, gomock.Any()).Return("a123", contract.TokenPayload{}, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateRefreshToken(ctx, gomock.Any()).Return("r123", contract.TokenPayload{ExpiredAt: time.Now()}, nil).Times(1)
 				m.AuthAppMock.EXPECT().CreateSession(ctx, gomock.Any()).Return(fmt.Errorf("error to create session")).Times(1)

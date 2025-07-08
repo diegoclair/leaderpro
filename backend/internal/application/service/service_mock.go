@@ -15,15 +15,15 @@ import (
 type allMocks struct {
 	mockDataManager *mocks.MockDataManager
 
-	mockAuthRepo    *mocks.MockAuthRepo
-	mockAccountRepo *mocks.MockAccountRepo
+	mockAuthRepo *mocks.MockAuthRepo
+	mockUserRepo *mocks.MockUserRepo
 
 	mockCacheManager *mocks.MockCacheManager
 	mockCrypto       *mocks.MockCrypto
 	mockValidator    validator.Validator
 	mockLogger       logger.Logger
 
-	mockAccountSvc *mocks.MockAccountApp
+	mockUserSvc *mocks.MockUserApp
 
 	mockDomain *mocks.MockInfrastructure
 }
@@ -36,8 +36,8 @@ func newServiceTestMock(t *testing.T) (m allMocks, ctrl *gomock.Controller) {
 
 	dm := mocks.NewMockDataManager(ctrl)
 
-	accountRepo := mocks.NewMockAccountRepo(ctrl)
-	dm.EXPECT().Account().Return(accountRepo).AnyTimes()
+	userRepo := mocks.NewMockUserRepo(ctrl)
+	dm.EXPECT().User().Return(userRepo).AnyTimes()
 
 	authRepo := mocks.NewMockAuthRepo(ctrl)
 	dm.EXPECT().Auth().Return(authRepo).AnyTimes()
@@ -47,7 +47,7 @@ func newServiceTestMock(t *testing.T) (m allMocks, ctrl *gomock.Controller) {
 	log := cfg.GetLogger()
 	v := cfg.GetValidator(t)
 
-	accountSvc := mocks.NewMockAccountApp(ctrl)
+	userSvc := mocks.NewMockUserApp(ctrl)
 
 	domainMock := mocks.NewMockInfrastructure(ctrl)
 	domainMock.EXPECT().DataManager().Return(dm).AnyTimes()
@@ -58,11 +58,11 @@ func newServiceTestMock(t *testing.T) (m allMocks, ctrl *gomock.Controller) {
 
 	m = allMocks{
 		mockDataManager:  dm,
-		mockAccountRepo:  accountRepo,
+		mockUserRepo:     userRepo,
 		mockCacheManager: cm,
 		mockAuthRepo:     authRepo,
 		mockCrypto:       crypto,
-		mockAccountSvc:   accountSvc,
+		mockUserSvc:      userSvc,
 		mockDomain:       domainMock,
 		mockValidator:    v,
 		mockLogger:       log,

@@ -42,41 +42,41 @@ func newAuthApp(infra domain.Infrastructure, userSvc contract.UserApp, accessTok
 	}
 }
 
-func (s *authApp) Login(ctx context.Context, input dto.LoginInput) (account entity.Account, err error) {
+func (s *authApp) Login(ctx context.Context, input dto.LoginInput) (user entity.User, err error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
 	err = input.Validate(ctx, s.validator)
 	if err != nil {
 		s.log.Errorw(ctx, "error or invalid input", logger.Err(err))
-		return account, err
+		return user, err
 	}
 
-	account, err = s.dm.Account().GetAccountByDocument(ctx, input.CPF)
+	user, err = s.dm.User().GetUserByEmail(ctx, input.Email)
 	if err != nil {
 		s.log.Errorw(ctx, "error getting account by document", logger.Err(err))
-		return account, resterrors.NewUnauthorizedError(wrongLogin)
+		return user, resterrors.NewUnauthorizedError(wrongLogin)
 	}
 
-	ctx = context.WithValue(ctx, infra.AccountUUIDKey, account.UUID) // set account uuid in context to be used in logs
+	ctx = context.WithValue(ctx, infra.AccountUUIDKey, user.UUID) // set account uuid in context to be used in logs
 
-	if !account.Active {
-		s.log.Error(ctx, "account is not active")
-		return account, resterrors.NewUnauthorizedError(errDeactivatedAccount)
+	if !user.Active {
+		s.log.Error(ctx, "user is not active")
+		return user, resterrors.NewUnauthorizedError(errDeactivatedAccount)
 	}
 
-	s.log.Infow(ctx, "account information used to login",
-		logger.Int64("account_id", account.ID),
-		logger.String("name", account.Name),
+	s.log.Infow(ctx, "user information used to login",
+		logger.Int64("user_id", user.ID),
+		logger.String("name", user.Name),
 	)
 
-	err = s.crypto.CheckPassword(input.Password, account.Password)
+	err = s.crypto.CheckPassword(input.Password, user.Password)
 	if err != nil {
 		s.log.Error(ctx, "wrong password")
-		return account, resterrors.NewUnauthorizedError(wrongLogin)
+		return user, resterrors.NewUnauthorizedError(wrongLogin)
 	}
 
-	return account, nil
+	return user, nil
 }
 
 func (s *authApp) CreateSession(ctx context.Context, session dto.Session) (err error) {
@@ -118,19 +118,20 @@ func (s *authApp) Logout(ctx context.Context, accessToken string) (err error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
-	loggedAccountID, err := s.accountSvc.GetLoggedAccountID(ctx)
+	loggedUserID, err := s.userSvc.GetLoggedUserID(ctx)
 	if err != nil {
 		return err
 	}
 
 	// access token will be on cache for 3 minutes after it duration
+	// this is to avoid the user to login again with the same access token (used in the middleware)
 	err = s.cache.SetStringWithExpiration(ctx, accessToken, "true", s.accessTokenDuration+3*time.Minute)
 	if err != nil {
 		s.log.Errorw(ctx, "error logging out", logger.Err(err))
 		return err
 	}
 
-	err = s.dm.Auth().SetSessionAsBlocked(ctx, loggedAccountID)
+	err = s.dm.Auth().SetSessionAsBlocked(ctx, loggedUserID)
 	if err != nil {
 		s.log.Errorw(ctx, "error logging out", logger.Err(err))
 		return err

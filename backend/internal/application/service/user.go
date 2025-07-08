@@ -12,7 +12,7 @@ type userService struct {
 	infra domain.Infrastructure
 }
 
-func newUserService(infra domain.Infrastructure) contract.UserApp {
+func newUserSvc(infra domain.Infrastructure) contract.UserApp {
 	return &userService{
 		infra: infra,
 	}

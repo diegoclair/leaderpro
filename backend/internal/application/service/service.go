@@ -23,7 +23,7 @@ func New(infra domain.Infrastructure, accessTokenDuration time.Duration) (*Apps,
 		return nil, err
 	}
 
-	userSvc := newUserService(infra)
+	userSvc := newUserSvc(infra)
 
 	return &Apps{
 		UserService:     userSvc,

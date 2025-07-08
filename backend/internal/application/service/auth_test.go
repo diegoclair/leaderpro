@@ -21,18 +21,18 @@ func Test_newAuthApp(t *testing.T) {
 		dm:                  m.mockDataManager,
 		log:                 m.mockLogger,
 		validator:           m.mockValidator,
-		accountSvc:          m.mockAccountSvc,
+		userSvc:             m.mockUserSvc,
 		accessTokenDuration: time.Minute,
 	}
 
-	if got := newAuthApp(m.mockDomain, m.mockAccountSvc, time.Minute); !reflect.DeepEqual(got, want) {
+	if got := newAuthApp(m.mockDomain, m.mockUserSvc, time.Minute); !reflect.DeepEqual(got, want) {
 		t.Errorf("newAuthService() = %v, want %v", got, want)
 	}
 }
 
 func Test_authService_Login(t *testing.T) {
 	type args struct {
-		cpf      string
+		email    string
 		password string
 	}
 	tests := []struct {
@@ -44,16 +44,16 @@ func Test_authService_Login(t *testing.T) {
 		{
 			name: "Should login without any errors",
 			args: args{
-				cpf:      "01234567890",
+				email:    "test@test.com",
 				password: "01234567890",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
 				gomock.InOrder(
-					mocks.mockAccountRepo.EXPECT().GetAccountByDocument(ctx, args.cpf).Return(entity.Account{
+					mocks.mockUserRepo.EXPECT().GetUserByEmail(ctx, args.email).Return(entity.User{
 						ID:       1,
 						UUID:     "uuid",
 						Name:     "name",
-						CPF:      args.cpf,
+						Email:    args.email,
 						Password: args.password,
 						Active:   true,
 					}, nil).Times(1),
@@ -65,15 +65,15 @@ func Test_authService_Login(t *testing.T) {
 		{
 			name: "Should return error when the account is not active",
 			args: args{
-				cpf:      "01234567890",
+				email:    "test@test.com",
 				password: "01234567890",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountRepo.EXPECT().GetAccountByDocument(ctx, args.cpf).Return(entity.Account{
+				mocks.mockUserRepo.EXPECT().GetUserByEmail(ctx, args.email).Return(entity.User{
 					ID:       1,
 					UUID:     "uuid",
 					Name:     "name",
-					CPF:      args.cpf,
+					Email:    args.email,
 					Password: args.password,
 					Active:   false,
 				}, nil).Times(1)
@@ -83,19 +83,19 @@ func Test_authService_Login(t *testing.T) {
 		{
 			name: "Should return error when there is some error to get account by document",
 			args: args{
-				cpf:      "01234567890",
+				email:    "test@test.com",
 				password: "01234567890",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountRepo.EXPECT().GetAccountByDocument(ctx, args.cpf).
-					Return(entity.Account{}, errors.New("some error")).Times(1)
+				mocks.mockUserRepo.EXPECT().GetUserByEmail(ctx, args.email).
+					Return(entity.User{}, errors.New("some error")).Times(1)
 			},
 			wantErr: true,
 		},
 		{
 			name: "Should return error when the password is wrong",
 			args: args{
-				cpf:      "01234567890",
+				email:    "test@test.com",
 				password: "01234567890",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {

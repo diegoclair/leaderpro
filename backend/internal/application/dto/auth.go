@@ -1,17 +1,32 @@
 package dto
 
-import "time"
+import (
+	"context"
+	"time"
+
+	"github.com/diegoclair/go_utils/validator"
+)
 
 type LoginInput struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
 
+func (l *LoginInput) Validate(ctx context.Context, v validator.Validator) error {
+	return v.ValidateStruct(ctx, l)
+}
+
 type Session struct {
-	SessionUUID string    `json:"session_uuid"`
-	UserID      int64     `json:"user_id"`
-	AccessToken string    `json:"access_token"`
-	CreatedAt   time.Time `json:"created_at"`
-	ExpiresAt   time.Time `json:"expires_at"`
-	Blocked     bool      `json:"blocked"`
+	SessionID             int64
+	SessionUUID           string `validate:"required,uuid"`
+	AccountID             int64  `validate:"required"`
+	RefreshToken          string `validate:"required"`
+	UserAgent             string
+	ClientIP              string
+	IsBlocked             bool
+	RefreshTokenExpiredAt time.Time
+}
+
+func (s *Session) Validate(ctx context.Context, v validator.Validator) error {
+	return v.ValidateStruct(ctx, s)
 }
