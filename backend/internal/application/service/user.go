@@ -18,9 +18,9 @@ func newUserSvc(infra domain.Infrastructure) contract.UserApp {
 	}
 }
 
-func (s *userService) CreateUser(ctx context.Context, user entity.User) error {
+func (s *userService) CreateUser(ctx context.Context, user entity.User) (entity.User, error) {
 	// TODO: Implement
-	return nil
+	return entity.User{}, nil
 }
 
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
@@ -46,4 +46,14 @@ func (s *userService) GetLoggedUserID(ctx context.Context) (int64, error) {
 func (s *userService) UpdateUser(ctx context.Context, userUUID string, user entity.User) error {
 	// TODO: Implement
 	return nil
+}
+
+func (s *userService) GetProfile(ctx context.Context) (entity.User, error) {
+	// TODO: Implement
+	return entity.User{}, nil
+}
+
+func (s *userService) UpdateProfile(ctx context.Context, user entity.User) (entity.User, error) {
+	// TODO: Implement
+	return entity.User{}, nil
 }

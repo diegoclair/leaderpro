@@ -64,7 +64,7 @@ func validateTokenCreation(t *testing.T, args utilArgs, token string, tokenPaylo
 	require.NotNil(t, tokenPayload)
 	require.NotEmpty(t, tokenPayload)
 
-	require.Equal(t, args.payload.AccountUUID, tokenPayload.AccountUUID)
+	require.Equal(t, args.payload.UserUUID, tokenPayload.UserUUID)
 	require.Equal(t, args.payload.SessionUUID, tokenPayload.SessionUUID)
 	require.NotZero(t, tokenPayload.IssuedAt)
 	require.NotZero(t, tokenPayload.ExpiredAt)

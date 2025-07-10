@@ -4,39 +4,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**LeaderPro** - Uma plataforma de IA que amplifica a inteligência de liderança, mantendo memória perfeita de cada interação com o time e sugerindo ações contextuais.
+**LeaderPro** - AI platform that amplifies leadership intelligence, maintaining perfect memory of every team interaction and suggesting contextual actions.
 
-**Tagline:** "Torne-se um líder mais inteligente"
+**Tagline:** "Become a smarter leader"
 
 ## Product Context
 
-- **Problema**: 70% dos líderes são promovidos sem treinamento adequado, resultando em 1:1s ineficazes e performance reviews superficiais
-- **Solução**: IA contextual multidimensional que combina dados pessoais + temporais + geográficos + histórico
-- **Diferencial**: Coach virtual que lembra tudo e sugere ações baseadas em contexto completo
-- **Modelo**: B2C (R$ 49,90/mês) - líder paga individualmente
+- **Problem**: 70% of leaders are promoted without adequate training, resulting in ineffective 1:1s and superficial performance reviews
+- **Solution**: Multidimensional contextual AI that combines personal + temporal + geographic + historical data
+- **Differentiator**: Virtual coach that remembers everything and suggests actions based on complete context
+- **Model**: B2C (R$ 49.90/month) - individual leader pays
 
 ## Project Structure
 
 ### Current State
-- `/backend/` - Empty directory (Go API to be implemented)
+- `/backend/` - Go boilerplate with DDD/Clean Architecture (needs LeaderPro implementation)
 - `/frontend/` - **✅ IMPLEMENTED** - Complete Next.js 15.3.5 frontend with all core features
 - `/plan/` - Complete project planning documentation
-- `/CLAUDE.md` - This file with development guidance
-- `/README.md` - Project overview and business context
+- `/.github/workflows/` - GitHub Actions for frontend deployment to GitHub Pages
 
 ### Key Documentation
 - **`/frontend/README.md`** - Frontend architecture, TypeScript types, components, and stores
-- **`/plan/000001-projeto-techlead.md`** - Business plan, market analysis, and strategy
+- **`/backend/README.md`** - Go boilerplate documentation with Clean Architecture
+- **`/plan/000001-projeto-leaderpro.md`** - Business plan, market analysis, and strategy
 
 ## Technology Stack
 
 ### Backend (Go/Golang)
-- **Framework**: Gin ou Echo
-- **ORM**: GORM
-- **Database**: PostgreSQL (dados relacionais)
-- **Cache**: Redis (sessões e cache de IA)
-- **IA**: OpenAI GPT-4 ou Claude API
-- **Vector DB**: Pinecone/Weaviate (memória contextual)
+- **Current**: Go boilerplate with Echo, GORM, MySQL, Redis
+- **To implement**: LeaderPro-specific endpoints for:
+  - Companies and team member management
+  - 1:1 meetings and notes
+  - AI integration (OpenAI/Claude API)
+  - Vector database for contextual memory
 
 ### Frontend (Next.js) - ✅ IMPLEMENTED
 - **Framework**: Next.js 15.3.5 with App Router
@@ -45,108 +45,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **State**: Zustand for global state management
 - **Icons**: Lucide React
 - **Date Utils**: date-fns
-- **Auth**: Clerk ou Auth0 (to be integrated)
 - **Deploy**: GitHub Pages via GitHub Actions
-
-## Brand Identity
-
-### Design System
-- **Cores primárias**: Azul #2563eb, Verde #16a34a
-- **Cores secundárias**: Cinza #475569, Branco #ffffff
-- **Acentos**: Laranja #ea580c, Roxo #7c3aed
-- **Tipografia**: Inter
-- **Ícones**: Heroicons (outline style)
-- **Estilo**: Minimalista, inspirado em Linear/Notion
-
-### Tom de Voz
-- Profissional mas acessível
-- Inteligente sem ser arrogante
-- Prático e orientado a resultados
-- Empático com as dores do líder
-
-## Core Features
-
-1. **1:1s com IA Contextual**
-   - Sugestões de perguntas baseadas em: perfil + data + localização + histórico
-   - Exemplo: "João tem filhos + julho + SP = pergunte sobre férias escolares"
-
-2. **Memória Contínua**
-   - Timeline visual de cada pessoa
-   - IA conecta eventos: "Maria melhorou comunicação desde feedback de março"
-
-3. **Anotações Inteligentes**
-   - Feedbacks do dia a dia
-   - Conquistas e observações
-   - Performance reviews automatizadas
-
-4. **Sistema de Menções e Feedback Cruzado**
-   - Durante 1:1s, use `@nome` para referenciar outras pessoas
-   - Exemplo: "Maria disse que @João é muito atencioso e ajuda bastante"
-   - Automaticamente cria feedback no perfil do João: "Feedback de Maria via 1:1"
-   - Se a pessoa não existir, sugere criar perfil básico
-   - Constrói rede de percepções e relacionamentos do time
-
-## Development Guidelines
-
-- **Backend**: Siga padrões Go idiomáticos, use interfaces para abstração
-- **Frontend**: Componentes reutilizáveis com shadcn/ui, typecheck rigoroso
-- **IA**: Otimize prompts para reduzir custos, implemente cache inteligente
-- **UX**: Foque na simplicidade - onboarding em 5 minutos
-- **Dados**: LGPD compliance obrigatório, criptografia end-to-end
-- **Performance**: Otimize para mobile, lazy loading, edge functions
-
-## Key Metrics
-
-- **MVP**: 10 usuários ativos semanalmente
-- **6 meses**: 100 usuários pagantes
-- **North Star**: Número de 1:1s realizados por mês
 
 ## Development Commands
 
-### Current Status
-**✅ FRONTEND COMPLETED** - Full Next.js implementation with all core features  
-**⚠️ BACKEND PENDING** - API implementation needed
-
-### Frontend (Next.js) - ✅ IMPLEMENTED
+### Frontend (Next.js) - ✅ WORKING
 ```bash
+cd frontend
+
 # Development server (with Turbopack)
-cd frontend && npm run dev
+npm run dev
 
 # Production build (static export)
 npm run build
-
-# Production server
-npm run start
 
 # Linting
 npm run lint
 
 # Type checking (manual - not in package.json)
 npx tsc --noEmit
-
-# Install dependencies
-npm install
-
-# Add new dependencies
-npm install [package-name]
 ```
 
-### Backend (Go) - To be implemented
+### Backend (Go) - BOILERPLATE READY
 ```bash
-# Initialize project (run once)
-cd backend && go mod init github.com/diegoclair/leaderpro
+cd backend
 
-# Run development server
-go run cmd/api/main.go
+# Start all services (MySQL, Redis, App)
+make start
 
 # Run tests
-go test ./...
+make tests
 
-# Build for production
-go build -o bin/api cmd/api/main.go
+# Generate mocks
+make mocks
 
-# Database migrations (when implemented)
-migrate -path db/migrations -database "postgresql://..." up
+# Generate API documentation (Swagger)
+make docs
+
+# Access Swagger UI (after start)
+# http://localhost:5000/swagger/
 ```
 
 ### Deployment
@@ -157,95 +94,77 @@ migrate -path db/migrations -database "postgresql://..." up
 
 ## Architecture Overview
 
-### Backend Architecture
+### Backend Architecture (Clean Architecture)
 ```
 backend/
-├── cmd/api/          # Application entrypoints
-├── internal/         # Private application code
-│   ├── domain/       # Business entities and interfaces
-│   ├── service/      # Business logic (includes @mention parsing)
-│   ├── repository/   # Data access layer
-│   ├── handler/      # HTTP handlers
-│   └── ai/           # AI integration (prompts, vector storage)
-├── pkg/              # Public packages
-├── db/migrations/    # Database migrations
-└── config/           # Configuration files
+├── cmd/              # Application entry point
+├── internal/         # Core application code
+│   ├── domain/       # Business logic, entities, interfaces
+│   ├── application/  # Use cases/services
+│   └── transport/    # HTTP handlers (Echo framework)
+├── infra/            # Infrastructure implementations
+│   ├── data/         # Database repositories
+│   ├── cache/        # Redis implementation
+│   └── logger/       # Logging infrastructure
+├── migrator/         # Database migrations
+├── docs/             # Generated Swagger docs
+└── mocks/            # Generated mocks for testing
 ```
 
 ### Frontend Architecture
 ```
 frontend/
 ├── app/                    # Next.js 15 App Router
-│   ├── components/         # Page-specific components
-│   ├── fonts/              # Local font files
-│   ├── globals.css         # Global styles and Tailwind
-│   ├── layout.tsx          # Root layout with providers
-│   └── page.tsx            # Main dashboard page
+│   ├── page.tsx            # Main dashboard
+│   └── profile/[id]/       # Person profile pages
 ├── components/             
 │   ├── ui/                 # shadcn/ui components
-│   ├── layout/             # Header, navigation
-│   ├── people/             # Person profiles, forms
-│   ├── one-on-ones/        # 1:1 meeting components
-│   ├── feedback/           # Feedback management
-│   └── shared/             # Reusable components
+│   ├── person/             # Person profiles, cards
+│   ├── profile/            # Profile tabs (info, history, feedback, chat)
+│   └── layout/             # Header, navigation
 ├── hooks/                  # Custom React hooks
 │   ├── use-mentions.ts     # @mention functionality
 │   └── use-create-person.ts# Auto-create from mentions
 ├── lib/                    
-│   ├── utils/              # Date, name, formatting utils
-│   └── utils.ts            # cn() utility for classes
-└── stores/                 # Zustand state stores
+│   ├── stores/             # Zustand state stores
+│   ├── types/              # TypeScript definitions
+│   └── utils/              # Date, name utilities
+└── stores/                 # Zustand stores
     ├── company-store.ts    # Company/project management
     ├── people-store.ts     # Team member profiles
     └── one-on-one-store.ts # 1:1 meetings and notes
 ```
 
-### AI Context Pipeline
-1. **Data Collection**: User inputs, team member profiles, calendar data
-2. **Vector Embedding**: Convert to embeddings using OpenAI/Claude
-3. **Context Building**: Combine temporal + geographic + personal data
-4. **Prompt Engineering**: Generate contextual suggestions
-5. **Response Caching**: Store frequent queries in Redis
+## Core Features
 
-## Implementation Status
-
-### ✅ Completed Features (Frontend)
-- Multi-company/project support with data persistence
-- Complete person profile management (personal + professional data)
-- 1:1 meeting system with notes and action items
-- @mention system with auto-suggestions and cross-referencing
+### ✅ Implemented (Frontend)
+- Multi-company/project support with persistence
+- Complete person profile management
+- 1:1 meeting system with notes
+- @mention system with auto-suggestions
 - Feedback tracking (direct + mentioned)
 - Dark/light theme toggle
-- Responsive design with shadcn/ui components
-- Local data persistence (localStorage + Zustand)
+- Responsive design
 
 ### ⏳ Pending Implementation
-1. **Backend API** (Go + PostgreSQL + Redis)
-2. **AI Integration** (OpenAI/Claude for contextual suggestions)
-3. **Authentication** (Clerk/Auth0)
-4. **Vector Database** (Pinecone/Weaviate for AI memory)
-5. **Real-time Sync** (WebSockets for collaborative features)
-6. **Testing Framework** (Jest/Vitest + Playwright)
-7. **Performance Reviews** (Auto-generation from 1:1s)
-8. **Calendar Integration** (Google/Outlook)
+1. **Backend API** - Implement LeaderPro endpoints in Go boilerplate
+2. **AI Integration** - OpenAI/Claude for contextual suggestions
+3. **Authentication** - User login/signup
+4. **Vector Database** - AI memory with Pinecone/Weaviate
+5. **Real-time Sync** - WebSockets for collaboration
+6. **Calendar Integration** - Google/Outlook
 
-## Code Quality and Best Practices
+## AI Context Pipeline (To Implement)
+1. **Data Collection**: User inputs, profiles, calendar
+2. **Vector Embedding**: Convert to embeddings
+3. **Context Building**: Combine temporal + geographic + personal
+4. **Prompt Engineering**: Generate suggestions
+5. **Response Caching**: Redis for frequent queries
 
-### TypeScript Configuration
-- Strict mode enabled with all checks
-- Path aliases: `@/*` maps to `./src/*`
-- Target: ES2022
-- Module resolution: bundler
+## Common Patterns
 
-### Common Patterns
+### TypeScript (Frontend)
 ```typescript
-// Component variants with CVA
-const buttonVariants = cva("base-classes", {
-  variants: {
-    size: { sm: "...", md: "...", lg: "..." }
-  }
-})
-
 // Zustand store pattern
 interface StoreState {
   items: Item[]
@@ -258,45 +177,26 @@ formatRelativeDate(date) // "2 days ago"
 formatDate(date, "PPP") // "January 7, 2025"
 ```
 
-### Performance Considerations
-- Static export for fast loading
-- Turbopack for faster dev builds
-- Component lazy loading where appropriate
-- Zustand persist middleware for offline support
+### Go (Backend)
+```go
+// Clean Architecture flow
+// transport -> application -> domain -> infra
+
+// Repository interface (domain layer)
+type UserRepository interface {
+    GetByID(ctx context.Context, id string) (*User, error)
+}
+
+// Use case (application layer)
+type GetUserUseCase struct {
+    userRepo UserRepository
+}
+```
 
 ## Important Notes
 
-- **Current Status**: Frontend completed, backend in planning phase
+- **Current Status**: Frontend completed, backend needs LeaderPro implementation
 - **Live Demo**: https://diegoclair.github.io/leaderpro/
-- **Data Storage**: Currently using localStorage (temporary)
-- **AI Features**: Mocked in frontend, pending backend implementation
-- **Authentication**: Not implemented, all features publicly accessible
-
-## Quick Start
-
-```bash
-# Clone and install
-git clone https://github.com/diegoclair/leaderpro.git
-cd leaderpro/frontend
-npm install
-
-# Run development server
-npm run dev
-
-# Open http://localhost:3000
-```
-
-## Common Tasks
-
-### Adding a New Feature
-1. Check `/frontend/README.md` for architecture patterns
-2. Create components in appropriate directories
-3. Update relevant Zustand stores
-4. Follow existing TypeScript patterns
-5. Test with multiple companies/profiles
-
-### Debugging
-- Check browser console for Zustand state updates
-- Use React Developer Tools for component inspection
-- TypeScript errors: run `npx tsc --noEmit`
-- Build issues: check `next.config.js` for static export settings
+- **Data Storage**: Currently localStorage (frontend only)
+- **AI Features**: Mocked in frontend
+- **Next Steps**: Implement backend API endpoints for LeaderPro features

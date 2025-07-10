@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/diegoclair/leaderpro/internal/application/dto"
+	"github.com/diegoclair/leaderpro/internal/domain/entity"
 	"github.com/stretchr/testify/require"
 	"github.com/twinj/uuid"
 )
 
 func validateTwoSessions(t *testing.T, sessionExpected dto.Session, sessionToCompare dto.Session) {
-	require.NotZero(t, sessionToCompare.AccountID)
+	require.NotZero(t, sessionToCompare.UserID)
 	require.Equal(t, sessionExpected.SessionUUID, sessionToCompare.SessionUUID)
 	require.Equal(t, sessionExpected.RefreshToken, sessionToCompare.RefreshToken)
 	require.Equal(t, sessionExpected.UserAgent, sessionToCompare.UserAgent)
@@ -21,13 +22,33 @@ func validateTwoSessions(t *testing.T, sessionExpected dto.Session, sessionToCom
 	require.WithinDuration(t, sessionExpected.RefreshTokenExpiredAt, sessionToCompare.RefreshTokenExpiredAt, 2*time.Second)
 }
 
+func createRandomUserForAuth(t *testing.T) int64 {
+	// Create a user using the user repository for auth tests
+	userRepo := newUserRepo(testMysql.(*MysqlConn).db)
+	
+	user := entity.User{
+		UUID:     uuid.NewV4().String(),
+		Email:    "authtest" + uuid.NewV4().String()[:8] + "@example.com",
+		Name:     "Auth Test User",
+		Password: "hashedpassword",
+		Phone:    "+1234567890",
+		Active:   true,
+	}
+
+	userID, err := userRepo.CreateUser(context.Background(), user)
+	require.NoError(t, err)
+	require.NotZero(t, userID)
+
+	return userID
+}
+
 func TestCreateAndGetSession(t *testing.T) {
 	ctx := context.Background()
-	account := createRandomAccount(t)
+	userID := createRandomUserForAuth(t)
 
 	session := dto.Session{
 		SessionUUID:           uuid.NewV4().String(),
-		AccountID:             account.ID,
+		UserID:               userID,
 		RefreshToken:          uuid.NewV4().String(),
 		UserAgent:             "user-agent",
 		ClientIP:              "client-ip",
@@ -61,11 +82,11 @@ func TestGetSessionErrorsWithMock(t *testing.T) {
 
 func TestSetSessionAsBlocked(t *testing.T) {
 	ctx := context.Background()
-	account := createRandomAccount(t)
+	userID := createRandomUserForAuth(t)
 
 	session := dto.Session{
 		SessionUUID:           uuid.NewV4().String(),
-		AccountID:             account.ID,
+		UserID:               userID,
 		RefreshToken:          uuid.NewV4().String(),
 		UserAgent:             "user-agent",
 		ClientIP:              "client-ip",
@@ -77,7 +98,7 @@ func TestSetSessionAsBlocked(t *testing.T) {
 	require.NoError(t, err)
 	require.NotZero(t, sessionID)
 
-	err = testMysql.Auth().SetSessionAsBlocked(ctx, session.AccountID)
+	err = testMysql.Auth().SetSessionAsBlocked(ctx, session.UserID)
 	require.NoError(t, err)
 
 	session2, err := testMysql.Auth().GetSessionByUUID(ctx, session.SessionUUID)

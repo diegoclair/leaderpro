@@ -23,8 +23,12 @@ var (
 type MysqlConn struct {
 	db *sql.DB
 
-	accountRepo contract.AccountRepo
+	userRepo    contract.UserRepo
 	authRepo    contract.AuthRepo
+	companyRepo contract.CompanyRepo
+	personRepo  contract.PersonRepo
+	oneOnOneRepo contract.OneOnOneRepo
+	feedbackRepo contract.FeedbackRepo
 }
 
 // helps test the Instance function
@@ -82,8 +86,12 @@ func instance(ctx context.Context, dsn, dbName string, log logger.Logger, getMys
 
 func repoInstances(dbConn dbConn) *MysqlConn {
 	return &MysqlConn{
-		accountRepo: newAccountRepo(dbConn),
+		userRepo:    newUserRepo(dbConn),
 		authRepo:    newAuthRepo(dbConn),
+		companyRepo: newCompanyRepo(dbConn),
+		personRepo:  newPersonRepo(dbConn),
+		oneOnOneRepo: newOneOnOneRepo(dbConn),
+		feedbackRepo: newFeedbackRepo(dbConn),
 	}
 }
 
@@ -115,10 +123,26 @@ func (c *MysqlConn) Close() (err error) {
 	return c.db.Close()
 }
 
-func (c *MysqlConn) Account() contract.AccountRepo {
-	return c.accountRepo
+func (c *MysqlConn) User() contract.UserRepo {
+	return c.userRepo
 }
 
 func (c *MysqlConn) Auth() contract.AuthRepo {
 	return c.authRepo
+}
+
+func (c *MysqlConn) Company() contract.CompanyRepo {
+	return c.companyRepo
+}
+
+func (c *MysqlConn) Person() contract.PersonRepo {
+	return c.personRepo
+}
+
+func (c *MysqlConn) OneOnOne() contract.OneOnOneRepo {
+	return c.oneOnOneRepo
+}
+
+func (c *MysqlConn) Feedback() contract.FeedbackRepo {
+	return c.feedbackRepo
 }

@@ -51,7 +51,7 @@ func TestHandler_handleLogin(t *testing.T) {
 				m.AuthAppMock.EXPECT().CreateSession(ctx, gomock.Any()).DoAndReturn(
 					func(ctx context.Context, req dto.Session) error {
 						require.NotEmpty(t, req.SessionUUID)
-						require.Equal(t, int64(1), req.AccountID)
+						require.Equal(t, int64(1), req.UserID)
 						require.Equal(t, "r123", req.RefreshToken)
 						require.NotEmpty(t, req.RefreshTokenExpiredAt)
 
@@ -212,10 +212,10 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, input.RefreshToken).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
-						AccountUUID: args.accountUUID,
+						UserUUID:    args.accountUUID,
 					}, nil).Times(1)
 
-				ctx = context.WithValue(ctx, infra.AccountUUIDKey, args.accountUUID)
+				ctx = context.WithValue(ctx, infra.UserUUIDKey, args.accountUUID)
 				ctx = context.WithValue(ctx, infra.SessionKey, args.sessionUUID)
 
 				m.AuthAppMock.EXPECT().GetSessionByUUID(ctx, args.sessionUUID).
@@ -225,7 +225,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					}, nil).Times(1)
 
 				req := contract.TokenPayloadInput{
-					AccountUUID: args.accountUUID,
+					UserUUID:    args.accountUUID,
 					SessionUUID: args.sessionUUID,
 				}
 				m.AuthTokenMock.EXPECT().CreateAccessToken(ctx, req).
@@ -273,10 +273,10 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, input.RefreshToken).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
-						AccountUUID: args.accountUUID,
+						UserUUID:    args.accountUUID,
 					}, nil).Times(1)
 
-				ctx = context.WithValue(ctx, infra.AccountUUIDKey, args.accountUUID)
+				ctx = context.WithValue(ctx, infra.UserUUIDKey, args.accountUUID)
 				ctx = context.WithValue(ctx, infra.SessionKey, args.sessionUUID)
 
 				m.AuthAppMock.EXPECT().GetSessionByUUID(ctx, args.sessionUUID).
@@ -298,10 +298,10 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
-						AccountUUID: args.accountUUID,
+						UserUUID:    args.accountUUID,
 					}, nil).Times(1)
 
-				ctx = context.WithValue(ctx, infra.AccountUUIDKey, args.accountUUID)
+				ctx = context.WithValue(ctx, infra.UserUUIDKey, args.accountUUID)
 				ctx = context.WithValue(ctx, infra.SessionKey, args.sessionUUID)
 
 				m.AuthAppMock.EXPECT().GetSessionByUUID(ctx, args.sessionUUID).
@@ -325,10 +325,10 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
-						AccountUUID: args.accountUUID,
+						UserUUID:    args.accountUUID,
 					}, nil).Times(1)
 
-				ctx = context.WithValue(ctx, infra.AccountUUIDKey, args.accountUUID)
+				ctx = context.WithValue(ctx, infra.UserUUIDKey, args.accountUUID)
 				ctx = context.WithValue(ctx, infra.SessionKey, args.sessionUUID)
 
 				m.AuthAppMock.EXPECT().GetSessionByUUID(ctx, args.sessionUUID).
@@ -353,10 +353,10 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
-						AccountUUID: args.accountUUID,
+						UserUUID:    args.accountUUID,
 					}, nil).Times(1)
 
-				ctx = context.WithValue(ctx, infra.AccountUUIDKey, args.accountUUID)
+				ctx = context.WithValue(ctx, infra.UserUUIDKey, args.accountUUID)
 				ctx = context.WithValue(ctx, infra.SessionKey, args.sessionUUID)
 
 				m.AuthAppMock.EXPECT().GetSessionByUUID(ctx, args.sessionUUID).
@@ -366,7 +366,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					}, nil).Times(1)
 
 				req := contract.TokenPayloadInput{
-					AccountUUID: args.accountUUID,
+					UserUUID:    args.accountUUID,
 					SessionUUID: args.sessionUUID,
 				}
 

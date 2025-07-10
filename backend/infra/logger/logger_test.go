@@ -16,13 +16,13 @@ func TestNewLogger(t *testing.T) {
 
 func TestAddDefaultAttributesToLogger(t *testing.T) {
 	ctx := context.WithValue(context.Background(), infra.SessionKey, "sessionCode")
-	ctx = context.WithValue(ctx, infra.AccountUUIDKey, "accountUUID")
+	ctx = context.WithValue(ctx, infra.UserUUIDKey, "userUUID")
 
 	args := addDefaultAttributesToLogger(ctx)
 	require.Equal(t, "session", args[0].(logger.StringField).Key)
 	require.Equal(t, "sessionCode", args[0].(logger.StringField).Value)
-	require.Equal(t, "account_uuid", args[1].(logger.StringField).Key)
-	require.Equal(t, "accountUUID", args[1].(logger.StringField).Value)
+	require.Equal(t, "user_uuid", args[1].(logger.StringField).Key)
+	require.Equal(t, "userUUID", args[1].(logger.StringField).Value)
 }
 
 func TestGetContextValue(t *testing.T) {
@@ -34,7 +34,7 @@ func TestGetContextValue(t *testing.T) {
 
 	t.Run("Should return empty string when value is nil", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), infra.SessionKey, nil)
-		value := getContextValue(ctx, infra.AccountUUIDKey)
+		value := getContextValue(ctx, infra.UserUUIDKey)
 		require.Equal(t, "", value)
 	})
 
@@ -64,15 +64,15 @@ func TestGetSession(t *testing.T) {
 
 func TestGetAccountUUID(t *testing.T) {
 	t.Run("Should return empty string when accountUUID is empty", func(t *testing.T) {
-		ctx := context.WithValue(context.Background(), infra.AccountUUIDKey, "")
-		accountUUID, ok := getAccountUUID(ctx)
+		ctx := context.WithValue(context.Background(), infra.UserUUIDKey, "")
+		accountUUID, ok := getUserUUID(ctx)
 		require.Equal(t, "", accountUUID)
 		require.False(t, ok)
 	})
 
 	t.Run("Should return accountUUID", func(t *testing.T) {
-		ctx := context.WithValue(context.Background(), infra.AccountUUIDKey, "accountUUID")
-		accountUUID, ok := getAccountUUID(ctx)
+		ctx := context.WithValue(context.Background(), infra.UserUUIDKey, "accountUUID")
+		accountUUID, ok := getUserUUID(ctx)
 		require.Equal(t, "accountUUID", accountUUID)
 		require.True(t, ok)
 	})

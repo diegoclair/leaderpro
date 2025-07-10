@@ -45,9 +45,8 @@ func (s *Handler) handleCreatePerson(c echo.Context) error {
 	}
 
 	person := input.ToEntity()
-	person.CompanyID = 0 // Will be set by service based on companyUUID
 
-	err = s.personService.CreatePerson(ctx, person)
+	err = s.personService.CreatePerson(ctx, companyUUID, person)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}

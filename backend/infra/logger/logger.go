@@ -23,8 +23,8 @@ func addDefaultAttributesToLogger(ctx context.Context) []logger.LogField {
 		args = append(args, logger.String("session", sessionCode))
 	}
 
-	if accountUUID, ok := getAccountUUID(ctx); ok {
-		args = append(args, logger.String("account_uuid", accountUUID))
+	if userUUID, ok := getUserUUID(ctx); ok {
+		args = append(args, logger.String("user_uuid", userUUID))
 	}
 
 	return args
@@ -52,11 +52,11 @@ func getSession(ctx context.Context) (string, bool) {
 	return sessionCode, true
 }
 
-func getAccountUUID(ctx context.Context) (string, bool) {
-	accountUUID := getContextValue(ctx, infra.AccountUUIDKey)
-	if accountUUID == "" {
+func getUserUUID(ctx context.Context) (string, bool) {
+	userUUID := getContextValue(ctx, infra.UserUUIDKey)
+	if userUUID == "" {
 		return "", false
 	}
 
-	return accountUUID, true
+	return userUUID, true
 }

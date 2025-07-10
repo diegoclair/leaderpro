@@ -6,12 +6,12 @@ import (
 )
 
 type TokenPayloadInput struct {
-	AccountUUID string
+	UserUUID    string
 	SessionUUID string
 }
 
 type TokenPayload struct {
-	AccountUUID  string
+	UserUUID     string
 	SessionUUID  string
 	RefreshToken string
 	IssuedAt     time.Time

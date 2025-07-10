@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	wrongLogin            string = "Document or password are wrong"
-	errDeactivatedAccount string = "Account is deactivated"
+	wrongLogin         string = "Document or password are wrong"
+	errDeactivatedUser string = "User is deactivated"
 )
 
 type authApp struct {
@@ -58,11 +58,11 @@ func (s *authApp) Login(ctx context.Context, input dto.LoginInput) (user entity.
 		return user, resterrors.NewUnauthorizedError(wrongLogin)
 	}
 
-	ctx = context.WithValue(ctx, infra.AccountUUIDKey, user.UUID) // set account uuid in context to be used in logs
+	ctx = context.WithValue(ctx, infra.UserUUIDKey, user.UUID) // set user uuid in context to be used in logs
 
 	if !user.Active {
 		s.log.Error(ctx, "user is not active")
-		return user, resterrors.NewUnauthorizedError(errDeactivatedAccount)
+		return user, resterrors.NewUnauthorizedError(errDeactivatedUser)
 	}
 
 	s.log.Infow(ctx, "user information used to login",

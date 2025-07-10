@@ -19,7 +19,7 @@ func (l *LoginInput) Validate(ctx context.Context, v validator.Validator) error 
 type Session struct {
 	SessionID             int64
 	SessionUUID           string `validate:"required,uuid"`
-	AccountID             int64  `validate:"required"`
+	UserID                int64  `validate:"required"`
 	RefreshToken          string `validate:"required"`
 	UserAgent             string
 	ClientIP              string

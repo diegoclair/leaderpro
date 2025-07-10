@@ -8,11 +8,13 @@ import (
 )
 
 type UserApp interface {
-	CreateUser(ctx context.Context, user entity.User) (err error)
+	CreateUser(ctx context.Context, user entity.User) (createdUser entity.User, err error)
 	GetUserByEmail(ctx context.Context, email string) (user entity.User, err error)
 	GetUserByUUID(ctx context.Context, userUUID string) (user entity.User, err error)
 	GetLoggedUser(ctx context.Context) (user entity.User, err error)
 	GetLoggedUserID(ctx context.Context) (userID int64, err error)
+	GetProfile(ctx context.Context) (user entity.User, err error)
+	UpdateProfile(ctx context.Context, user entity.User) (updatedUser entity.User, err error)
 	UpdateUser(ctx context.Context, userUUID string, user entity.User) (err error)
 }
 
@@ -33,7 +35,7 @@ type CompanyApp interface {
 }
 
 type PersonApp interface {
-	CreatePerson(ctx context.Context, person entity.Person) (err error)
+	CreatePerson(ctx context.Context, companyUUID string, person entity.Person) (err error)
 	GetPersonByUUID(ctx context.Context, personUUID string) (person entity.Person, err error)
 	GetCompanyPeople(ctx context.Context, companyUUID string) (people []entity.Person, err error)
 	UpdatePerson(ctx context.Context, personUUID string, person entity.Person) (err error)

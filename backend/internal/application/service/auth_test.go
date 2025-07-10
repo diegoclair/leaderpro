@@ -99,11 +99,11 @@ func Test_authService_Login(t *testing.T) {
 				password: "01234567890",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountRepo.EXPECT().GetAccountByDocument(ctx, args.cpf).Return(entity.Account{
+				mocks.mockUserRepo.EXPECT().GetUserByEmail(ctx, args.email).Return(entity.User{
 					ID:       1,
 					UUID:     "uuid",
 					Name:     "name",
-					CPF:      args.cpf,
+					Email:    args.email,
 					Password: args.password,
 					Active:   true,
 				}, nil).Times(1)
@@ -129,10 +129,10 @@ func Test_authService_Login(t *testing.T) {
 				tt.buildMock(ctx, m, tt.args)
 			}
 
-			s := newAuthApp(m.mockDomain, m.mockAccountSvc, time.Minute)
+			s := newAuthApp(m.mockDomain, m.mockUserSvc, time.Minute)
 
 			input := dto.LoginInput{
-				CPF:      tt.args.cpf,
+				Email:    tt.args.email,
 				Password: tt.args.password,
 			}
 
@@ -159,7 +159,7 @@ func Test_authService_CreateSession(t *testing.T) {
 			name: "Should create session without any errors",
 			args: args{
 				session: dto.Session{
-					AccountID:    1,
+					UserID:       1,
 					SessionUUID:  "d152a340-9a87-4d32-85ad-19df4c9934cd",
 					RefreshToken: "token",
 				},
@@ -172,7 +172,7 @@ func Test_authService_CreateSession(t *testing.T) {
 			name: "Should return error when there is some error to create session",
 			args: args{
 				session: dto.Session{
-					AccountID:    1,
+					UserID:       1,
 					SessionUUID:  "d152a340-9a87-4d32-85ad-19df4c9934cd",
 					RefreshToken: "token",
 				},
@@ -199,7 +199,7 @@ func Test_authService_CreateSession(t *testing.T) {
 			if tt.buildMock != nil {
 				tt.buildMock(ctx, m, tt.args)
 			}
-			s := newAuthApp(m.mockDomain, m.mockAccountSvc, time.Minute)
+			s := newAuthApp(m.mockDomain, m.mockUserSvc, time.Minute)
 			if err := s.CreateSession(ctx, tt.args.session); (err != nil) != tt.wantErr {
 				t.Errorf("authService.CreateSession() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -252,7 +252,7 @@ func Test_authService_GetSessionByUUID(t *testing.T) {
 			if tt.buildMock != nil {
 				tt.buildMock(ctx, m, tt.args)
 			}
-			s := newAuthApp(m.mockDomain, m.mockAccountSvc, time.Minute)
+			s := newAuthApp(m.mockDomain, m.mockUserSvc, time.Minute)
 			gotSession, err := s.GetSessionByUUID(ctx, tt.args.sessionUUID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("authService.GetSessionByUUID() error = %v, wantErr %v", err, tt.wantErr)
@@ -281,7 +281,7 @@ func Test_authService_Logout(t *testing.T) {
 				accessToken: "token",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountSvc.EXPECT().GetLoggedAccountID(ctx).Return(int64(1), nil).Times(1)
+				mocks.mockUserSvc.EXPECT().GetLoggedUserID(ctx).Return(int64(1), nil).Times(1)
 				mocks.mockCacheManager.EXPECT().SetStringWithExpiration(ctx, args.accessToken, "true", gomock.Any()).Return(nil).Times(1)
 				mocks.mockAuthRepo.EXPECT().SetSessionAsBlocked(ctx, int64(1)).Return(nil).Times(1)
 			},
@@ -292,7 +292,7 @@ func Test_authService_Logout(t *testing.T) {
 				accessToken: "token",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountSvc.EXPECT().GetLoggedAccountID(ctx).Return(int64(0), errors.New("some error")).Times(1)
+				mocks.mockUserSvc.EXPECT().GetLoggedUserID(ctx).Return(int64(0), errors.New("some error")).Times(1)
 			},
 			wantErr: true,
 		},
@@ -302,7 +302,7 @@ func Test_authService_Logout(t *testing.T) {
 				accessToken: "token",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountSvc.EXPECT().GetLoggedAccountID(ctx).Return(int64(1), nil).Times(1)
+				mocks.mockUserSvc.EXPECT().GetLoggedUserID(ctx).Return(int64(1), nil).Times(1)
 				mocks.mockCacheManager.EXPECT().SetStringWithExpiration(ctx, args.accessToken, "true", gomock.Any()).Return(errors.New("some error")).Times(1)
 			},
 			wantErr: true,
@@ -313,7 +313,7 @@ func Test_authService_Logout(t *testing.T) {
 				accessToken: "token",
 			},
 			buildMock: func(ctx context.Context, mocks allMocks, args args) {
-				mocks.mockAccountSvc.EXPECT().GetLoggedAccountID(ctx).Return(int64(1), nil).Times(1)
+				mocks.mockUserSvc.EXPECT().GetLoggedUserID(ctx).Return(int64(1), nil).Times(1)
 				mocks.mockCacheManager.EXPECT().SetStringWithExpiration(ctx, args.accessToken, "true", gomock.Any()).Return(nil).Times(1)
 				mocks.mockAuthRepo.EXPECT().SetSessionAsBlocked(ctx, int64(1)).Return(errors.New("some error")).Times(1)
 			},
@@ -330,7 +330,7 @@ func Test_authService_Logout(t *testing.T) {
 			if tt.buildMock != nil {
 				tt.buildMock(ctx, m, tt.args)
 			}
-			s := newAuthApp(m.mockDomain, m.mockAccountSvc, time.Minute)
+			s := newAuthApp(m.mockDomain, m.mockUserSvc, time.Minute)
 			if err := s.Logout(ctx, tt.args.accessToken); (err != nil) != tt.wantErr {
 				t.Errorf("authService.Logout() error = %v, wantErr %v", err, tt.wantErr)
 			}

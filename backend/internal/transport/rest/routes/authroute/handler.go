@@ -53,7 +53,7 @@ func (s *Handler) handleLogin(c echo.Context) error {
 
 	sessionUUID := uuid.NewV4().String()
 	req := infraContract.TokenPayloadInput{
-		AccountUUID: account.UUID,
+		UserUUID:    account.UUID,
 		SessionUUID: sessionUUID,
 	}
 	token, tokenPayload, err := s.authToken.CreateAccessToken(ctx, req)
@@ -68,7 +68,7 @@ func (s *Handler) handleLogin(c echo.Context) error {
 
 	sessionReq := dto.Session{
 		SessionUUID:           sessionUUID,
-		AccountID:             account.ID,
+		UserID:               account.ID,
 		RefreshToken:          refreshToken,
 		UserAgent:             c.Request().UserAgent(),
 		ClientIP:              c.RealIP(),
@@ -105,7 +105,7 @@ func (s *Handler) handleRefreshToken(c echo.Context) error {
 		return routeutils.HandleError(c, err)
 	}
 
-	ctx = context.WithValue(ctx, infra.AccountUUIDKey, refreshPayload.AccountUUID)
+	ctx = context.WithValue(ctx, infra.UserUUIDKey, refreshPayload.UserUUID)
 	ctx = context.WithValue(ctx, infra.SessionKey, refreshPayload.SessionUUID)
 
 	session, err := s.authService.GetSessionByUUID(ctx, refreshPayload.SessionUUID)
@@ -126,7 +126,7 @@ func (s *Handler) handleRefreshToken(c echo.Context) error {
 	}
 
 	req := infraContract.TokenPayloadInput{
-		AccountUUID: refreshPayload.AccountUUID,
+		UserUUID:    refreshPayload.UserUUID,
 		SessionUUID: refreshPayload.SessionUUID,
 	}
 	accessToken, accessPayload, err := s.authToken.CreateAccessToken(ctx, req)

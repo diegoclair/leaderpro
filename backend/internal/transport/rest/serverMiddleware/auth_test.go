@@ -28,7 +28,7 @@ func TestAuthMiddleware(t *testing.T) {
 		c := echo.New().NewContext(req, rec)
 
 		mockAuthToken.EXPECT().VerifyToken(gomock.Any(), "Bearer").Return(contract.TokenPayload{
-			AccountUUID: "uuid",
+			UserUUID:    "uuid",
 			SessionUUID: "session",
 		}, nil)
 
@@ -38,7 +38,7 @@ func TestAuthMiddleware(t *testing.T) {
 		})(c)
 
 		assert.Nil(t, err)
-		assert.Equal(t, "uuid", c.Get(infra.AccountUUIDKey.String()))
+		assert.Equal(t, "uuid", c.Get(infra.UserUUIDKey.String()))
 		assert.Equal(t, "session", c.Get(infra.SessionKey.String()))
 	})
 	t.Run("Should return error when access token is required", func(t *testing.T) {
@@ -77,7 +77,7 @@ func TestAuthMiddleware(t *testing.T) {
 		c := echo.New().NewContext(req, rec)
 
 		mockAuthToken.EXPECT().VerifyToken(gomock.Any(), "Bearer").Return(contract.TokenPayload{
-			AccountUUID: "uuid",
+			UserUUID:    "uuid",
 			SessionUUID: "session",
 		}, nil)
 

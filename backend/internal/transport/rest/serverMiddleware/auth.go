@@ -28,7 +28,7 @@ func AuthMiddlewarePrivateRoute(authToken infraContract.AuthToken, cache contrac
 			}
 
 			// Add information to the echo context
-			ctx.Set(infra.AccountUUIDKey.String(), payload.AccountUUID)
+			ctx.Set(infra.UserUUIDKey.String(), payload.UserUUID)
 			ctx.Set(infra.SessionKey.String(), payload.SessionUUID)
 
 			return next(ctx)

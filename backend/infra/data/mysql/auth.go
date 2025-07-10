@@ -22,7 +22,7 @@ func (r *authRepo) CreateSession(ctx context.Context, session dto.Session) (sess
 	query := `
 		INSERT INTO tab_session (
 			session_uuid,
-			account_id,
+			user_id,
 			refresh_token,
 			user_agent,
 			client_ip,
@@ -40,7 +40,7 @@ func (r *authRepo) CreateSession(ctx context.Context, session dto.Session) (sess
 
 	result, err := stmt.ExecContext(ctx,
 		session.SessionUUID,
-		session.AccountID,
+		session.UserID,
 		session.RefreshToken,
 		session.UserAgent,
 		session.ClientIP,
@@ -64,7 +64,7 @@ func (r *authRepo) GetSessionByUUID(ctx context.Context, sessionUUID string) (se
 		SELECT 
 			ts.session_id,
 			ts.session_uuid,
-			ta.account_id,
+			tu.user_id,
 			ts.refresh_token,
 			ts.user_agent,
 			ts.client_ip,
@@ -73,8 +73,8 @@ func (r *authRepo) GetSessionByUUID(ctx context.Context, sessionUUID string) (se
 		
 		FROM 	tab_session 			ts
 
-		INNER JOIN tab_account ta
-			ON ta.account_id = ts.account_id
+		INNER JOIN tab_user tu
+			ON tu.user_id = ts.user_id
 
 		WHERE	ts.session_uuid 		= 	?
 
@@ -91,7 +91,7 @@ func (r *authRepo) GetSessionByUUID(ctx context.Context, sessionUUID string) (se
 	err = row.Scan(
 		&session.SessionID,
 		&session.SessionUUID,
-		&session.AccountID,
+		&session.UserID,
 		&session.RefreshToken,
 		&session.UserAgent,
 		&session.ClientIP,
@@ -105,11 +105,11 @@ func (r *authRepo) GetSessionByUUID(ctx context.Context, sessionUUID string) (se
 	return session, nil
 }
 
-func (r *authRepo) SetSessionAsBlocked(ctx context.Context, accountID int64) (err error) {
+func (r *authRepo) SetSessionAsBlocked(ctx context.Context, userID int64) (err error) {
 	query := `
 		UPDATE tab_session
 		SET is_blocked = true
-		WHERE account_id = ?;
+		WHERE user_id = ?;
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -118,7 +118,7 @@ func (r *authRepo) SetSessionAsBlocked(ctx context.Context, accountID int64) (er
 	}
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, accountID)
+	_, err = stmt.ExecContext(ctx, userID)
 	if err != nil {
 		return mysqlutils.HandleMySQLError(err)
 	}

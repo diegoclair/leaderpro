@@ -14,9 +14,10 @@ import (
 	"github.com/diegoclair/leaderpro/infra/configmock"
 	"github.com/diegoclair/leaderpro/infra/contract"
 	infraMocks "github.com/diegoclair/leaderpro/infra/mocks"
-	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/accountroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/authroute"
-	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/transferroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/companyroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/personroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/userroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routeutils"
 	servermiddleware "github.com/diegoclair/leaderpro/internal/transport/rest/serverMiddleware"
 	"github.com/diegoclair/leaderpro/mocks"
@@ -27,11 +28,12 @@ import (
 )
 
 type SvcMocks struct {
-	AccountAppMock  *mocks.MockAccountApp
-	AuthAppMock     *mocks.MockAuthApp
-	AuthTokenMock   *infraMocks.MockAuthToken
-	CacheMock       *mocks.MockCacheManager
-	TransferAppMock *mocks.MockTransferApp
+	UserAppMock    *mocks.MockUserApp
+	AuthAppMock    *mocks.MockAuthApp
+	PersonAppMock  *mocks.MockPersonApp
+	CompanyAppMock *mocks.MockCompanyApp
+	AuthTokenMock  *infraMocks.MockAuthToken
+	CacheMock      *mocks.MockCacheManager
 }
 
 func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.Controller) {
@@ -39,11 +41,12 @@ func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.C
 
 	ctrl = gomock.NewController(t)
 	m = SvcMocks{
-		AccountAppMock:  mocks.NewMockAccountApp(ctrl),
-		AuthAppMock:     mocks.NewMockAuthApp(ctrl),
-		AuthTokenMock:   infraMocks.NewMockAuthToken(ctrl),
-		CacheMock:       mocks.NewMockCacheManager(ctrl),
-		TransferAppMock: mocks.NewMockTransferApp(ctrl),
+		UserAppMock:    mocks.NewMockUserApp(ctrl),
+		AuthAppMock:    mocks.NewMockAuthApp(ctrl),
+		PersonAppMock:  mocks.NewMockPersonApp(ctrl),
+		CompanyAppMock: mocks.NewMockCompanyApp(ctrl),
+		AuthTokenMock:  infraMocks.NewMockAuthToken(ctrl),
+		CacheMock:      mocks.NewMockCacheManager(ctrl),
 	}
 
 	server = goswag.NewEcho()
@@ -60,16 +63,19 @@ func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.C
 		PrivateGroup: privateGroup,
 	}
 
-	accountHandler := accountroute.NewHandler(m.AccountAppMock)
-	accountRoute := accountroute.NewRouter(accountHandler)
+	userHandler := userroute.NewHandler(m.UserAppMock)
+	userRoute := userroute.NewRouter(userHandler)
 	authHandler := authroute.NewHandler(m.AuthAppMock, m.AuthTokenMock)
 	authRoute := authroute.NewRouter(authHandler)
-	transferHandler := transferroute.NewHandler(m.TransferAppMock)
-	transferRoute := transferroute.NewRouter(transferHandler)
+	personHandler := personroute.NewHandler(m.PersonAppMock)
+	personRoute := personroute.NewRouter(personHandler)
+	companyHandler := companyroute.NewHandler(m.CompanyAppMock)
+	companyRoute := companyroute.NewRouter(companyHandler)
 
-	accountRoute.RegisterRoutes(g)
+	userRoute.RegisterRoutes(g)
 	authRoute.RegisterRoutes(g)
-	transferRoute.RegisterRoutes(g)
+	personRoute.RegisterRoutes(g)
+	companyRoute.RegisterRoutes(g)
 	return
 }
 
@@ -100,7 +106,7 @@ func getTestTokenMaker(t *testing.T) contract.AuthToken {
 }
 
 var (
-	accountUUID = uuid.NewV4().String()
+	userUUID    = uuid.NewV4().String()
 	sessionUUID = uuid.NewV4().String()
 )
 
@@ -116,7 +122,7 @@ func addAuthorizationWithNoCache(ctx context.Context, t *testing.T, req *http.Re
 
 	tokenMaker := getTestTokenMaker(t)
 
-	token, _, err := tokenMaker.CreateAccessToken(ctx, contract.TokenPayloadInput{AccountUUID: accountUUID, SessionUUID: sessionUUID})
+	token, _, err := tokenMaker.CreateAccessToken(ctx, contract.TokenPayloadInput{UserUUID: userUUID, SessionUUID: sessionUUID})
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	req.Header.Set(infra.TokenKey.String(), token)
@@ -128,7 +134,7 @@ func GetTestContext(t *testing.T, req *http.Request, w http.ResponseWriter, auth
 
 	c := echo.New().NewContext(req, w)
 	if authEndpoint {
-		c.Set(infra.AccountUUIDKey.String(), accountUUID)
+		c.Set(infra.UserUUIDKey.String(), userUUID)
 		c.Set(infra.SessionKey.String(), sessionUUID)
 	}
 	return routeutils.GetContext(c)

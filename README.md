@@ -132,7 +132,7 @@ Coach de 1:1s com IA contextual
 ## 📁 Documentação do Projeto
 
 ### Arquivos Principais
-- `/plan/000001-projeto-techlead.md` - Plano de negócio completo e análise de mercado
+- `/plan/000001-projeto-leaderpro.md` - Plano de negócio completo e análise de mercado
 - `/CLAUDE.md` - Diretrizes técnicas gerais e arquitetura do projeto
 - `/frontend/README.md` - **Documentação específica do frontend** (arquitetura, componentes, boas práticas)
 - `/backend/README.md` - Documentação da API e backend (a ser criado)

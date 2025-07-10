@@ -18,7 +18,7 @@ func TestPasetoTokenMaker(t *testing.T) {
 			name: "Should create token without error",
 			args: utilArgs{
 				payload: contract.TokenPayloadInput{
-					AccountUUID: "d152a340-9a87-4d32-85ad-19df4c9934cd",
+					UserUUID:    "d152a340-9a87-4d32-85ad-19df4c9934cd",
 					SessionUUID: "d152a340-9a87-4d32-85ad-19df4c9934cd",
 				},
 				accessTokenDuration:  time.Second,
@@ -87,7 +87,7 @@ func Test_paseto_VerifyToken(t *testing.T) {
 				return
 			}
 			require.Equal(t, tt.args.payload.SessionUUID, gotPayload.SessionUUID)
-			require.Equal(t, tt.args.payload.AccountUUID, gotPayload.AccountUUID)
+			require.Equal(t, tt.args.payload.UserUUID, gotPayload.UserUUID)
 			require.WithinDuration(t, tokenPayload.IssuedAt, gotPayload.IssuedAt, 1*time.Second)
 			require.WithinDuration(t, tokenPayload.ExpiredAt, gotPayload.ExpiredAt, 1*time.Second)
 		})
