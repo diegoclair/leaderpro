@@ -31,7 +31,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Technology Stack
 
 ### Backend (Go/Golang)
-- **Current**: Go boilerplate with Echo, GORM, MySQL, Redis
+- **Current**: Go 1.24.2 boilerplate with Echo v4.13.3, GORM, MySQL 8.0.32, Redis 7.4.2
+- **Auth**: PASETO tokens (15m access, 24h refresh)
+- **Testing**: Testcontainers for integration tests, go-sqlmock for unit tests
+- **Observability**: Prometheus, Grafana, Jaeger tracing
 - **To implement**: LeaderPro-specific endpoints for:
   - Companies and team member management
   - 1:1 meetings and notes
@@ -59,6 +62,9 @@ npm run dev
 # Production build (static export)
 npm run build
 
+# Start production server
+npm run start
+
 # Linting
 npm run lint
 
@@ -82,12 +88,18 @@ make mocks
 # Generate API documentation (Swagger)
 make docs
 
+# Clean Docker volumes (if needed)
+make clean-volumes
+
 # Access Swagger UI (after start)
 # http://localhost:5000/swagger/
 
 # Individual operations
 docker compose up --build    # Same as make start
 go test -v -cover ./...      # Same as make tests
+
+# Single test file
+go test -v -cover ./internal/domain/...
 ```
 
 ### Deployment
@@ -117,15 +129,18 @@ backend/
 
 ### Frontend Architecture
 ```
-frontend/
+frontend/src/
 ├── app/                    # Next.js 15 App Router
-│   ├── page.tsx            # Main dashboard
+│   ├── page.tsx            # Home (auth redirect)
+│   ├── dashboard/          # Main dashboard
+│   ├── auth/              # Login/registration pages
 │   └── profile/[id]/       # Person profile pages
 ├── components/             
 │   ├── ui/                 # shadcn/ui components
 │   ├── person/             # Person profiles, cards
 │   ├── profile/            # Profile tabs (info, history, feedback, chat)
-│   └── layout/             # Header, navigation
+│   ├── company/            # Company selector
+│   └── layout/             # Header, navigation, theme toggle
 ├── hooks/                  # Custom React hooks
 │   ├── use-mentions.ts     # @mention functionality
 │   └── use-create-person.ts# Auto-create from mentions
@@ -133,10 +148,7 @@ frontend/
 │   ├── stores/             # Zustand state stores
 │   ├── types/              # TypeScript definitions
 │   └── utils/              # Date, name utilities
-└── stores/                 # Zustand stores
-    ├── company-store.ts    # Company/project management
-    ├── people-store.ts     # Team member profiles
-    └── one-on-one-store.ts # 1:1 meetings and notes
+└── stores/                 # Legacy - migrated to lib/stores/
 ```
 
 ## Core Features
@@ -197,6 +209,18 @@ type GetUserUseCase struct {
 }
 ```
 
+## Development Environment
+
+### Prerequisites
+- **Docker** (for backend services: MySQL, Redis, Prometheus, Grafana, Jaeger)
+- **Go 1.22+** (for backend development)
+- **Node.js 18+** (for frontend development)
+
+### Configuration Files
+- **Backend**: `/backend/deployment/config-local.toml` (database, Redis, auth settings)
+- **Frontend**: TypeScript strict mode, path alias `@/*` → `./src/*`
+- **Ports**: App (5000), MySQL (3306), Redis (6379)
+
 ## Important Notes
 
 - **Current Status**: Frontend completed, backend needs LeaderPro implementation
@@ -214,7 +238,9 @@ type GetUserUseCase struct {
 - `backend/migrator/mysql/sql/` - Database migrations
 
 ### Frontend Entry Points  
-- `frontend/src/app/page.tsx` - Main dashboard
+- `frontend/src/app/page.tsx` - Home page (auth redirect)
+- `frontend/src/app/dashboard/page.tsx` - Main dashboard
+- `frontend/src/app/auth/` - Login/registration pages
 - `frontend/src/app/profile/[id]/page.tsx` - Person profile pages
 - `frontend/src/lib/stores/` - Zustand state management
 - `frontend/src/components/` - Reusable UI components

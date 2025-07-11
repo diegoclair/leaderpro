@@ -83,16 +83,19 @@ export const useAuthStore = create<AuthStore>()(
             throw new Error(errorData.message || 'Erro ao fazer login')
           }
 
-          const tokens: AuthTokens = await response.json()
+          const authResponse = await response.json()
           
           set({ 
-            tokens,
+            user: authResponse.user,
+            tokens: {
+              accessToken: authResponse.auth.access_token,
+              accessTokenExpiresAt: authResponse.auth.access_token_expires_at,
+              refreshToken: authResponse.auth.refresh_token,
+              refreshTokenExpiresAt: authResponse.auth.refresh_token_expires_at,
+            },
             isAuthenticated: true,
             isLoading: false 
           })
-
-          // Buscar perfil do usuário após login
-          await get().getProfile()
           
         } catch (error) {
           set({ isLoading: false })
@@ -104,7 +107,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true })
         
         try {
-          // Primeiro criar o usuário
+          // Criar usuário - agora retorna AuthResponse direto
           const registerResponse = await fetch(`${API_BASE_URL}/users`, {
             method: 'POST',
             headers: {
@@ -118,8 +121,20 @@ export const useAuthStore = create<AuthStore>()(
             throw new Error(errorData.message || 'Erro ao criar conta')
           }
 
-          // Após criar a conta, fazer login automaticamente
-          await get().login(data.email, data.password)
+          // Backend já faz login automático e retorna user + tokens
+          const authResponse = await registerResponse.json()
+          
+          set({ 
+            user: authResponse.user,
+            tokens: {
+              accessToken: authResponse.auth.access_token,
+              accessTokenExpiresAt: authResponse.auth.access_token_expires_at,
+              refreshToken: authResponse.auth.refresh_token,
+              refreshTokenExpiresAt: authResponse.auth.refresh_token_expires_at,
+            },
+            isAuthenticated: true,
+            isLoading: false 
+          })
           
         } catch (error) {
           set({ isLoading: false })

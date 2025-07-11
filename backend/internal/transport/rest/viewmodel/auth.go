@@ -35,3 +35,8 @@ type RefreshTokenResponse struct {
 	AccessToken          string    `json:"access_token"`
 	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
 }
+
+type AuthResponse struct {
+	User User          `json:"user"`
+	Auth LoginResponse `json:"auth"`
+}

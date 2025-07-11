@@ -35,11 +35,12 @@ func (r *AuthRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 
 	router.POST(LoginRoute, r.ctrl.handleLogin).
 		Summary("Login").
+		Description("Login user and return user data with authentication tokens").
 		Read(viewmodel.Login{}).
 		Returns([]models.ReturnType{
 			{
 				StatusCode: http.StatusOK,
-				Body:       viewmodel.LoginResponse{},
+				Body:       viewmodel.AuthResponse{},
 			},
 		})
 

@@ -16,6 +16,7 @@ import (
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/companyroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/personroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/pingroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/shared"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/swaggerroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/userroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routeutils"
@@ -59,11 +60,14 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, ca
 		_ = routeutils.HandleError(c, err)
 	}
 
+	// shared auth helper
+	authHelper := shared.NewAuthHelper(services.AuthService, services.UserService, authToken)
+
 	pingHandler := pingroute.NewHandler()
-	authHandler := authroute.NewHandler(services.AuthService, authToken)
+	authHandler := authroute.NewHandler(services.AuthService, authToken, authHelper)
 	companyHandler := companyroute.NewHandler(services.CompanyService)
 	personHandler := personroute.NewHandler(services.PersonService)
-	userHandler := userroute.NewHandler(services.UserService)
+	userHandler := userroute.NewHandler(services.UserService, authHelper)
 
 	pingRoute := pingroute.NewRouter(pingHandler)
 	authRoute := authroute.NewRouter(authHandler)

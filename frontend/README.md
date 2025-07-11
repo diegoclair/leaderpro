@@ -10,10 +10,11 @@ LeaderPro é uma plataforma de IA que amplifica a inteligência de liderança, m
 
 ### Stack Tecnológico
 
-- **Framework**: Next.js 14 com App Router
-- **TypeScript**: Tipagem estática completa
-- **Styling**: TailwindCSS + shadcn/ui
-- **Estado**: Zustand (gerenciamento de estado global)
+- **Framework**: Next.js 15.3.5 com App Router
+- **Runtime**: React 19.0.0
+- **TypeScript**: Tipagem estática completa (modo strict)
+- **Styling**: TailwindCSS v4 + shadcn/ui
+- **Estado**: Zustand (gerenciamento de estado global com persistência)
 - **Build**: Turbopack (desenvolvimento mais rápido)
 - **Linting**: ESLint configurado
 
@@ -21,14 +22,29 @@ LeaderPro é uma plataforma de IA que amplifica a inteligência de liderança, m
 
 ```
 src/
-├── app/                 # Next.js 14 App Router
-│   ├── page.tsx         # Dashboard principal
-│   └── profile/[id]/    # Perfis individuais
-│       └── page.tsx     # Página de perfil detalhado
+├── app/                 # Next.js 15.3.5 App Router
+│   ├── auth/            # Páginas de autenticação
+│   │   ├── layout.tsx   # Layout para páginas de auth
+│   │   ├── login/       # Página de login
+│   │   └── register/    # Página de registro
+│   ├── dashboard/       # Dashboard principal da aplicação
+│   │   └── page.tsx     # Página principal com cards e métricas
+│   ├── profile/[id]/    # Perfis individuais
+│   │   ├── layout.tsx   # Layout para páginas de perfil
+│   │   ├── page.tsx     # Página de perfil detalhado
+│   │   └── static-params.ts # Parâmetros estáticos para build
+│   ├── page.tsx         # Landing page (redireciona baseado em auth)
+│   ├── layout.tsx       # Layout raiz da aplicação
+│   ├── globals.css      # Estilos globais
+│   └── middleware.ts    # Middleware Next.js para proteção de rotas
 ├── components/          # Componentes reutilizáveis
+│   ├── auth/            # Componentes de autenticação
+│   │   └── AuthGuard.tsx # Proteção de rotas autenticadas
 │   ├── ui/              # Componentes shadcn/ui (button, card, etc.)
 │   ├── company/         # Componentes relacionados a empresa
 │   │   └── CompanySelector.tsx
+│   ├── onboarding/      # Componentes de onboarding
+│   │   └── OnboardingWizard.tsx # Wizard inicial para novos usuários
 │   ├── person/          # Componentes de perfil de pessoas
 │   │   └── PersonCard.tsx
 │   ├── profile/         # Componentes específicos do perfil
@@ -40,34 +56,49 @@ src/
 │   │   └── CreatePersonDialog.tsx
 │   └── layout/          # Layout e navegação
 │       ├── AppHeader.tsx
+│       ├── ThemeProvider.tsx # Provider do tema
 │       └── ThemeToggle.tsx
 ├── lib/                 # Utilitários e helpers
-│   ├── stores/          # Zustand stores (companyStore, peopleStore)
+│   ├── stores/          # Zustand stores com persistência
+│   │   ├── authStore.ts # Store de autenticação (integrado com API)
+│   │   ├── companyStore.ts # Store de empresas
+│   │   └── peopleStore.ts  # Store de pessoas e 1:1s
 │   ├── types/           # Definições TypeScript
+│   │   └── index.ts     # Types principais da aplicação
 │   ├── utils/           # Funções utilitárias
 │   │   ├── dates.ts     # Formatação de datas
 │   │   └── names.ts     # Utilitários de nomes
+│   ├── utils.ts         # Utilitários principais (cn function)
 │   └── data/            # Dados mockados (temporário)
 │       └── mockData.ts
 └── hooks/               # Custom React hooks
     ├── useMentions.ts   # Hook para sistema de @menções
-    └── useCreatePerson.ts # Hook para criação de pessoas
+    ├── useCreatePerson.ts # Hook para criação de pessoas
+    └── useAuthRedirect.ts # Hook para redirecionamento de auth
 ```
 
 ## Funcionalidades Principais
 
-### 1. Multi-Empresas
+### 1. Sistema de Autenticação Completo
+- **Login/Registro**: Interface moderna com validação
+- **JWT Tokens**: Access token (15min) + Refresh token (24h)
+- **Proteção de Rotas**: Middleware automático + AuthGuard
+- **Renovação Automática**: Tokens renovados transparentemente
+- **Persistência**: Estado mantido entre sessões
+- **Logout Seguro**: Invalidação local + notificação ao backend
+
+### 2. Multi-Empresas
 - Líder pode gerenciar múltiplas empresas
 - Histórico separado por empresa
 - Empresa padrão configurável
 - Portabilidade de dados ao mudar de empresa
 
-### 2. Sistema de Menções (@mentions)
+### 3. Sistema de Menções (@mentions)
 - Durante 1:1s, use `@nome` para referenciar outras pessoas
 - Cria automaticamente feedback cruzado no perfil da pessoa mencionada
 - Sugere criação de perfil se pessoa não existir
 
-### 3. Coach de IA Contextual
+### 4. Coach de IA Contextual
 - Sugestões de perguntas baseadas em contexto completo
 - Combina dados pessoais + temporais + geográficos + histórico
 - Conexões inteligentes entre eventos
@@ -77,6 +108,24 @@ src/
 ### Estrutura de Dados Principal
 
 ```typescript
+// Usuário (Autenticação)
+interface User {
+  uuid: string
+  email: string
+  name: string
+  phone?: string
+  profilePhoto?: string
+  plan: string
+  trialEndsAt?: string
+  subscribedAt?: string
+  timezone?: string
+  language?: string
+  createdAt: string
+  updatedAt: string
+  lastLoginAt?: string
+  emailVerified: boolean
+}
+
 // Empresa
 type Company = {
   id: string
@@ -150,6 +199,65 @@ const usePeopleStore = create((set) => ({
   getPeopleByCompany: (companyId) => // filtrar por empresa
 }))
 ```
+
+## Comunicação com Backend
+
+### API Integration Layer
+
+O frontend implementa comunicação completa com o backend através de:
+
+#### AuthStore - Sistema de Autenticação
+```typescript
+// Store principal de autenticação
+const useAuthStore = create<AuthStore>()(
+  persist(
+    (set, get) => ({
+      // State
+      user: User | null,
+      tokens: AuthTokens | null,
+      isLoading: boolean,
+      isAuthenticated: boolean,
+
+      // Actions - Integradas com API real
+      login: (email, password) => POST /auth/login
+      register: (data) => POST /users + auto-login
+      logout: () => POST /auth/logout + clearAuth
+      refreshToken: () => POST /auth/refresh-token
+      getProfile: () => GET /users/profile
+    }),
+    { name: 'auth-storage' } // Persistência local
+  )
+)
+```
+
+#### HTTP Interceptor com Renovação Automática
+```typescript
+// authFetch - Interceptor para requisições autenticadas
+export const authFetch = async (url: string, options: RequestInit = {}) => {
+  // 1. Adiciona automaticamente Authorization header
+  // 2. Se receber 401, tenta renovar token automaticamente
+  // 3. Retenta requisição com novo token
+  // 4. Se falhar, limpa auth e redireciona para login
+}
+```
+
+#### Endpoints Implementados
+- **Autenticação**: `/auth/login`, `/auth/logout`, `/auth/refresh-token`
+- **Usuários**: `/users` (POST), `/users/profile` (GET)
+- **Backend URL**: Configurável via `NEXT_PUBLIC_API_URL` (default: http://localhost:5000)
+
+#### Fluxo de Autenticação
+1. **Login**: Email/senha → JWT access + refresh tokens
+2. **Persistência**: Tokens salvos no localStorage via Zustand persist
+3. **Interceptor**: Todas as requisições autenticadas passam pelo `authFetch`
+4. **Renovação**: Token expirado é renovado automaticamente e transparentemente
+5. **Logout**: Limpa tokens local + notifica backend
+
+#### Próximas APIs (Pendentes)
+- **Empresas**: `/companies` (CRUD)
+- **Pessoas**: `/people` (CRUD)
+- **1:1s**: `/one-on-ones` (CRUD)
+- **AI**: `/ai/suggestions` (contextual insights)
 
 ## Componentes Principais
 
@@ -254,15 +362,22 @@ const usePeopleStore = create((set) => ({
 
 ```bash
 # Desenvolvimento
-npm run dev              # Inicia servidor de desenvolvimento
-npm run build           # Build de produção
+npm run dev              # Inicia servidor de desenvolvimento (http://localhost:3000)
+npm run build           # Build de produção (static export)
 npm run start           # Inicia servidor de produção
 npm run lint            # Executa ESLint
-npm run type-check      # Verificação de tipos TypeScript
+npx tsc --noEmit        # Verificação de tipos TypeScript
 
 # Componentes shadcn/ui
 npx shadcn@latest add [component]  # Adiciona componente
 npx shadcn@latest list             # Lista componentes disponíveis
+```
+
+### Variáveis de Ambiente
+
+```bash
+# .env.local (opcional)
+NEXT_PUBLIC_API_URL=http://localhost:5000  # URL do backend (default se não definido)
 ```
 
 ## Dados Mockados (Temporário)
@@ -282,26 +397,32 @@ npx shadcn@latest list             # Lista componentes disponíveis
 
 ## Status de Implementação
 
-1. ✅ Setup inicial do projeto
-2. ✅ Configuração do shadcn/ui
-3. ✅ Estrutura básica implementada
-4. ✅ Stores Zustand (Company + People)
-5. ✅ Componentes de layout (AppHeader, ThemeToggle)
-6. ✅ Dashboard principal com métricas e cards
-7. ✅ Sistema de multi-empresas com persistência
-8. ✅ Perfis de pessoas com abas completas
-9. ✅ Sistema de registro de 1:1s
-10. ✅ Sistema de @mentions com autocomplete
-11. ✅ Refatoração arquitetural (hooks + componentes modulares)
-12. ✅ Sistema de feedbacks cruzados
+### ✅ Concluído
+1. **Setup e Base**: Projeto Next.js 15.3.5 + TailwindCSS v4 + shadcn/ui
+2. **Arquitetura**: Estrutura modular com components/hooks/stores/utils
+3. **Autenticação**: Sistema completo JWT com refresh automático
+4. **API Layer**: authStore + authFetch interceptor integrado com backend
+5. **Stores Zustand**: authStore (real) + companyStore + peopleStore (mock)
+6. **Layout**: AppHeader, ThemeProvider, AuthGuard, middleware de proteção
+7. **Páginas**: Landing, Auth (login/register), Dashboard, Profile
+8. **Dashboard**: Cards de pessoas, métricas, seletor de empresa
+9. **Perfis**: Abas completas (info, histórico, feedback, chat IA)
+10. **Sistema @mentions**: Autocomplete + criação automática de pessoas
+11. **Onboarding**: Wizard inicial para novos usuários
+12. **Feedbacks cruzados**: Sistema de menções entre perfis
 
-## Próximos Passos
-1. ⏳ Integração com backend real
-2. ⏳ Sistema de autenticação
-3. ⏳ IA contextual real (OpenAI/Claude API)
-4. ⏳ Sistema de notificações
-5. ⏳ Mobile responsiveness
-6. ⏳ Testes unitários e E2E
+### ⏳ Em Desenvolvimento
+1. **API Business**: Endpoints de empresas, pessoas e 1:1s no backend
+2. **Migração Mock→API**: Substituir localStorage por API real
+3. **IA Contextual**: Integração OpenAI/Claude para suggestions
+
+### 📋 Próximos Passos
+1. **Backend APIs**: Implementar endpoints business no backend Go
+2. **Data Migration**: Migrar stores para usar APIs reais
+3. **IA Integration**: Sistema de suggestions contextuais
+4. **Notificações**: Sistema de notificações em tempo real
+5. **Mobile**: Responsividade completa mobile-first
+6. **Testes**: Suíte de testes unitários e E2E
 
 ## Notas Importantes
 

@@ -34,12 +34,12 @@ func (r *UserRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 
 	router.POST(RootUserRoute, r.ctrl.handleCreateUser).
 		Summary("Create User").
-		Description("Create a new user account").
+		Description("Create a new user account and return authentication tokens").
 		Read(viewmodel.CreateUser{}).
 		Returns([]models.ReturnType{
 			{
 				StatusCode: http.StatusOK,
-				Body:       viewmodel.User{},
+				Body:       viewmodel.AuthResponse{},
 			},
 		})
 

@@ -3,7 +3,9 @@ package userroute
 import (
 	"sync"
 
+	"github.com/diegoclair/leaderpro/internal/application/dto"
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/shared"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routeutils"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/viewmodel"
 
@@ -17,12 +19,14 @@ var (
 
 type Handler struct {
 	userService contract.UserApp
+	authHelper  *shared.AuthHelper
 }
 
-func NewHandler(userService contract.UserApp) *Handler {
+func NewHandler(userService contract.UserApp, authHelper *shared.AuthHelper) *Handler {
 	Once.Do(func() {
 		instance = &Handler{
 			userService: userService,
+			authHelper:  authHelper,
 		}
 	})
 
@@ -38,13 +42,23 @@ func (s *Handler) handleCreateUser(c echo.Context) error {
 		return routeutils.ResponseInvalidRequestBody(c, err)
 	}
 
-	user, err := s.userService.CreateUser(ctx, input.ToEntity())
+	_, err = s.userService.CreateUser(ctx, input.ToEntity())
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
 
-	response := viewmodel.FromEntityUser(user)
-	return routeutils.ResponseAPIOk(c, response)
+	// auto login after user creation to get access token and refresh token
+	loginInput := dto.LoginInput{
+		Email:    input.Email,
+		Password: input.Password,
+	}
+
+	authResponse, err := s.authHelper.DoLogin(ctx, c, loginInput)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	return routeutils.ResponseAPIOk(c, authResponse)
 }
 
 func (s *Handler) handleGetProfile(c echo.Context) error {
@@ -55,8 +69,7 @@ func (s *Handler) handleGetProfile(c echo.Context) error {
 		return routeutils.HandleError(c, err)
 	}
 
-	response := viewmodel.FromEntityUser(user)
-	return routeutils.ResponseAPIOk(c, response)
+	return routeutils.ResponseAPIOk(c, viewmodel.FromEntityUser(user))
 }
 
 func (s *Handler) handleUpdateProfile(c echo.Context) error {

@@ -17,6 +17,7 @@ import (
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/authroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/companyroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/personroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/shared"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/userroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routeutils"
 	servermiddleware "github.com/diegoclair/leaderpro/internal/transport/rest/serverMiddleware"
@@ -62,10 +63,11 @@ func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.C
 		AppGroup:     appGroup,
 		PrivateGroup: privateGroup,
 	}
+	authHelper := shared.NewAuthHelper(m.AuthAppMock, m.UserAppMock, m.AuthTokenMock)
 
-	userHandler := userroute.NewHandler(m.UserAppMock)
+	userHandler := userroute.NewHandler(m.UserAppMock, authHelper)
 	userRoute := userroute.NewRouter(userHandler)
-	authHandler := authroute.NewHandler(m.AuthAppMock, m.AuthTokenMock)
+	authHandler := authroute.NewHandler(m.AuthAppMock, m.AuthTokenMock, authHelper)
 	authRoute := authroute.NewRouter(authHandler)
 	personHandler := personroute.NewHandler(m.PersonAppMock)
 	personRoute := personroute.NewRouter(personHandler)

@@ -7,11 +7,10 @@ import (
 
 	"github.com/diegoclair/leaderpro/infra"
 	infraContract "github.com/diegoclair/leaderpro/infra/contract"
-	"github.com/diegoclair/leaderpro/internal/application/dto"
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/shared"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routeutils"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/viewmodel"
-	"github.com/twinj/uuid"
 
 	echo "github.com/labstack/echo/v4"
 )
@@ -24,13 +23,15 @@ var (
 type Handler struct {
 	authService contract.AuthApp
 	authToken   infraContract.AuthToken
+	authHelper  *shared.AuthHelper
 }
 
-func NewHandler(authService contract.AuthApp, authToken infraContract.AuthToken) *Handler {
+func NewHandler(authService contract.AuthApp, authToken infraContract.AuthToken, authHelper *shared.AuthHelper) *Handler {
 	Once.Do(func() {
 		instance = &Handler{
 			authService: authService,
 			authToken:   authToken,
+			authHelper:  authHelper,
 		}
 	})
 
@@ -46,48 +47,12 @@ func (s *Handler) handleLogin(c echo.Context) error {
 		return routeutils.ResponseInvalidRequestBody(c, err)
 	}
 
-	account, err := s.authService.Login(ctx, input.ToDto())
+	authResponse, err := s.authHelper.DoLogin(ctx, c, input.ToDto())
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
 
-	sessionUUID := uuid.NewV4().String()
-	req := infraContract.TokenPayloadInput{
-		UserUUID:    account.UUID,
-		SessionUUID: sessionUUID,
-	}
-	token, tokenPayload, err := s.authToken.CreateAccessToken(ctx, req)
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	refreshToken, refreshTokenPayload, err := s.authToken.CreateRefreshToken(ctx, req)
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	sessionReq := dto.Session{
-		SessionUUID:           sessionUUID,
-		UserID:               account.ID,
-		RefreshToken:          refreshToken,
-		UserAgent:             c.Request().UserAgent(),
-		ClientIP:              c.RealIP(),
-		RefreshTokenExpiredAt: refreshTokenPayload.ExpiredAt,
-	}
-
-	err = s.authService.CreateSession(ctx, sessionReq)
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	response := viewmodel.LoginResponse{
-		AccessToken:           token,
-		AccessTokenExpiresAt:  tokenPayload.ExpiredAt,
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
-	}
-
-	return routeutils.ResponseAPIOk(c, response)
+	return routeutils.ResponseAPIOk(c, authResponse)
 }
 
 func (s *Handler) handleRefreshToken(c echo.Context) error {
