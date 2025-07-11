@@ -13,21 +13,17 @@ type User struct {
 	Password     string
 	Phone        string
 	ProfilePhoto string
-	
+
 	// Subscription info
-	Plan         string    // basic, standard, unlimited
+	Plan         string // basic, standard, unlimited
 	TrialEndsAt  *time.Time
 	SubscribedAt *time.Time
-	
-	// Preferences
-	Timezone     string
-	Language     string    // pt-BR, en-US
-	
+
 	// Metadata
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	LastLoginAt  *time.Time
-	Active       bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	LastLoginAt   *time.Time
+	Active        bool
 	EmailVerified bool
 }
 

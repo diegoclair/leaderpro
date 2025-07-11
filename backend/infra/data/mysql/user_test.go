@@ -19,8 +19,6 @@ func validateTwoUsers(t *testing.T, userExpected entity.User, userToCompare enti
 	require.Equal(t, userExpected.Phone, userToCompare.Phone)
 	require.Equal(t, userExpected.ProfilePhoto, userToCompare.ProfilePhoto)
 	require.Equal(t, userExpected.Plan, userToCompare.Plan)
-	require.Equal(t, userExpected.Timezone, userToCompare.Timezone)
-	require.Equal(t, userExpected.Language, userToCompare.Language)
 	require.Equal(t, userExpected.Active, userToCompare.Active)
 	require.Equal(t, userExpected.EmailVerified, userToCompare.EmailVerified)
 }
@@ -34,8 +32,6 @@ func createRandomUser(t *testing.T) entity.User {
 		Phone:         "+1234567890",
 		ProfilePhoto:  "https://example.com/photo.jpg",
 		Plan:          "basic",
-		Timezone:      "UTC",
-		Language:      "en-US",
 		Active:        true,
 		EmailVerified: false,
 	}
@@ -96,19 +92,19 @@ func createRandomPersonForTests(t *testing.T) entity.Person {
 	startDate := time.Now().AddDate(-2, 0, 0) // 2 years ago
 
 	person := entity.Person{
-		UUID:         uuid.NewV4().String(),
-		CompanyID:    company.ID,
-		Name:         "Test Person",
-		Email:        "testperson" + uuid.NewV4().String()[:8] + "@example.com",
-		Phone:        "+1987654321",
-		Position:     "Software Engineer",
-		Department:   "Engineering",
-		Birthday:     &birthday,
-		StartDate:    &startDate,
-		ManagerID:    nil, // No manager for test person
-		Notes:        "Test person",
-		CreatedBy:    user.ID,
-		Active:       true,
+		UUID:       uuid.NewV4().String(),
+		CompanyID:  company.ID,
+		Name:       "Test Person",
+		Email:      "testperson" + uuid.NewV4().String()[:8] + "@example.com",
+		Phone:      "+1987654321",
+		Position:   "Software Engineer",
+		Department: "Engineering",
+		Birthday:   &birthday,
+		StartDate:  &startDate,
+		ManagerID:  nil, // No manager for test person
+		Notes:      "Test person",
+		CreatedBy:  user.ID,
+		Active:     true,
 	}
 
 	personID, err := testMysql.Person().CreatePerson(context.Background(), person)
@@ -132,8 +128,6 @@ func TestCreateUser(t *testing.T) {
 		Plan:          "basic",
 		TrialEndsAt:   nil,
 		SubscribedAt:  nil,
-		Timezone:      "UTC",
-		Language:      "en-US",
 		Active:        true,
 		EmailVerified: false,
 	}
@@ -183,8 +177,6 @@ func TestUpdateUser(t *testing.T) {
 	user.Phone = "+9876543210"
 	user.ProfilePhoto = "https://example.com/updated-photo.jpg"
 	user.Plan = "premium"
-	user.Timezone = "America/New_York"
-	user.Language = "pt-BR"
 	user.EmailVerified = true
 
 	err := testMysql.User().UpdateUser(ctx, user.ID, user)
@@ -197,8 +189,6 @@ func TestUpdateUser(t *testing.T) {
 	require.Equal(t, user.Phone, updatedUser.Phone)
 	require.Equal(t, user.ProfilePhoto, updatedUser.ProfilePhoto)
 	require.Equal(t, user.Plan, updatedUser.Plan)
-	require.Equal(t, user.Timezone, updatedUser.Timezone)
-	require.Equal(t, user.Language, updatedUser.Language)
 	require.Equal(t, user.EmailVerified, updatedUser.EmailVerified)
 }
 

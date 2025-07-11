@@ -1,0 +1,47 @@
+update_settings(max_parallel_updates=10)
+
+# Load Docker Compose resources
+docker_compose('./docker-compose.yml')
+
+dc_resource('cache', labels=['infra'])
+dc_resource('db', labels=['infra'])
+dc_resource('jaeger', labels=['infra'])
+dc_resource('prometheus', labels=['infra'])
+dc_resource('grafana', labels=['infra'])
+
+# aux function to build and start the backend
+def build_start(service_name, label, main_file):
+
+    go_flags = 'CGO_ENABLED=0'
+    serve_cmd = './.bin/%s/%s' % (label, service_name)
+
+    labels = ['%s' % label]
+    
+    # use the flag -gcflags to build without compilers optimization, it will help us attach debug tools - DON'T USE IT IN PRODUCTION
+    build_command = '%s go build -gcflags="all=-N -l" -o ./.bin/%s/%s ./%s' % (go_flags, label, service_name, main_file)  
+
+    local_resource(
+        service_name,
+        labels=labels,
+        cmd=build_command,
+        deps=['.'],
+        ignore=[
+          '.bin/**/*',
+          'docs/**/*',
+          '.docker/**/*',
+      ],
+        serve_cmd=serve_cmd if serve_cmd else "",
+        allow_parallel=True,
+        resource_deps=['db', 'cache'],
+    )
+
+
+
+build_start(
+    service_name='backend',
+    label='backend',
+    main_file='cmd/main.go',
+)
+
+
+

@@ -73,10 +73,10 @@ cd backend
 # Start all services (MySQL, Redis, App)
 make start
 
-# Run tests
+# Run tests with coverage
 make tests
 
-# Generate mocks
+# Generate mocks for testing
 make mocks
 
 # Generate API documentation (Swagger)
@@ -84,6 +84,10 @@ make docs
 
 # Access Swagger UI (after start)
 # http://localhost:5000/swagger/
+
+# Individual operations
+docker compose up --build    # Same as make start
+go test -v -cover ./...      # Same as make tests
 ```
 
 ### Deployment
@@ -200,3 +204,17 @@ type GetUserUseCase struct {
 - **Data Storage**: Currently localStorage (frontend only)
 - **AI Features**: Mocked in frontend
 - **Next Steps**: Implement backend API endpoints for LeaderPro features
+
+## Key Files and Entry Points
+
+### Backend Entry Points
+- `backend/cmd/main.go` - Application startup
+- `backend/internal/transport/rest/server.go` - HTTP server setup
+- `backend/internal/domain/entity/` - Core business entities (Person, Company, OneOnOne)
+- `backend/migrator/mysql/sql/` - Database migrations
+
+### Frontend Entry Points  
+- `frontend/src/app/page.tsx` - Main dashboard
+- `frontend/src/app/profile/[id]/page.tsx` - Person profile pages
+- `frontend/src/lib/stores/` - Zustand state management
+- `frontend/src/components/` - Reusable UI components

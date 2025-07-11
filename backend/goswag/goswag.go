@@ -192,6 +192,38 @@ func handleUpdatePerson() {} //nolint:unused
 //	@Router			/companies/:company_uuid/people/:person_uuid [delete]
 func handleDeletePerson() {} //nolint:unused 
 
+//	@Summary		Get User Profile
+//	@Description	Get the current user's profile
+//	@Tags			users
+//	@Produce		json
+//	@Param			user-token	header		string	true	"User access token"
+//	@Success		200			{object}	viewmodel.User
+//	@Failure		400			{object}	resterrors.restErr
+//	@Failure		404			{object}	resterrors.restErr
+//	@Failure		500			{object}	resterrors.restErr
+//	@Failure		401			{object}	resterrors.restErr
+//	@Failure		422			{object}	resterrors.restErr
+//	@Failure		409			{object}	resterrors.restErr
+//	@Router			/users/profile [get]
+func handleGetProfile() {} //nolint:unused 
+
+//	@Summary		Update User Profile
+//	@Description	Update the current user's profile
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request		body		viewmodel.UpdateUser	true	"Request"
+//	@Param			user-token	header		string					true	"User access token"
+//	@Success		200			{object}	viewmodel.User
+//	@Failure		400			{object}	resterrors.restErr
+//	@Failure		404			{object}	resterrors.restErr
+//	@Failure		500			{object}	resterrors.restErr
+//	@Failure		401			{object}	resterrors.restErr
+//	@Failure		422			{object}	resterrors.restErr
+//	@Failure		409			{object}	resterrors.restErr
+//	@Router			/users/profile [put]
+func handleUpdateProfile() {} //nolint:unused 
+
 //	@Summary		Login
 //	@Description	Login
 //	@Tags			auth
@@ -237,4 +269,20 @@ func handleRefreshToken() {} //nolint:unused
 //	@Failure		409	{object}	resterrors.restErr
 //	@Router			/ping/ [get]
 func handlePing() {} //nolint:unused 
+
+//	@Summary		Create User
+//	@Description	Create a new user account
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		viewmodel.CreateUser	true	"Request"
+//	@Success		200		{object}	viewmodel.User
+//	@Failure		400		{object}	resterrors.restErr
+//	@Failure		404		{object}	resterrors.restErr
+//	@Failure		500		{object}	resterrors.restErr
+//	@Failure		401		{object}	resterrors.restErr
+//	@Failure		422		{object}	resterrors.restErr
+//	@Failure		409		{object}	resterrors.restErr
+//	@Router			/users [post]
+func handleCreateUser() {} //nolint:unused 
 

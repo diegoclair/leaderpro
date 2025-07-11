@@ -2,8 +2,11 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -21,13 +24,25 @@ var (
 var EnvKeyReplacer = strings.NewReplacer(".", "_", "-", "_")
 
 func setup() {
-	viper.AutomaticEnv()
+	var env string
+	env = os.Getenv("ENV")
+	if env == "" {
+		env = "local"
+	}
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("toml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("../")
-	viper.AddConfigPath("../../")
+	// Get the directory of the current file (config.go)
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		slog.Error("Unable to get the current file path")
+		return
+	}
+
+	configFilePath := filepath.Join(filepath.Dir(filename),
+		"..", "..", "deployment",
+		fmt.Sprintf("config-%s.toml", env),
+	)
+	viper.SetConfigFile(configFilePath)
+	viper.AutomaticEnv()
 }
 
 // GetConfigEnvironment read config from environment variables and config.toml file

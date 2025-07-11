@@ -17,7 +17,7 @@ import (
 
 const (
 	gracefulShutdownTimeout = 10 * time.Second
-	appName                 = "boilerplate"
+	appName                 = "leaderpro"
 )
 
 func main() {

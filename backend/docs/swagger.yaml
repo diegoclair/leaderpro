@@ -39,6 +39,23 @@ definitions:
       uuid:
         type: string
     type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.CreateUser:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 2
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
   github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.Login:
     properties:
       email:
@@ -145,6 +162,45 @@ definitions:
       access_token_expires_at:
         type: string
     type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.UpdateUser:
+    properties:
+      name:
+        minLength: 2
+        type: string
+      phone:
+        type: string
+      profile_photo:
+        type: string
+    required:
+    - name
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      last_login_at:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      plan:
+        type: string
+      profile_photo:
+        type: string
+      subscribed_at:
+        type: string
+      trial_ends_at:
+        type: string
+      updated_at:
+        type: string
+      uuid:
+        type: string
+    type: object
   resterrors.restErr:
     properties:
       causes: {}
@@ -160,8 +216,8 @@ info:
   contact:
     email: diego93rodrigues@gmail.com
     name: Email
-  description: This is an API documentation for go boilerplate
-  title: Go Boilerplate API
+  description: This is an API documentation for go leaderpro
+  title: Go LeaderPro API
   version: "1.0"
 paths:
   /auth/login:
@@ -843,6 +899,145 @@ paths:
       summary: Ping the server
       tags:
       - ping
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Create User
+      tags:
+      - users
+  /users/profile:
+    get:
+      description: Get the current user's profile
+      parameters:
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Get User Profile
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update the current user's profile
+      parameters:
+      - description: Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.UpdateUser'
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Update User Profile
+      tags:
+      - users
 schemes:
 - http
 swagger: "2.0"

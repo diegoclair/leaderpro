@@ -17,6 +17,7 @@ import (
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/personroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/pingroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/swaggerroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/userroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routeutils"
 	servermiddleware "github.com/diegoclair/leaderpro/internal/transport/rest/serverMiddleware"
 	"github.com/labstack/echo-contrib/echoprometheus"
@@ -62,11 +63,13 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, ca
 	authHandler := authroute.NewHandler(services.AuthService, authToken)
 	companyHandler := companyroute.NewHandler(services.CompanyService)
 	personHandler := personroute.NewHandler(services.PersonService)
+	userHandler := userroute.NewHandler(services.UserService)
 
 	pingRoute := pingroute.NewRouter(pingHandler)
 	authRoute := authroute.NewRouter(authHandler)
 	companyRoute := companyroute.NewRouter(companyHandler)
 	personRoute := personroute.NewRouter(personHandler)
+	userRoute := userroute.NewRouter(userHandler)
 
 	swaggerRoute := swaggerroute.NewRouter(router.Echo())
 
@@ -76,6 +79,7 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, ca
 	server.addRouters(personRoute)
 	server.addRouters(pingRoute)
 	server.addRouters(swaggerRoute)
+	server.addRouters(userRoute)
 	server.registerAppRouters(authToken)
 
 	server.setupPrometheus(appName)

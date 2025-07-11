@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Building2, User, Settings } from 'lucide-react'
+import { Building2, User, Settings, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,6 +14,8 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { CompanySelector } from '../company/CompanySelector'
 import { ThemeToggle } from './ThemeToggle'
+import { useAuthStore } from '@/lib/stores/authStore'
+import { getInitials } from '@/lib/utils/names'
 
 interface AppHeaderProps {
   className?: string
@@ -21,6 +23,16 @@ interface AppHeaderProps {
 
 export function AppHeader({ className }: AppHeaderProps) {
   const router = useRouter()
+  const { user, logout } = useAuthStore()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+    }
+  }
 
   return (
     <header className={`border-b bg-background px-6 py-4 ${className || ''}`}>
@@ -29,7 +41,7 @@ export function AppHeader({ className }: AppHeaderProps) {
         <div className="flex items-center gap-6">
           <div 
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/dashboard')}
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg">
               <span className="text-lg font-bold text-white">LP</span>
@@ -51,7 +63,12 @@ export function AppHeader({ className }: AppHeaderProps) {
         <div className="flex items-center gap-4">
           {/* Main Navigation */}
           <nav className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => router.push('/dashboard')}
+            >
               <Building2 className="h-4 w-4" />
               Dashboard
             </Button>
@@ -70,7 +87,7 @@ export function AppHeader({ className }: AppHeaderProps) {
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
                   <AvatarFallback className="bg-slate-100 text-slate-600">
-                    DC
+                    {user ? getInitials(user.name) : 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -78,9 +95,11 @@ export function AppHeader({ className }: AppHeaderProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Diego Clair</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user?.name || 'Usuário'}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    diego93rodrigues@gmail.com
+                    {user?.email || 'email@exemplo.com'}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -90,7 +109,8 @@ export function AppHeader({ className }: AppHeaderProps) {
                 Configurações
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem className="gap-2" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>

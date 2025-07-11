@@ -13,8 +13,8 @@ import (
 const GroupRouteName = "users"
 
 const (
-	CreateUserRoute   = ""
-	GetProfileRoute   = "/profile"
+	RootUserRoute      = ""
+	GetProfileRoute    = "/profile"
 	UpdateProfileRoute = "/profile"
 )
 
@@ -32,7 +32,7 @@ func (r *UserRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 	router := g.AppGroup.Group(GroupRouteName)
 	privateRouter := g.PrivateGroup.Group(GroupRouteName)
 
-	router.POST(CreateUserRoute, r.ctrl.handleCreateUser).
+	router.POST(RootUserRoute, r.ctrl.handleCreateUser).
 		Summary("Create User").
 		Description("Create a new user account").
 		Read(viewmodel.CreateUser{}).

@@ -53,3 +53,7 @@ docs:
 .PHONY: start
 start:
 	docker compose up --build
+
+.PHONY: clean-volumes
+clean-volumes:
+	@sudo rm -rf ./.docker/volumes/*

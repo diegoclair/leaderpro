@@ -1,0 +1,10 @@
+# Frontend Tiltfile  
+# Gerencia o frontend Next.js
+
+
+local_resource(
+    'frontend', 
+    labels=['frontend'],
+    serve_cmd='npm run dev',
+    deps=['./frontend/src/']
+)

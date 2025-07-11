@@ -30,8 +30,6 @@ const userSelectBase string = `
 		u.plan,
 		u.trial_ends_at,
 		u.subscribed_at,
-		u.timezone,
-		u.language,
 		u.created_at,
 		u.updated_at,
 		u.last_login_at,
@@ -53,8 +51,6 @@ func (r *userRepo) parseUser(row scanner) (user entity.User, err error) {
 		&user.Plan,
 		&user.TrialEndsAt,
 		&user.SubscribedAt,
-		&user.Timezone,
-		&user.Language,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 		&user.LastLoginAt,
@@ -81,12 +77,10 @@ func (r *userRepo) CreateUser(ctx context.Context, user entity.User) (createdID 
 			plan,
 			trial_ends_at,
 			subscribed_at,
-			timezone,
-			language,
 			active,
 			email_verified
 		) 
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -105,8 +99,6 @@ func (r *userRepo) CreateUser(ctx context.Context, user entity.User) (createdID 
 		user.Plan,
 		user.TrialEndsAt,
 		user.SubscribedAt,
-		user.Timezone,
-		user.Language,
 		user.Active,
 		user.EmailVerified,
 	)
@@ -194,8 +186,6 @@ func (r *userRepo) UpdateUser(ctx context.Context, userID int64, user entity.Use
 			plan = ?,
 			trial_ends_at = ?,
 			subscribed_at = ?,
-			timezone = ?,
-			language = ?,
 			email_verified = ?,
 			updated_at = NOW()
 		WHERE user_id = ?
@@ -215,8 +205,6 @@ func (r *userRepo) UpdateUser(ctx context.Context, userID int64, user entity.Use
 		user.Plan,
 		user.TrialEndsAt,
 		user.SubscribedAt,
-		user.Timezone,
-		user.Language,
 		user.EmailVerified,
 		userID,
 	)

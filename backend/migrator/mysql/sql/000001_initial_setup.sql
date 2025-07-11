@@ -9,8 +9,6 @@ CREATE TABLE IF NOT EXISTS tab_user (
     plan VARCHAR(50) NULL DEFAULT 'trial',
     trial_ends_at TIMESTAMP NULL,
     subscribed_at TIMESTAMP NULL,
-    timezone VARCHAR(50) NULL DEFAULT 'America/Sao_Paulo',
-    language VARCHAR(10) NULL DEFAULT 'pt-BR',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login_at TIMESTAMP NULL,
@@ -22,6 +20,30 @@ CREATE TABLE IF NOT EXISTS tab_user (
     UNIQUE INDEX email_UNIQUE (email ASC) VISIBLE,
     INDEX idx_user_active (active ASC) VISIBLE
 ) ENGINE = InnoDB CHARACTER SET=utf8mb4;
+
+
+CREATE TABLE IF NOT EXISTS tab_session (
+    session_id INT NOT NULL AUTO_INCREMENT,
+    session_uuid CHAR(36) NOT NULL,
+    user_id INT NULL,
+    refresh_token VARCHAR(1500) NOT NULL,
+    user_agent VARCHAR(1000) NOT NULL,
+    client_ip VARCHAR(500) NOT NULL,
+    is_blocked TINYINT(1) NOT NULL DEFAULT 0,
+    refresh_token_expires_at TIMESTAMP NOT NULL ,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (session_id),
+    UNIQUE INDEX session_id_UNIQUE (session_id ASC) VISIBLE,
+    INDEX fk_tab_session_tab_user_idx (user_id ASC) VISIBLE,
+
+    CONSTRAINT fk_tab_session_tab_user
+        FOREIGN KEY (user_id)
+        REFERENCES tab_user (user_id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB CHARACTER SET=utf8;
 
 CREATE TABLE IF NOT EXISTS tab_company (
     company_id INT NOT NULL AUTO_INCREMENT,

@@ -1,25 +1,6 @@
 services:
-
-  app:
-    container_name: go-boilerplate-app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 5000:5000
-    environment:
-      WAIT_HOSTS: db:3306
-      WAIT_HOSTS_TIMEOUT: 60
-    volumes:
-      - ./:/app   #use this volume to set the live reload
-    depends_on:
-      - db
-      - cache
-    networks:
-      - app-network
-
   cache:
-    container_name: go-boilerplate-cache-redis
+    container_name: leaderpro-cache-redis
     image: redis:7.4.2-alpine
     restart: unless-stopped
     ports:
@@ -31,7 +12,7 @@ services:
       - app-network
   
   db:
-    container_name: go-boilerplate-mysql
+    container_name: leaderpro-mysql
     image: mysql:8.0.32
     command: bash -c "usermod -u 1000 mysql && docker-entrypoint.sh mysqld --innodb-use-native-aio=0 --disable-log-bin"
     cap_add:
@@ -52,7 +33,7 @@ services:
 
   prometheus:
     image: prom/prometheus
-    container_name: go-boilerplate-prometheus
+    container_name: leaderpro-prometheus
     ports:
       - 9090:9090
     command:
@@ -66,8 +47,8 @@ services:
     # to configure host on grafana inside datasource, we can use the container name, for example: http://prometheus:9090
     image: grafana/grafana
     ports:
-      - "3000:3000"
-    container_name: go-boilerplate-grafana
+      - "3001:3001"
+    container_name: leaderpro-grafana
     depends_on:
       - prometheus
     networks:

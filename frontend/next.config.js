@@ -1,12 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
+  //TODO: remover quando tirar do github pages //Só usar export estático em produção (GitHub Pages)
+  ...(process.env.NODE_ENV === 'production' && {
+    output: 'export',
+    trailingSlash: true,
+    assetPrefix: '/leaderpro',
+    basePath: '/leaderpro',
+  }),
   images: {
     unoptimized: true
   },
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/leaderpro' : '',
-  basePath: process.env.NODE_ENV === 'production' ? '/leaderpro' : '',
 }
 
 module.exports = nextConfig

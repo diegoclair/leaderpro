@@ -54,7 +54,7 @@ func (s *authApp) Login(ctx context.Context, input dto.LoginInput) (user entity.
 
 	user, err = s.dm.User().GetUserByEmail(ctx, input.Email)
 	if err != nil {
-		s.log.Errorw(ctx, "error getting account by document", logger.Err(err))
+		s.log.Errorw(ctx, "error getting user by email", logger.Err(err))
 		return user, resterrors.NewUnauthorizedError(wrongLogin)
 	}
 
