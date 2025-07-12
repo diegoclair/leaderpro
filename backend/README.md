@@ -102,6 +102,7 @@ CREATE TABLE tab_company (
 - **Person Profiles**: Comprehensive team member profile system
 - **1:1 Meetings**: Meeting management and note-taking system
 - **Feedback Tracking**: Direct and mentioned feedback collection
+- **Member Get Member System**: Referral tracking with 50% discounts per valid referral
 
 ### 🚧 Planned AI Features
 - **Contextual Memory**: Vector database integration for AI-powered insights

@@ -176,14 +176,46 @@ Um coach de liderança pessoal com IA que transforma líderes técnicos em gesto
 
 ## Modelo de Negócio
 - **Modelo**: B2C (tech lead paga individualmente)
-- **Precificação**:
-  - Plano básico: R$ 29,90/mês (limite de tokens/reuniões)
-  - Plano padrão: R$ 49,90/mês (uso moderado)
-  - Plano ilimitado: R$ 79,90/mês (sem limites de IA)
-- **Estratégia de lançamento**: 
-  - Trial de 30 dias
-  - Primeiros usuários: 6 meses por R$ 9,90 (early adopters)
+- **Precificação Principal**:
+  - **Plano Leader**: R$ 49,90/mês (foco principal do produto)
+  - Trial de 14 dias gratuito
 - **Dados**: Propriedade do usuário, não da empresa
+
+### Estratégia Member Get Member - Sistema de Indicações
+
+**Mecânica Inteligente (Fluxo de Caixa Otimizado):**
+- **Para o Indicado**: 10% desconto apenas na primeira mensalidade (R$ 44,91)
+- **Para o Indicador**: 50% desconto a partir do SEGUNDO mês de pagamento
+- **Trigger**: Indicado deve completar trial + pagar primeira mensalidade
+- **Sistema Acumulativo**: Cada indicação válida = 1 mês com desconto (a partir do 2º mês)
+- **Exemplo**: 10 indicações válidas = 10 meses pagando R$ 24,95 ao invés de R$ 49,90
+
+**Fluxo da Indicação Revisado:**
+1. **Usuário indica**: Compartilha link personalizado com código único
+2. **Novo usuário**: Se cadastra pelo link e completa trial de 14 dias
+3. **Primeira mensalidade**: Indicado paga R$ 44,91 (10% desconto de boas-vindas)
+4. **Validação**: Após primeiro pagamento, indicação é validada
+5. **Benefício ativado**: Indicador ganha 1 crédito de desconto de 50% para o próximo ciclo
+6. **Aplicação**: Créditos são aplicados automaticamente a partir do 2º mês do indicador
+
+**Vantagens Estratégicas:**
+- **Fluxo de Caixa Saudável**: Primeira mensalidade sempre garante receita real
+- **Qualificação de Usuários**: Filtra "caçadores de desconto", atrai genuinamente interessados
+- **Sustentabilidade**: Programa pode escalar sem comprometer margem
+- **Crescimento Orgânico**: Usuários se tornam promotores ativos
+- **Retenção**: Descontos incentivam permanência na plataforma
+- **Validação**: Indicações são prova social do valor entregue
+- **CAC Reduzido**: Custo de aquisição menor que marketing pago
+- **Network Effect**: Líderes recomendam para outros líderes
+
+**Implementação Técnica:**
+- Sistema de códigos únicos por usuário
+- Dashboard de indicações com tracking em tempo real
+- Billing inteligente: 10% indicado (1º mês) + 50% indicador (2º mês+)
+- Validação de pagamento antes de ativar crédito
+- Notificações de conquistas ("Sua indicação foi validada! Próximo mês: R$ 24,95")
+- Histórico de créditos utilizados e disponíveis
+- Sistema de prevenção a fraudes (mesmo IP, cartão, etc.)
 
 ## Plano de Implementação
 ### Fase 1 - MVP (3 meses)
@@ -282,6 +314,33 @@ Um coach de liderança pessoal com IA que transforma líderes técnicos em gesto
 - **6 meses**: 100 usuários pagantes
 - **1 ano**: 1000 usuários, break-even
 - **North Star**: Número de 1:1s realizados por mês
+
+### Métricas do Programa de Indicações
+- **Taxa de Indicação**: % de usuários que fazem pelo menos 1 indicação
+- **Conversão de Indicados**: % de indicados que pagam primeira mensalidade
+- **Retenção de Indicados**: % que permanecem após 3 meses
+- **Viral Coefficient**: Quantos novos usuários cada usuário traz
+- **Receita por Indicação**: Receita média gerada por indicação válida
+- **Impacto no LTV**: Aumento do valor de vida do cliente vs. CAC
+- **Meta Inicial**: 30% dos usuários fazem pelo menos 1 indicação
+- **Meta de Crescimento**: 2.5 indicações válidas por usuário ativo/ano
+- **Meta Financeira**: Receita de indicações = 25% da receita total
+
+### Impacto Financeiro Comparativo
+**Cenário Tradicional (desconto imediato):**
+- Indicado mês 1: R$ 49,90
+- Indicador mês 1: R$ 24,95 (desconto imediato)
+- **Total mês 1**: R$ 74,85
+
+**Nossa Estratégia (desconto diferido):**
+- Indicado mês 1: R$ 44,91 (10% desconto de boas-vindas)
+- Indicador mês 1: R$ 49,90 (ainda sem desconto)
+- **Total mês 1**: R$ 94,81 (**+26% receita!**)
+
+**Benefícios Adicionais:**
+- Indicado comprometido (pagou mensalidade quase cheia)
+- Indicador fidelizado (desconto começa no 2º mês)
+- Receita previsível e sustentável
 
 ## Identidade Visual - LeaderPro
 

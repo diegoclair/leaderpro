@@ -164,6 +164,15 @@ GRÁTIS              ESSENCIAL           PRO ⭐Popular
 **"Vale a pena o investimento?"**
 → Se economizar 2 horas já pagou 3 meses. Garantimos ou devolvemos.
 
+**"Como funciona o programa de indicações?"**
+→ Você indica, seu colega ganha 10% na primeira mensalidade e você ganha 50% desconto a partir do seu 2º mês. Ganha-ganha!
+
+**"Por que o desconto não é imediato?"**
+→ Garantimos que cada indicação seja genuína. Após seu indicado pagar o primeiro mês, seu desconto é ativado automaticamente.
+
+**"Posso acumular vários descontos?"**
+→ Sim! Indique 10 pessoas = 10 meses pagando metade do preço. Sem limite.
+
 **"Funciona para times não-técnicos?"**
 → Sim! Temos gestores de vendas, marketing, operações usando diariamente.
 
@@ -290,3 +299,138 @@ Quer agendar um lembrete para testar quando tiver 15 minutos?
 - SEO optimization
 
 **Meta:** Landing page gerando 50+ trials/semana em 30 dias.
+
+---
+
+## Programa Member Get Member - Página Dedicada
+
+### Conceito da Página de Indicações
+
+**URL:** `/indicacoes` ou `/member-get-member`
+
+**Headline:** "Indique Colegas, Pague Metade"
+
+**Sub-headline:** "A cada líder que você indicar e que virar cliente, seu indicado ganha 10% na primeira mensalidade e você ganha 50% desconto a partir do 2º mês. Sem limite!"
+
+### Estrutura da Página de Indicações
+
+#### 1. Hero Section
+```
+💰 50% DE DESCONTO POR INDICAÇÃO
+
+Indique gestores → Eles ganham 10% → Você ganha 50% (a partir do 2º mês)
+
+Exemplo: 5 indicações válidas = 5 meses pagando R$ 24,95
+
+[Gerar Meu Link de Indicação]
+```
+
+#### 2. Como Funciona (4 Passos)
+```
+1️⃣ INDIQUE
+Compartilhe seu link personalizado
+com gestores que você conhece
+
+2️⃣ CADASTRO
+Seu indicado se cadastra e 
+testa grátis por 14 dias
+
+3️⃣ PRIMEIRA MENSALIDADE
+Indicado paga R$ 44,91
+(10% desconto de boas-vindas)
+
+4️⃣ SEU DESCONTO ATIVA
+A partir do seu 2º mês: R$ 24,95
+(indicação validada!)
+```
+
+#### 3. Calculadora de Economia
+```
+📊 Quantos gestores você conhece?
+
+[Slider: 1-20 pessoas]
+
+Com 10 indicações válidas você economizaria:
+💰 R$ 249,50 (10 meses de desconto a partir do 2º mês)
+📅 Equivale a quase 1 ano pagando metade!
+
+[Começar a Indicar Agora]
+```
+
+#### 4. Exemplos de Rede
+```
+🎯 Onde encontrar gestores para indicar:
+
+✓ LinkedIn (colegas de empresas anteriores)
+✓ Ex-colegas que viraram líderes
+✓ Slack/Discord de comunidades tech
+✓ Meetups e eventos de tecnologia
+✓ Grupos de WhatsApp de gestores
+✓ Curso/MBA de gestão que você fez
+
+[Templates de Mensagem Prontos]
+```
+
+#### 5. Templates de Compartilhamento
+```
+📱 WHATSAPP:
+"Oi [Nome]! Encontrei uma ferramenta incrível para gestores. 
+Te economiza 85% do tempo em performance reviews. 
+Teste grátis: [seu_link] 
+Qualquer dúvida, me chama!"
+
+💼 LINKEDIN:
+"Colegas gestores: descobri o LeaderPro, uma IA que economiza 
+horas em avaliações de time. Teste gratuito: [seu_link]"
+
+📧 EMAIL:
+Template completo com assunto e corpo da mensagem
+```
+
+#### 6. Dashboard de Indicações
+```
+SEU PROGRESSO:
+
+🔗 Link compartilhado: 12 vezes
+👀 Pessoas que visitaram: 8
+🎯 Cadastros realizados: 5  
+💰 Conversões (pagantes): 3
+🎊 Meses com desconto: 3
+
+Próxima fatura: R$ 24,95 (50% off)
+Créditos restantes: 2 meses
+
+[Compartilhar Mais] [Ver Histórico]
+```
+
+#### 7. Motivação e Gamificação
+```
+🏆 CONQUISTAS DESBLOQUEADAS:
+
+⭐ Primeira Indicação (1)
+🎯 Trio de Ouro (3)
+🔥 Rede Influente (5)
+💎 Líder Mentor (10)
+
+Próxima conquista: "Evangelista" (15 indicações)
+Recompensa: Certificado + Mês grátis extra!
+```
+
+### CTA Principal da Página
+```
+[Gerar Meu Link Personalizado]
+
+✓ Link único com seu nome
+✓ Dashboard de acompanhamento  
+✓ Templates prontos para compartilhar
+✓ Aplicação automática dos descontos
+
+"João Silva está te convidando para economizar tempo com IA..."
+```
+
+### Métricas Específicas da Página de Indicações
+- **Taxa de geração de link**: % de visitantes que criam link
+- **Compartilhamentos por usuário**: Quantas vezes o link é usado
+- **Conversão de indicados**: % de indicados que viram pagantes  
+- **Impacto no LTV**: Aumento do valor de vida do cliente
+- **Viral coefficient**: Quantos novos usuários cada indicação traz

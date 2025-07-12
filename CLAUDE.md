@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Solution**: Multidimensional contextual AI that combines personal + temporal + geographic + historical data
 - **Differentiator**: Virtual coach that remembers everything and suggests actions based on complete context
 - **Model**: B2C (R$ 49.90/month) - individual leader pays
+- **Member Get Member Strategy**: 50% discount per valid referral (accumulative)
 
 ## Project Structure
 
@@ -171,10 +172,37 @@ frontend/src/
 
 ### ⏳ Pending Implementation
 1. **Person Management API** - Complete person CRUD endpoints
-2. **AI Integration** - OpenAI/Claude for contextual suggestions
-3. **Vector Database** - AI memory with Pinecone/Weaviate
-4. **Real-time Sync** - WebSockets for collaboration
-5. **Calendar Integration** - Google/Outlook
+2. **Member Get Member System** - Referral tracking and discount management
+3. **AI Integration** - OpenAI/Claude for contextual suggestions
+4. **Vector Database** - AI memory with Pinecone/Weaviate
+5. **Real-time Sync** - WebSockets for collaboration
+6. **Calendar Integration** - Google/Outlook
+
+## Member Get Member Strategy
+
+### Concept (Smart Cash Flow Strategy)
+- **For Referred User**: 10% discount only on first month (R$ 44.91)
+- **For Referrer**: 50% discount starting from SECOND month of payment
+- **Trigger**: Referred user completes trial + pays first full month
+- **Accumulative**: 10 referrals = 10 months at R$ 24.95 instead of R$ 49.90
+- **No Limits**: Users can accumulate unlimited discounts
+
+### Strategic Advantages
+- **Healthy Cash Flow**: First month always guarantees real revenue (R$ 44.91 minimum)
+- **User Qualification**: Filters "discount hunters", attracts genuinely interested users
+- **Sustainability**: Program can scale without compromising margins
+- **Fraud Prevention**: Deferred discount reduces fake referral attempts
+- **Higher Retention**: Both referrer and referred have skin in the game
+
+### Implementation Requirements
+1. **Unique Referral Codes**: Each user gets a personalized referral link
+2. **Tracking System**: Track clicks, registrations, and conversions
+3. **Smart Billing**: 10% referred (1st month) + 50% referrer (2nd month+)
+4. **Payment Validation**: Credit only activates after first payment clears
+5. **Dashboard**: User interface to track referrals and credits
+6. **Gamification**: Achievement badges and progress tracking
+7. **Templates**: Pre-written messages for sharing (WhatsApp, LinkedIn, Email)
+8. **Fraud Prevention**: Same IP, card, device detection
 
 ## AI Context Pipeline (To Implement)
 1. **Data Collection**: User inputs, profiles, calendar

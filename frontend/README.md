@@ -432,7 +432,8 @@ NEXT_PUBLIC_API_URL=http://localhost:5000  # URL do backend (default se não def
 ### ⏳ Em Desenvolvimento
 1. **API Business**: Endpoints de pessoas e 1:1s no backend
 2. **Migração Mock→API**: Migrar peopleStore para usar APIs reais
-3. **IA Contextual**: Integração OpenAI/Claude para suggestions
+3. **Sistema Member Get Member**: Programa de indicações com desconto
+4. **IA Contextual**: Integração OpenAI/Claude para suggestions
 
 ### 📋 Próximos Passos
 1. **People API**: Implementar endpoints de pessoas no backend Go
