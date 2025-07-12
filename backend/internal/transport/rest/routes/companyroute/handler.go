@@ -38,18 +38,22 @@ func (s *Handler) handleCreateCompany(c echo.Context) error {
 		return routeutils.ResponseInvalidRequestBody(c, err)
 	}
 
-	err = s.companyService.CreateCompany(ctx, input.ToEntity(), input.IsDefault)
+	createdCompany, err := s.companyService.CreateCompany(ctx, input.ToEntity())
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
 
-	return routeutils.ResponseCreated(c)
+	// Build response from entity (already contains role and is_default)
+	response := viewmodel.CompanyResponse{}
+	response.FillFromEntity(createdCompany)
+
+	return routeutils.ResponseCreated(c, response)
 }
 
 func (s *Handler) handleGetCompanies(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companies, err := s.companyService.GetUserCompaniesWithDefault(ctx)
+	companies, err := s.companyService.GetUserCompanies(ctx)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -57,7 +61,7 @@ func (s *Handler) handleGetCompanies(c echo.Context) error {
 	response := []viewmodel.CompanyResponse{}
 	for _, company := range companies {
 		item := viewmodel.CompanyResponse{}
-		item.FillFromUserCompany(company)
+		item.FillFromEntity(company)
 		response = append(response, item)
 	}
 

@@ -31,7 +31,7 @@ func newCompanyService(infra domain.Infrastructure, authApp contract.AuthApp) co
 	}
 }
 
-func (s *companyService) CreateCompany(ctx context.Context, company entity.Company, isDefault bool) error {
+func (s *companyService) CreateCompany(ctx context.Context, company entity.Company) (entity.Company, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -44,43 +44,41 @@ func (s *companyService) CreateCompany(ctx context.Context, company entity.Compa
 	}
 	company.Active = true
 
-	// Get logged user ID to set as creator
+	// Get logged user ID to set as owner
 	userID, err := s.authApp.GetLoggedUserID(ctx)
 	if err != nil {
-		return err
+		return company, err
 	}
-	company.CreatedBy = userID
+	company.UserOwnerID = userID
+
+	// If this company is being set as default, unset other defaults for this user
+	if company.IsDefault {
+		err = s.unsetUserDefaultCompanies(ctx, userID)
+		if err != nil {
+			s.log.Errorw(ctx, "error unsetting default companies", logger.Err(err))
+			return company, err
+		}
+	}
 
 	// Create company in database
 	companyID, err := s.dm.Company().CreateCompany(ctx, company)
 	if err != nil {
 		s.log.Errorw(ctx, "error creating company", logger.Err(err))
-		return err
+		return company, err
 	}
-
-	// Add user to company as owner
-	err = s.dm.Company().AddUserToCompany(ctx, companyID, userID, "owner")
-	if err != nil {
-		s.log.Errorw(ctx, "error adding user to company", logger.Err(err))
-		return err
-	}
-
-	// Set as default company if requested
-	if isDefault {
-		err = s.dm.Company().SetCompanyAsDefault(ctx, companyID, userID)
-		if err != nil {
-			s.log.Errorw(ctx, "error setting company as default", logger.Err(err))
-			return err
-		}
-	}
+	
+	// Set the created ID
+	company.ID = companyID
 
 	s.log.Infow(ctx, "company created successfully",
 		logger.Int64("company_id", companyID),
 		logger.String("company_name", company.Name),
-		logger.Bool("is_default", isDefault),
+		logger.Int64("user_owner_id", userID),
+		logger.String("role", company.Role),
+		logger.Bool("is_default", company.IsDefault),
 	)
 
-	return nil
+	return company, nil
 }
 
 func (s *companyService) GetCompanyByUUID(ctx context.Context, companyUUID string) (entity.Company, error) {
@@ -175,60 +173,23 @@ func (s *companyService) DeleteCompany(ctx context.Context, companyUUID string) 
 	return nil
 }
 
-func (s *companyService) GetUserCompaniesWithDefault(ctx context.Context) ([]entity.UserCompany, error) {
-	s.log.Info(ctx, "Process Started")
-	defer s.log.Info(ctx, "Process Finished")
-
-	userID, err := s.authApp.GetLoggedUserID(ctx)
+// unsetUserDefaultCompanies removes the default flag from all companies of a user
+func (s *companyService) unsetUserDefaultCompanies(ctx context.Context, userID int64) error {
+	companies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	companies, err := s.dm.Company().GetUserCompaniesWithDefault(ctx, userID)
-	if err != nil {
-		s.log.Errorw(ctx, "error getting user companies with default", logger.Err(err))
-		return nil, err
-	}
-
-	return companies, nil
-}
-
-func (s *companyService) AddUserToCompany(ctx context.Context, companyUUID string, userEmail string, role string) error {
-	s.log.Info(ctx, "Process Started")
-	defer s.log.Info(ctx, "Process Finished")
-
-	// Get company by UUID
-	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
-	if err != nil {
-		if mysqlutils.SQLNotFound(err.Error()) {
-			return resterrors.NewNotFoundError("company not found")
+	for _, company := range companies {
+		if company.IsDefault {
+			company.IsDefault = false
+			err = s.dm.Company().UpdateCompany(ctx, company.ID, company)
+			if err != nil {
+				return err
+			}
 		}
-		s.log.Errorw(ctx, "error getting company by UUID", logger.Err(err))
-		return err
 	}
-
-	// Get user by email
-	user, err := s.dm.User().GetUserByEmail(ctx, userEmail)
-	if err != nil {
-		if mysqlutils.SQLNotFound(err.Error()) {
-			return resterrors.NewNotFoundError("user not found")
-		}
-		s.log.Errorw(ctx, "error getting user by email", logger.Err(err))
-		return err
-	}
-
-	// Add user to company
-	err = s.dm.Company().AddUserToCompany(ctx, company.ID, user.ID, role)
-	if err != nil {
-		s.log.Errorw(ctx, "error adding user to company", logger.Err(err))
-		return err
-	}
-
-	s.log.Infow(ctx, "user added to company successfully",
-		logger.Int64("company_id", company.ID),
-		logger.Int64("user_id", user.ID),
-		logger.String("role", role),
-	)
 
 	return nil
 }
+

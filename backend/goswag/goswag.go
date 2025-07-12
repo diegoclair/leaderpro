@@ -225,12 +225,12 @@ func handleGetProfile() {} //nolint:unused
 func handleUpdateProfile() {} //nolint:unused 
 
 //	@Summary		Login
-//	@Description	Login
+//	@Description	Login user and return user data with authentication tokens
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		viewmodel.Login	true	"Request"
-//	@Success		200		{object}	viewmodel.LoginResponse
+//	@Success		200		{object}	viewmodel.AuthResponse
 //	@Failure		400		{object}	resterrors.restErr
 //	@Failure		404		{object}	resterrors.restErr
 //	@Failure		500		{object}	resterrors.restErr
@@ -241,7 +241,7 @@ func handleUpdateProfile() {} //nolint:unused
 func handleLogin() {} //nolint:unused 
 
 //	@Summary		Refresh Token
-//	@Description	Generate a new token using the refresh token
+//	@Description	Generate a new access token using the refresh token
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
@@ -271,12 +271,12 @@ func handleRefreshToken() {} //nolint:unused
 func handlePing() {} //nolint:unused 
 
 //	@Summary		Create User
-//	@Description	Create a new user account
+//	@Description	Create a new user account and return authentication tokens
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		viewmodel.CreateUser	true	"Request"
-//	@Success		200		{object}	viewmodel.User
+//	@Success		200		{object}	viewmodel.AuthResponse
 //	@Failure		400		{object}	resterrors.restErr
 //	@Failure		404		{object}	resterrors.restErr
 //	@Failure		500		{object}	resterrors.restErr

@@ -282,32 +282,19 @@ func (m *MockCompanyApp) EXPECT() *MockCompanyAppMockRecorder {
 	return m.recorder
 }
 
-// AddUserToCompany mocks base method.
-func (m *MockCompanyApp) AddUserToCompany(ctx context.Context, companyUUID, userEmail, role string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUserToCompany", ctx, companyUUID, userEmail, role)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddUserToCompany indicates an expected call of AddUserToCompany.
-func (mr *MockCompanyAppMockRecorder) AddUserToCompany(ctx, companyUUID, userEmail, role any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserToCompany", reflect.TypeOf((*MockCompanyApp)(nil).AddUserToCompany), ctx, companyUUID, userEmail, role)
-}
-
 // CreateCompany mocks base method.
-func (m *MockCompanyApp) CreateCompany(ctx context.Context, company entity.Company, isDefault bool) error {
+func (m *MockCompanyApp) CreateCompany(ctx context.Context, company entity.Company) (entity.Company, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCompany", ctx, company, isDefault)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "CreateCompany", ctx, company)
+	ret0, _ := ret[0].(entity.Company)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateCompany indicates an expected call of CreateCompany.
-func (mr *MockCompanyAppMockRecorder) CreateCompany(ctx, company, isDefault any) *gomock.Call {
+func (mr *MockCompanyAppMockRecorder) CreateCompany(ctx, company any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCompany", reflect.TypeOf((*MockCompanyApp)(nil).CreateCompany), ctx, company, isDefault)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCompany", reflect.TypeOf((*MockCompanyApp)(nil).CreateCompany), ctx, company)
 }
 
 // DeleteCompany mocks base method.
@@ -354,21 +341,6 @@ func (mr *MockCompanyAppMockRecorder) GetUserCompanies(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCompanies", reflect.TypeOf((*MockCompanyApp)(nil).GetUserCompanies), ctx)
 }
 
-// GetUserCompaniesWithDefault mocks base method.
-func (m *MockCompanyApp) GetUserCompaniesWithDefault(ctx context.Context) ([]entity.UserCompany, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserCompaniesWithDefault", ctx)
-	ret0, _ := ret[0].([]entity.UserCompany)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserCompaniesWithDefault indicates an expected call of GetUserCompaniesWithDefault.
-func (mr *MockCompanyAppMockRecorder) GetUserCompaniesWithDefault(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCompaniesWithDefault", reflect.TypeOf((*MockCompanyApp)(nil).GetUserCompaniesWithDefault), ctx)
-}
-
 // UpdateCompany mocks base method.
 func (m *MockCompanyApp) UpdateCompany(ctx context.Context, companyUUID string, company entity.Company) error {
 	m.ctrl.T.Helper()
@@ -408,17 +380,17 @@ func (m *MockPersonApp) EXPECT() *MockPersonAppMockRecorder {
 }
 
 // CreatePerson mocks base method.
-func (m *MockPersonApp) CreatePerson(ctx context.Context, companyUUID string, person entity.Person) error {
+func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePerson", ctx, companyUUID, person)
+	ret := m.ctrl.Call(m, "CreatePerson", ctx, person, companyUUID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreatePerson indicates an expected call of CreatePerson.
-func (mr *MockPersonAppMockRecorder) CreatePerson(ctx, companyUUID, person any) *gomock.Call {
+func (mr *MockPersonAppMockRecorder) CreatePerson(ctx, person, companyUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockPersonApp)(nil).CreatePerson), ctx, companyUUID, person)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockPersonApp)(nil).CreatePerson), ctx, person, companyUUID)
 }
 
 // DeletePerson mocks base method.

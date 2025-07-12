@@ -27,17 +27,15 @@ type AuthApp interface {
 }
 
 type CompanyApp interface {
-	CreateCompany(ctx context.Context, company entity.Company, isDefault bool) (err error)
+	CreateCompany(ctx context.Context, company entity.Company) (createdCompany entity.Company, err error)
 	GetCompanyByUUID(ctx context.Context, companyUUID string) (company entity.Company, err error)
 	GetUserCompanies(ctx context.Context) (companies []entity.Company, err error)
-	GetUserCompaniesWithDefault(ctx context.Context) (companies []entity.UserCompany, err error)
 	UpdateCompany(ctx context.Context, companyUUID string, company entity.Company) (err error)
 	DeleteCompany(ctx context.Context, companyUUID string) (err error)
-	AddUserToCompany(ctx context.Context, companyUUID string, userEmail string, role string) (err error)
 }
 
 type PersonApp interface {
-	CreatePerson(ctx context.Context, companyUUID string, person entity.Person) (err error)
+	CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (err error)
 	GetPersonByUUID(ctx context.Context, personUUID string) (person entity.Person, err error)
 	GetCompanyPeople(ctx context.Context, companyUUID string) (people []entity.Person, err error)
 	UpdatePerson(ctx context.Context, personUUID string, person entity.Person) (err error)

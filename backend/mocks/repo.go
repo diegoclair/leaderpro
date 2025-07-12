@@ -345,20 +345,6 @@ func (m *MockCompanyRepo) EXPECT() *MockCompanyRepoMockRecorder {
 	return m.recorder
 }
 
-// AddUserToCompany mocks base method.
-func (m *MockCompanyRepo) AddUserToCompany(ctx context.Context, companyID, userID int64, role string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUserToCompany", ctx, companyID, userID, role)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddUserToCompany indicates an expected call of AddUserToCompany.
-func (mr *MockCompanyRepoMockRecorder) AddUserToCompany(ctx, companyID, userID, role any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserToCompany", reflect.TypeOf((*MockCompanyRepo)(nil).AddUserToCompany), ctx, companyID, userID, role)
-}
-
 // CreateCompany mocks base method.
 func (m *MockCompanyRepo) CreateCompany(ctx context.Context, company entity.Company) (int64, error) {
 	m.ctrl.T.Helper()
@@ -416,49 +402,6 @@ func (m *MockCompanyRepo) GetCompanyByUUID(ctx context.Context, companyUUID stri
 func (mr *MockCompanyRepoMockRecorder) GetCompanyByUUID(ctx, companyUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompanyByUUID", reflect.TypeOf((*MockCompanyRepo)(nil).GetCompanyByUUID), ctx, companyUUID)
-}
-
-// GetUserCompaniesWithDefault mocks base method.
-func (m *MockCompanyRepo) GetUserCompaniesWithDefault(ctx context.Context, userID int64) ([]entity.UserCompany, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserCompaniesWithDefault", ctx, userID)
-	ret0, _ := ret[0].([]entity.UserCompany)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserCompaniesWithDefault indicates an expected call of GetUserCompaniesWithDefault.
-func (mr *MockCompanyRepoMockRecorder) GetUserCompaniesWithDefault(ctx, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCompaniesWithDefault", reflect.TypeOf((*MockCompanyRepo)(nil).GetUserCompaniesWithDefault), ctx, userID)
-}
-
-// RemoveUserFromCompany mocks base method.
-func (m *MockCompanyRepo) RemoveUserFromCompany(ctx context.Context, companyID, userID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveUserFromCompany", ctx, companyID, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveUserFromCompany indicates an expected call of RemoveUserFromCompany.
-func (mr *MockCompanyRepoMockRecorder) RemoveUserFromCompany(ctx, companyID, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUserFromCompany", reflect.TypeOf((*MockCompanyRepo)(nil).RemoveUserFromCompany), ctx, companyID, userID)
-}
-
-// SetCompanyAsDefault mocks base method.
-func (m *MockCompanyRepo) SetCompanyAsDefault(ctx context.Context, companyID, userID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetCompanyAsDefault", ctx, companyID, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetCompanyAsDefault indicates an expected call of SetCompanyAsDefault.
-func (mr *MockCompanyRepoMockRecorder) SetCompanyAsDefault(ctx, companyID, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCompanyAsDefault", reflect.TypeOf((*MockCompanyRepo)(nil).SetCompanyAsDefault), ctx, companyID, userID)
 }
 
 // UpdateCompany mocks base method.

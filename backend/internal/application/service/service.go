@@ -30,7 +30,7 @@ func New(infra domain.Infrastructure, accessTokenDuration time.Duration) (*Apps,
 		User:     userApp,
 		Auth:     authApp,
 		Company:  newCompanyService(infra, authApp),
-		Person:   newPersonService(infra),
+		Person:   newPersonService(infra, authApp),
 		OneOnOne: newOneOnOneService(infra),
 		Feedback: newFeedbackService(infra),
 	}, nil

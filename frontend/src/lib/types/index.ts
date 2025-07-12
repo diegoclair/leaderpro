@@ -2,7 +2,11 @@
 
 export type Company = {
   id: string
+  uuid: string
   name: string
+  industry: string
+  size: string
+  role: string
   isDefault: boolean
   createdAt: Date
   updatedAt: Date

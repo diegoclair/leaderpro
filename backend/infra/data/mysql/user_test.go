@@ -69,10 +69,11 @@ func createRandomCompanyForTests(t *testing.T) entity.Company {
 	company := entity.Company{
 		UUID:        uuid.NewV4().String(),
 		Name:        "Test Company",
-		Description: "A test company for tests",
 		Industry:    "Technology",
 		Size:        "small",
-		CreatedBy:   user.ID,
+		Role:        "CEO",
+		IsDefault:   true,
+		UserOwnerID: user.ID,
 		Active:      true,
 	}
 

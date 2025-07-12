@@ -37,12 +37,8 @@ type CompanyRepo interface {
 	CreateCompany(ctx context.Context, company entity.Company) (createdID int64, err error)
 	GetCompanyByUUID(ctx context.Context, companyUUID string) (company entity.Company, err error)
 	GetCompaniesByUser(ctx context.Context, userID int64) (companies []entity.Company, err error)
-	GetUserCompaniesWithDefault(ctx context.Context, userID int64) (companies []entity.UserCompany, err error)
 	UpdateCompany(ctx context.Context, companyID int64, company entity.Company) (err error)
 	DeleteCompany(ctx context.Context, companyID int64) (err error)
-	AddUserToCompany(ctx context.Context, companyID, userID int64, role string) (err error)
-	SetCompanyAsDefault(ctx context.Context, companyID, userID int64) (err error)
-	RemoveUserFromCompany(ctx context.Context, companyID, userID int64) (err error)
 }
 
 type PersonRepo interface {

@@ -4,15 +4,24 @@ definitions:
       message:
         type: string
     type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AuthResponse:
+    properties:
+      auth:
+        $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.LoginResponse'
+      user:
+        $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User'
+    type: object
   github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.CompanyRequest:
     properties:
-      description:
-        type: string
       industry:
         type: string
+      is_default:
+        type: boolean
       name:
         maxLength: 255
         minLength: 2
+        type: string
+      role:
         type: string
       size:
         enum:
@@ -28,11 +37,13 @@ definitions:
     properties:
       created_at:
         type: string
-      description:
-        type: string
       industry:
         type: string
+      is_default:
+        type: boolean
       name:
+        type: string
+      role:
         type: string
       size:
         type: string
@@ -224,7 +235,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Login
+      description: Login user and return user data with authentication tokens
       parameters:
       - description: Request
         in: body
@@ -238,7 +249,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.LoginResponse'
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AuthResponse'
         "400":
           description: Bad Request
           schema:
@@ -313,7 +324,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Generate a new token using the refresh token
+      description: Generate a new access token using the refresh token
       parameters:
       - description: Request
         in: body
@@ -903,7 +914,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new user account
+      description: Create a new user account and return authentication tokens
       parameters:
       - description: Request
         in: body
@@ -917,7 +928,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User'
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AuthResponse'
         "400":
           description: Bad Request
           schema:

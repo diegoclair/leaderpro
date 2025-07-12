@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building2, Users, CheckCircle } from 'lucide-react'
-import { useCompanyStore } from '@/lib/stores/companyStore'
+import { useLoadCompanies } from '@/lib/stores/companyStore'
 import { apiClient } from '@/lib/stores/authStore'
 
 interface OnboardingWizardProps {
@@ -17,7 +17,7 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const router = useRouter()
-  const { addCompany, setActiveCompany } = useCompanyStore()
+  const loadCompanies = useLoadCompanies()
   
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -43,14 +43,21 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       // Criar empresa no backend
       const companyData = {
         name: formData.companyName,
-        description: `Empresa de ${formData.industry}`,
         industry: formData.industry,
         size: formData.teamSize,
+        role: formData.userRole,
         is_default: true // Primeira empresa sempre é default
       }
 
+      console.log('🚀 Criando empresa:', companyData)
+      
       // Chamar API para criar empresa
-      await apiClient.authPost('/companies', companyData)
+      const response = await apiClient.authPost('/companies', companyData)
+      console.log('✅ Empresa criada com sucesso:', response)
+      
+      // Recarregar empresas para atualizar a lista
+      console.log('🔄 Recarregando empresas...')
+      await loadCompanies()
       
       // Marcar onboarding como completo
       localStorage.setItem('onboarding_completed', 'true')
@@ -62,8 +69,15 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       router.push('/dashboard')
       
     } catch (error) {
-      console.error('Erro ao criar empresa:', error)
-      // Mostrar erro para usuário se necessário
+      console.error('❌ Erro ao criar empresa:', error)
+      
+      // Mostrar erro detalhado para debug
+      if (error instanceof Error) {
+        console.error('Mensagem do erro:', error.message)
+      }
+      
+      // TODO: Mostrar notificação de erro para o usuário
+      alert(`Erro ao criar empresa: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
     } finally {
       setIsLoading(false)
     }

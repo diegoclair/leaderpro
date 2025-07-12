@@ -44,9 +44,9 @@ func (r *AuthRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 			},
 		})
 
-	router.POST("/refresh-token", r.ctrl.handleRefreshToken).
+	router.POST(RefreshTokenRoute, r.ctrl.handleRefreshToken).
 		Summary("Refresh Token").
-		Description("Generate a new token using the refresh token").
+		Description("Generate a new access token using the refresh token").
 		Read(viewmodel.RefreshTokenRequest{}).
 		Returns([]models.ReturnType{
 			{

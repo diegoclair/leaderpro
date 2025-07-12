@@ -85,19 +85,13 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
         id: company.uuid,
         uuid: company.uuid,
         name: company.name,
-        description: company.description || '',
         industry: company.industry || '',
         size: company.size || '',
+        role: company.role || '',
         isDefault: company.is_default || false,
         createdAt: new Date(company.created_at),
         updatedAt: new Date(company.created_at)
       }))
-
-      // Adicionar TechCorp como empresa mock (sempre não-default)
-      const techCorp = mockCompanies.find(c => c.name === 'TechCorp')
-      if (techCorp) {
-        companies.push({ ...techCorp, isDefault: false })
-      }
 
       // Ordenar: default primeiro, depois por nome
       companies.sort((a, b) => {
@@ -120,6 +114,8 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
         }
       }
       
+      console.log('🏢 Empresas carregadas:', companies.length)
+      
       set({
         companies,
         activeCompany,
@@ -127,15 +123,12 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
       })
       
     } catch (error) {
-      console.error('Erro ao carregar empresas:', error)
+      console.error('❌ Erro ao carregar empresas:', error)
       
-      // Fallback para dados mock em caso de erro
-      const companies = mockCompanies.map(c => c.name === 'TechCorp' ? { ...c, isDefault: false } : c)
-      const activeCompany = companies.find(c => c.isDefault) || companies[0] || null
-      
+      // Em caso de erro, deixar vazio para acionar onboarding
       set({
-        companies,
-        activeCompany,
+        companies: [],
+        activeCompany: null,
         isLoading: false
       })
     }

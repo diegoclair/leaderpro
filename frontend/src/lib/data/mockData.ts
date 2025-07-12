@@ -6,9 +6,9 @@ export const mockCompanies: Company[] = [
     id: '1',
     uuid: '1',
     name: 'TechCorp',
-    description: 'Empresa de tecnologia para testes',
     industry: 'technology',
     size: 'medium',
+    role: 'CTO',
     isDefault: false, // Não será mais default por padrão
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-07-01')

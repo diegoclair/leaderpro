@@ -89,12 +89,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     const initializeData = async () => {
+      // Sempre carregar empresas ao entrar no dashboard
+      console.log('📊 Dashboard: Carregando empresas...')
       await loadCompanies()
       loadPeopleData()
     }
     
-    initializeData()
-  }, [loadCompanies, loadPeopleData])
+    // Só carregar se estiver autenticado e renderizando
+    if (shouldRender && !needsOnboarding) {
+      initializeData()
+    }
+  }, [loadCompanies, loadPeopleData, shouldRender, needsOnboarding])
 
   // Mostrar loading se estiver carregando auth ou não deve renderizar
   if (isLoading || !shouldRender) {

@@ -49,46 +49,23 @@ CREATE TABLE IF NOT EXISTS tab_company (
     company_id INT NOT NULL AUTO_INCREMENT,
     company_uuid CHAR(36) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    description TEXT NULL,
     industry VARCHAR(100) NULL,
     size VARCHAR(50) NULL,
+    role VARCHAR(200) NULL,
+    is_default TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    created_by INT NOT NULL,
+    user_owner_id INT NOT NULL,
     active TINYINT(1) NOT NULL DEFAULT 1,
     
     PRIMARY KEY (company_id),
     UNIQUE INDEX company_id_UNIQUE (company_id ASC) VISIBLE,
     INDEX idx_company_active (active ASC) VISIBLE,
     
-    CONSTRAINT fk_company_user
-        FOREIGN KEY (created_by)
+    CONSTRAINT fk_company_owner
+        FOREIGN KEY (user_owner_id)
         REFERENCES tab_user (user_id)
         ON DELETE NO ACTION
-        ON UPDATE NO ACTION
-) ENGINE = InnoDB CHARACTER SET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS tab_company_user (
-    company_user_id INT NOT NULL AUTO_INCREMENT,
-    company_id INT NOT NULL,
-    user_id INT NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'member',
-    joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (company_user_id),
-    UNIQUE INDEX company_user_UNIQUE (company_id, user_id) VISIBLE,
-    INDEX idx_user_companies (user_id ASC) VISIBLE,
-    
-    CONSTRAINT fk_company_user_company
-        FOREIGN KEY (company_id)
-        REFERENCES tab_company (company_id)
-        ON DELETE CASCADE
-        ON UPDATE NO ACTION,
-        
-    CONSTRAINT fk_company_user_user
-        FOREIGN KEY (user_id)
-        REFERENCES tab_user (user_id)
-        ON DELETE CASCADE
         ON UPDATE NO ACTION
 ) ENGINE = InnoDB CHARACTER SET=utf8mb4;
 

@@ -20,7 +20,7 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
-                "description": "Login",
+                "description": "Login user and return user data with authentication tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -46,7 +46,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.LoginResponse"
+                            "$ref": "#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AuthResponse"
                         }
                     },
                     "400": {
@@ -155,7 +155,7 @@ const docTemplate = `{
         },
         "/auth/refresh-token": {
             "post": {
-                "description": "Generate a new token using the refresh token",
+                "description": "Generate a new access token using the refresh token",
                 "consumes": [
                     "application/json"
                 ],
@@ -1038,7 +1038,7 @@ const docTemplate = `{
         },
         "/users": {
             "post": {
-                "description": "Create a new user account",
+                "description": "Create a new user account and return authentication tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -1064,7 +1064,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User"
+                            "$ref": "#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AuthResponse"
                         }
                     },
                     "400": {
@@ -1256,22 +1256,36 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "auth": {
+                    "$ref": "#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.LoginResponse"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.User"
+                }
+            }
+        },
         "github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.CompanyRequest": {
             "type": "object",
             "required": [
                 "name"
             ],
             "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "industry": {
                     "type": "string"
+                },
+                "is_default": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 2
+                },
+                "role": {
+                    "type": "string"
                 },
                 "size": {
                     "type": "string",
@@ -1290,13 +1304,16 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
-                "description": {
-                    "type": "string"
-                },
                 "industry": {
                     "type": "string"
                 },
+                "is_default": {
+                    "type": "boolean"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 },
                 "size": {

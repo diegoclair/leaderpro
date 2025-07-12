@@ -14,10 +14,11 @@ func validateTwoCompanies(t *testing.T, companyExpected entity.Company, companyT
 	require.NotZero(t, companyToCompare.ID)
 	require.Equal(t, companyExpected.UUID, companyToCompare.UUID)
 	require.Equal(t, companyExpected.Name, companyToCompare.Name)
-	require.Equal(t, companyExpected.Description, companyToCompare.Description)
 	require.Equal(t, companyExpected.Industry, companyToCompare.Industry)
 	require.Equal(t, companyExpected.Size, companyToCompare.Size)
-	require.Equal(t, companyExpected.CreatedBy, companyToCompare.CreatedBy)
+	require.Equal(t, companyExpected.Role, companyToCompare.Role)
+	require.Equal(t, companyExpected.IsDefault, companyToCompare.IsDefault)
+	require.Equal(t, companyExpected.UserOwnerID, companyToCompare.UserOwnerID)
 	require.Equal(t, companyExpected.Active, companyToCompare.Active)
 }
 
@@ -29,10 +30,11 @@ func createRandomCompany(t *testing.T) entity.Company {
 	company := entity.Company{
 		UUID:        uuid.NewV4().String(),
 		Name:        "Test Company",
-		Description: "A test company for unit tests",
 		Industry:    "Technology",
 		Size:        "small",
-		CreatedBy:   user.ID,
+		Role:        "Tech Lead",
+		IsDefault:   true,
+		UserOwnerID: user.ID,
 		Active:      true,
 	}
 
@@ -51,10 +53,11 @@ func TestCreateCompany(t *testing.T) {
 	company := entity.Company{
 		UUID:        uuid.NewV4().String(),
 		Name:        "New Company",
-		Description: "A brand new company",
 		Industry:    "Finance",
 		Size:        "medium",
-		CreatedBy:   user.ID,
+		Role:        "Manager",
+		IsDefault:   false,
+		UserOwnerID: user.ID,
 		Active:      true,
 	}
 
@@ -81,20 +84,22 @@ func TestGetCompaniesByUser(t *testing.T) {
 	company1 := entity.Company{
 		UUID:        uuid.NewV4().String(),
 		Name:        "Company 1",
-		Description: "First company",
 		Industry:    "Technology",
 		Size:        "small",
-		CreatedBy:   user.ID,
+		Role:        "CTO",
+		IsDefault:   true,
+		UserOwnerID: user.ID,
 		Active:      true,
 	}
 
 	company2 := entity.Company{
 		UUID:        uuid.NewV4().String(),
 		Name:        "Company 2",
-		Description: "Second company",
 		Industry:    "Healthcare",
 		Size:        "large",
-		CreatedBy:   user.ID,
+		Role:        "Lead Developer",
+		IsDefault:   false,
+		UserOwnerID: user.ID,
 		Active:      true,
 	}
 
@@ -107,12 +112,7 @@ func TestGetCompaniesByUser(t *testing.T) {
 	require.NoError(t, err)
 	require.NotZero(t, companyID2)
 
-	// Add user to companies
-	err = testMysql.Company().AddUserToCompany(ctx, companyID1, user.ID, "owner")
-	require.NoError(t, err)
-
-	err = testMysql.Company().AddUserToCompany(ctx, companyID2, user.ID, "admin")
-	require.NoError(t, err)
+	// Companies are already owned by the user through UserOwnerID
 
 	// Get companies by user
 	companies, err := testMysql.Company().GetCompaniesByUser(ctx, user.ID)
@@ -134,10 +134,11 @@ func TestUpdateCompany(t *testing.T) {
 
 	// Update company fields
 	updatedCompany := entity.Company{
-		Name:        "Updated Company Name",
-		Description: "Updated description",
-		Industry:    "Updated Industry",
-		Size:        "enterprise",
+		Name:      "Updated Company Name",
+		Industry:  "Updated Industry",
+		Size:      "enterprise",
+		Role:      "Senior Manager",
+		IsDefault: false,
 	}
 
 	err := testMysql.Company().UpdateCompany(ctx, company.ID, updatedCompany)
@@ -147,7 +148,6 @@ func TestUpdateCompany(t *testing.T) {
 	retrievedCompany, err := testMysql.Company().GetCompanyByUUID(ctx, company.UUID)
 	require.NoError(t, err)
 	require.Equal(t, updatedCompany.Name, retrievedCompany.Name)
-	require.Equal(t, updatedCompany.Description, retrievedCompany.Description)
 	require.Equal(t, updatedCompany.Industry, retrievedCompany.Industry)
 	require.Equal(t, updatedCompany.Size, retrievedCompany.Size)
 }
@@ -164,44 +164,6 @@ func TestDeleteCompany(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestAddUserToCompany(t *testing.T) {
-	ctx := context.Background()
-	company := createRandomCompany(t)
-	user := createRandomUserForTests(t)
-
-	err := testMysql.Company().AddUserToCompany(ctx, company.ID, user.ID, "member")
-	require.NoError(t, err)
-
-	// Verify user is now part of the company
-	companies, err := testMysql.Company().GetCompaniesByUser(ctx, user.ID)
-	require.NoError(t, err)
-	require.Len(t, companies, 1)
-	require.Equal(t, company.UUID, companies[0].UUID)
-}
-
-func TestRemoveUserFromCompany(t *testing.T) {
-	ctx := context.Background()
-	company := createRandomCompany(t)
-	user := createRandomUserForTests(t)
-
-	// First add user to company
-	err := testMysql.Company().AddUserToCompany(ctx, company.ID, user.ID, "member")
-	require.NoError(t, err)
-
-	// Verify user is part of the company
-	companies, err := testMysql.Company().GetCompaniesByUser(ctx, user.ID)
-	require.NoError(t, err)
-	require.Len(t, companies, 1)
-
-	// Remove user from company
-	err = testMysql.Company().RemoveUserFromCompany(ctx, company.ID, user.ID)
-	require.NoError(t, err)
-
-	// Verify user is no longer part of the company
-	companies, err = testMysql.Company().GetCompaniesByUser(ctx, user.ID)
-	require.NoError(t, err)
-	require.Len(t, companies, 0)
-}
 
 // Error tests with mocks
 func TestCreateCompanyErrorsWithMock(t *testing.T) {
@@ -237,14 +199,3 @@ func TestDeleteCompanyErrorsWithMock(t *testing.T) {
 	})
 }
 
-func TestAddUserToCompanyErrorsWithMock(t *testing.T) {
-	testForUpdateDeleteErrorsWithMock(t, func(db *sql.DB) error {
-		return newCompanyRepo(db).AddUserToCompany(context.Background(), 1, 1, "member")
-	})
-}
-
-func TestRemoveUserFromCompanyErrorsWithMock(t *testing.T) {
-	testForUpdateDeleteErrorsWithMock(t, func(db *sql.DB) error {
-		return newCompanyRepo(db).RemoveUserFromCompany(context.Background(), 1, 1)
-	})
-}
