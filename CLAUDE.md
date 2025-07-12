@@ -162,13 +162,19 @@ frontend/src/
 - Dark/light theme toggle
 - Responsive design
 
+### ✅ Recently Implemented
+- **Authentication System** - User login/signup with PASETO tokens
+- **Company Management** - Create, read companies with role/default settings
+- **User-Company Association** - Direct ownership model (simplified from many-to-many)
+- **Onboarding Flow** - Automatic onboarding when no companies exist
+- **Database Integration** - Full MySQL integration with Clean Architecture
+
 ### ⏳ Pending Implementation
-1. **Backend API** - Implement LeaderPro endpoints in Go boilerplate
+1. **Person Management API** - Complete person CRUD endpoints
 2. **AI Integration** - OpenAI/Claude for contextual suggestions
-3. **Authentication** - User login/signup
-4. **Vector Database** - AI memory with Pinecone/Weaviate
-5. **Real-time Sync** - WebSockets for collaboration
-6. **Calendar Integration** - Google/Outlook
+3. **Vector Database** - AI memory with Pinecone/Weaviate
+4. **Real-time Sync** - WebSockets for collaboration
+5. **Calendar Integration** - Google/Outlook
 
 ## AI Context Pipeline (To Implement)
 1. **Data Collection**: User inputs, profiles, calendar
@@ -210,11 +216,26 @@ await apiClient.authDelete('/companies/123')
 ### TypeScript (Frontend)
 ```typescript
 // Zustand store pattern
-interface StoreState {
-  items: Item[]
-  addItem: (item: Item) => void
-  updateItem: (id: string, updates: Partial<Item>) => void
+interface CompanyState {
+  companies: Company[]
+  activeCompany: Company | null
+  isLoading: boolean
+  
+  loadCompanies: () => Promise<void>
+  addCompany: (company: Company) => void
 }
+
+// Onboarding flow - automatic based on data
+const needsOnboarding = isAuthenticated && companies.length === 0
+
+// Company creation with backend sync
+const response = await apiClient.authPost('/companies', {
+  name: 'TechCorp',
+  industry: 'technology',
+  size: 'medium',
+  role: 'CTO',
+  is_default: true
+})
 
 // Date formatting
 formatRelativeDate(date) // "2 days ago"
@@ -227,13 +248,30 @@ formatDate(date, "PPP") // "January 7, 2025"
 // transport -> application -> domain -> infra
 
 // Repository interface (domain layer)
-type UserRepository interface {
-    GetByID(ctx context.Context, id string) (*User, error)
+type CompanyRepository interface {
+    CreateCompany(ctx context.Context, company entity.Company) (int64, error)
+    GetCompaniesByUser(ctx context.Context, userID int64) ([]entity.Company, error)
 }
 
 // Use case (application layer)
-type GetUserUseCase struct {
-    userRepo UserRepository
+type CompanyService struct {
+    dm      contract.DataManager
+    authApp contract.AuthApp
+}
+
+func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Company) (entity.Company, error) {
+    userID, err := s.authApp.GetLoggedUserID(ctx)
+    if err != nil {
+        return company, err
+    }
+    company.UserOwnerID = userID
+    
+    companyID, err := s.dm.Company().CreateCompany(ctx, company)
+    if err != nil {
+        return company, err
+    }
+    company.ID = companyID
+    return company, nil
 }
 ```
 
@@ -251,11 +289,12 @@ type GetUserUseCase struct {
 
 ## Important Notes
 
-- **Current Status**: Frontend completed, backend needs LeaderPro implementation
+- **Current Status**: Frontend completed, backend authentication + company management implemented
 - **Live Demo**: https://diegoclair.github.io/leaderpro/
-- **Data Storage**: Currently localStorage (frontend only)
-- **AI Features**: Mocked in frontend
-- **Next Steps**: Implement backend API endpoints for LeaderPro features
+- **Data Storage**: MySQL database for companies/users, localStorage for frontend state
+- **AI Features**: Mocked in frontend (backend integration pending)
+- **Authentication**: Full PASETO token-based auth with refresh tokens
+- **Next Steps**: Implement person management API and AI integration
 
 ## Key Files and Entry Points
 

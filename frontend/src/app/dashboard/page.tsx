@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
-import { useActiveCompany, useLoadCompanies } from '@/lib/stores/companyStore'
+import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
 import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
 import { getMockDaysAgo, getMockAverageDays } from '@/lib/utils/dates'
@@ -20,8 +20,16 @@ export default function Dashboard() {
   const { isLoading, shouldRender, needsOnboarding, completeOnboarding } = useAuthRedirect({ requireAuth: true })
   const router = useRouter()
   const activeCompany = useActiveCompany()
+  const companies = useCompanyStore(state => state.companies)
   const loadCompanies = useLoadCompanies()
   const loadPeopleData = useLoadPeopleData()
+
+  // Carregar empresas uma única vez quando o componente monta
+  useEffect(() => {
+    if (companies.length === 0) {
+      loadCompanies()
+    }
+  }, []) // Array vazio = executa apenas uma vez
   
   const allPeople = useAllPeopleFromStore()
   const aiSuggestions = useAllAISuggestions()
@@ -88,18 +96,11 @@ export default function Dashboard() {
   }, [people])
 
   useEffect(() => {
-    const initializeData = async () => {
-      // Sempre carregar empresas ao entrar no dashboard
-      console.log('📊 Dashboard: Carregando empresas...')
-      await loadCompanies()
+    // Carregar pessoas quando estiver pronto (após empresas carregadas)
+    if (shouldRender && !needsOnboarding && activeCompany) {
       loadPeopleData()
     }
-    
-    // Só carregar se estiver autenticado e renderizando
-    if (shouldRender && !needsOnboarding) {
-      initializeData()
-    }
-  }, [loadCompanies, loadPeopleData, shouldRender, needsOnboarding])
+  }, [loadPeopleData, shouldRender, needsOnboarding, activeCompany])
 
   // Mostrar loading se estiver carregando auth ou não deve renderizar
   if (isLoading || !shouldRender) {
@@ -276,10 +277,12 @@ export default function Dashboard() {
                 Gerencie 1:1s e acompanhe o desenvolvimento de {people.length} pessoa{people.length !== 1 ? 's' : ''} na {activeCompany.name}
               </p>
             </div>
-            <Button className="gap-2" size="lg">
-              <Users className="h-4 w-4" />
-              Adicionar pessoa
-            </Button>
+            {people.length > 0 && (
+              <Button className="gap-2" size="lg">
+                <Users className="h-4 w-4" />
+                Adicionar pessoa
+              </Button>
+            )}
           </div>
 
           {people.length === 0 ? (

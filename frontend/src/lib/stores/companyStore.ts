@@ -74,6 +74,11 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
   },
 
   loadCompanies: async () => {
+    const { isLoading } = get()
+    
+    // Evitar múltiplas chamadas simultâneas
+    if (isLoading) return
+    
     set({ isLoading: true })
     
     try {

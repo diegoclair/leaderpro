@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
-import { useCompanyStore, useLoadCompanies } from '@/lib/stores/companyStore'
+import { useCompanyStore } from '@/lib/stores/companyStore'
 
 interface UseAuthRedirectOptions {
   requireAuth?: boolean
@@ -13,71 +13,33 @@ export function useAuthRedirect({
   redirectTo 
 }: UseAuthRedirectOptions = {}) {
   const router = useRouter()
-  const { isAuthenticated, tokens, isLoading } = useAuthStore()
-  const { companies } = useCompanyStore()
-  const loadCompanies = useLoadCompanies()
-  const [needsOnboarding, setNeedsOnboarding] = useState(false)
-  const [companiesLoaded, setCompaniesLoaded] = useState(false)
-
-  // Carregar empresas quando autenticado
-  useEffect(() => {
-    const loadUserCompanies = async () => {
-      if (isAuthenticated && !companiesLoaded) {
-        console.log('🔐 AuthRedirect: Usuário autenticado, carregando empresas...')
-        try {
-          await loadCompanies()
-          console.log('✅ AuthRedirect: Empresas carregadas, total:', companies.length)
-        } catch (error) {
-          console.error('❌ AuthRedirect: Erro ao carregar empresas:', error)
-        } finally {
-          setCompaniesLoaded(true)
-        }
-      }
-    }
-    
-    loadUserCompanies()
-  }, [isAuthenticated, companiesLoaded, loadCompanies])
+  const { isAuthenticated, isLoading } = useAuthStore()
+  const companies = useCompanyStore(state => state.companies)
 
   useEffect(() => {
-    // Se ainda está carregando auth, não faz nada
     if (isLoading) return
-    
-    // Se autenticado mas ainda não carregou empresas, aguardar
-    if (isAuthenticated && !companiesLoaded) return
 
-    // Se requer autenticação mas não está autenticado
+    // Redirecionar se não autenticado e requer auth
     if (requireAuth && !isAuthenticated) {
       router.push(redirectTo || '/auth/login')
       return
     }
 
-    // Se não requer autenticação mas está autenticado (páginas de auth)
-    if (!requireAuth && isAuthenticated) {
-      const hasCompanies = companies.length > 0
-      
-      if (!hasCompanies) {
-        setNeedsOnboarding(true)
-      } else {
-        router.push('/dashboard')
-      }
-      return
+    // Redirecionar se autenticado mas está em página de auth
+    if (!requireAuth && isAuthenticated && companies.length > 0) {
+      router.push('/dashboard')
     }
+  }, [isAuthenticated, isLoading, requireAuth, router, redirectTo, companies.length])
 
-    // Se está autenticado e requer auth, verificar onboarding
-    if (requireAuth && isAuthenticated && companiesLoaded) {
-      const hasCompanies = companies.length > 0
-      
-      console.log('📊 Empresas carregadas:', companies.length, hasCompanies ? '- Dashboard normal' : '- Iniciando onboarding')
-      
-      setNeedsOnboarding(!hasCompanies)
-    }
-  }, [isAuthenticated, requireAuth, redirectTo, router, isLoading, companies.length, companiesLoaded])
+  // Estados simples
+  const needsOnboarding = isAuthenticated && companies.length === 0
+  const shouldRender = requireAuth ? isAuthenticated : !isAuthenticated
 
   return {
     isAuthenticated,
     isLoading,
     needsOnboarding,
-    shouldRender: requireAuth ? isAuthenticated : !isAuthenticated,
-    completeOnboarding: () => setNeedsOnboarding(false)
+    shouldRender,
+    completeOnboarding: () => router.push('/dashboard')
   }
 }

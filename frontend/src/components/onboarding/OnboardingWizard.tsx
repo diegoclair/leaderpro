@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building2, Users, CheckCircle } from 'lucide-react'
-import { useLoadCompanies } from '@/lib/stores/companyStore'
+import { useAddCompany } from '@/lib/stores/companyStore'
 import { apiClient } from '@/lib/stores/authStore'
 
 interface OnboardingWizardProps {
@@ -17,7 +17,7 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const router = useRouter()
-  const loadCompanies = useLoadCompanies()
+  const addCompany = useAddCompany()
   
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -55,12 +55,19 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       const response = await apiClient.authPost('/companies', companyData)
       console.log('✅ Empresa criada com sucesso:', response)
       
-      // Recarregar empresas para atualizar a lista
-      console.log('🔄 Recarregando empresas...')
-      await loadCompanies()
+      // Adicionar empresa diretamente ao store
+      addCompany({
+        id: response.uuid,
+        uuid: response.uuid,
+        name: response.name,
+        industry: response.industry || '',
+        size: response.size || '',
+        role: response.role || formData.userRole,
+        isDefault: response.is_default || true,
+        createdAt: new Date(response.created_at),
+        updatedAt: new Date(response.created_at)
+      })
       
-      // Marcar onboarding como completo
-      localStorage.setItem('onboarding_completed', 'true')
       
       // Chamar callback
       onComplete()

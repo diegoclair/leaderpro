@@ -407,32 +407,41 @@ NEXT_PUBLIC_API_URL=http://localhost:5000  # URL do backend (default se não def
 
 ## Status de Implementação
 
-### ✅ Concluído
+### ✅ Recentemente Implementado
+1. **Sistema de Autenticação**: JWT/PASETO completo com refresh automático
+2. **Gerenciamento de Empresas**: Criação, listagem e seleção de empresas
+3. **Associação Usuário-Empresa**: Modelo simplificado onde cada empresa pertence diretamente a um usuário
+4. **Fluxo de Onboarding**: Wizard inicial para criação da primeira empresa
+5. **Integração Banco de Dados**: Criação real de empresas no backend MySQL
+6. **API Endpoints**: `/companies` (POST/GET), `/users` (POST), `/auth/*` implementados
+
+### ✅ Frontend Completo
 1. **Setup e Base**: Projeto Next.js 15.3.5 + TailwindCSS v4 + shadcn/ui
 2. **Arquitetura**: Estrutura modular com components/hooks/stores/utils
 3. **Autenticação**: Sistema completo JWT com refresh automático
 4. **API Layer**: authStore + authFetch interceptor integrado com backend
-5. **Stores Zustand**: authStore (real) + companyStore + peopleStore (mock)
+5. **Stores Zustand**: authStore (real) + companyStore (real) + peopleStore (mock)
 6. **Layout**: AppHeader, ThemeProvider, AuthGuard, middleware de proteção
 7. **Páginas**: Landing, Auth (login/register), Dashboard, Profile
 8. **Dashboard**: Cards de pessoas, métricas, seletor de empresa
 9. **Perfis**: Abas completas (info, histórico, feedback, chat IA)
 10. **Sistema @mentions**: Autocomplete + criação automática de pessoas
-11. **Onboarding**: Wizard inicial para novos usuários
+11. **Onboarding**: Wizard inicial para novos usuários integrado com backend
 12. **Feedbacks cruzados**: Sistema de menções entre perfis
 
 ### ⏳ Em Desenvolvimento
-1. **API Business**: Endpoints de empresas, pessoas e 1:1s no backend
-2. **Migração Mock→API**: Substituir localStorage por API real
+1. **API Business**: Endpoints de pessoas e 1:1s no backend
+2. **Migração Mock→API**: Migrar peopleStore para usar APIs reais
 3. **IA Contextual**: Integração OpenAI/Claude para suggestions
 
 ### 📋 Próximos Passos
-1. **Backend APIs**: Implementar endpoints business no backend Go
-2. **Data Migration**: Migrar stores para usar APIs reais
-3. **IA Integration**: Sistema de suggestions contextuais
-4. **Notificações**: Sistema de notificações em tempo real
-5. **Mobile**: Responsividade completa mobile-first
-6. **Testes**: Suíte de testes unitários e E2E
+1. **People API**: Implementar endpoints de pessoas no backend Go
+2. **1:1 Meetings API**: Implementar endpoints de reuniões 1:1
+3. **Data Migration**: Migrar peopleStore para usar APIs reais
+4. **IA Integration**: Sistema de suggestions contextuais
+5. **Notificações**: Sistema de notificações em tempo real
+6. **Mobile**: Responsividade completa mobile-first
+7. **Testes**: Suíte de testes unitários e E2E
 
 ## Notas Importantes
 

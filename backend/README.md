@@ -48,16 +48,57 @@ LeaderPro Backend is an AI-powered platform that amplifies leadership intelligen
 
 The platform maintains perfect memory of every team interaction and suggests contextual actions to help leaders become more effective. Built with Go, it provides a solid foundation for scalable leadership intelligence features.
 
+## Current Architecture Implementation
+
+### Simplified Company-User Relationship
+The application uses a simplified ownership model where:
+- Each company belongs directly to one user via `user_owner_id`
+- No junction table (`tab_company_user`) needed
+- Each user can own multiple companies
+- Frontend onboarding creates the user's first company automatically
+
+### Company Entity Structure
+```sql
+CREATE TABLE tab_company (
+    company_id INT NOT NULL AUTO_INCREMENT,
+    company_uuid CHAR(36) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    industry VARCHAR(100) NULL,
+    size VARCHAR(50) NULL,
+    role VARCHAR(200) NULL,
+    is_default TINYINT(1) NOT NULL DEFAULT 0,
+    user_owner_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY (company_id),
+    UNIQUE KEY uk_company_uuid (company_uuid),
+    KEY fk_company_user (user_owner_id),
+    CONSTRAINT fk_company_user FOREIGN KEY (user_owner_id) REFERENCES tab_user (user_id)
+)
+```
+
+### Onboarding Flow Integration
+1. **User Registration**: Creates user account in backend
+2. **Auto-login**: Returns authentication tokens immediately
+3. **Company Check**: Frontend checks if user has companies via `GET /companies`
+4. **Onboarding Wizard**: If no companies, shows 3-step wizard
+5. **Company Creation**: `POST /companies` creates first company with `is_default: true`
+6. **Dashboard Redirect**: Automatically loads dashboard with new company
+
 ## Features
 
-### ✅ Authentication & User Management
+### ✅ Recently Implemented (Backend + Frontend Integration)
 - **JWT Authentication**: PASETO-based token system with 15-minute access tokens and 24-hour refresh tokens
 - **User Registration**: Streamlined registration with automatic login (single API call)
 - **User Profiles**: Complete profile management with update capabilities
 - **Session Management**: Secure session tracking with Redis cache
+- **Company Management**: Full CRUD operations with simplified user-company ownership model
+- **User-Company Association**: Direct ownership via `user_owner_id` field (no junction table)
+- **Onboarding Flow**: Frontend wizard integrated with backend company creation
+- **Database Integration**: Real company creation and retrieval from MySQL
 
-### ✅ Core Platform Features  
-- **Company Management**: Multi-company support for team organization
+### 🙧 Planned Core Features  
 - **Person Profiles**: Comprehensive team member profile system
 - **1:1 Meetings**: Meeting management and note-taking system
 - **Feedback Tracking**: Direct and mentioned feedback collection
@@ -205,7 +246,7 @@ curl -X POST http://localhost:5000/auth/login \
 #### 4. Get User Profile (Protected Route)
 ```bash
 curl -X GET http://localhost:5000/users/profile \
-  -H "Authorization: v2.local.Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+  -H "user-token: v2.local.Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
 ```
 ```json
 {
@@ -214,6 +255,50 @@ curl -X GET http://localhost:5000/users/profile \
   "email": "john.doe@example.com",
   "phone": "+1234567890"
 }
+```
+
+#### 5. Create Company (Onboarding)
+```bash
+curl -X POST http://localhost:5000/companies \
+  -H "Content-Type: application/json" \
+  -H "user-token: v2.local.Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..." \
+  -d '{
+    "name": "Tech Startup",
+    "industry": "technology",
+    "size": "6-15",
+    "role": "CTO",
+    "is_default": true
+  }'
+```
+```json
+{
+  "uuid": "company-uuid-here",
+  "name": "Tech Startup",
+  "industry": "technology",
+  "size": "6-15",
+  "role": "CTO",
+  "is_default": true,
+  "created_at": "2025-01-07T10:15:00Z"
+}
+```
+
+#### 6. List User Companies
+```bash
+curl -X GET http://localhost:5000/companies \
+  -H "user-token: v2.local.Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+```
+```json
+[
+  {
+    "uuid": "company-uuid-here",
+    "name": "Tech Startup",
+    "industry": "technology",
+    "size": "6-15",
+    "role": "CTO",
+    "is_default": true,
+    "created_at": "2025-01-07T10:15:00Z"
+  }
+]
 ```
 
 
