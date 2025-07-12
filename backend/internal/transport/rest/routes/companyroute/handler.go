@@ -38,7 +38,7 @@ func (s *Handler) handleCreateCompany(c echo.Context) error {
 		return routeutils.ResponseInvalidRequestBody(c, err)
 	}
 
-	err = s.companyService.CreateCompany(ctx, input.ToEntity())
+	err = s.companyService.CreateCompany(ctx, input.ToEntity(), input.IsDefault)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -49,7 +49,7 @@ func (s *Handler) handleCreateCompany(c echo.Context) error {
 func (s *Handler) handleGetCompanies(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companies, err := s.companyService.GetUserCompanies(ctx)
+	companies, err := s.companyService.GetUserCompaniesWithDefault(ctx)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -57,7 +57,7 @@ func (s *Handler) handleGetCompanies(c echo.Context) error {
 	response := []viewmodel.CompanyResponse{}
 	for _, company := range companies {
 		item := viewmodel.CompanyResponse{}
-		item.FillFromEntity(company)
+		item.FillFromUserCompany(company)
 		response = append(response, item)
 	}
 

@@ -4,16 +4,13 @@ import { Company, Person, OneOnOneSession, Feedback, AISuggestion } from '../typ
 export const mockCompanies: Company[] = [
   {
     id: '1',
+    uuid: '1',
     name: 'TechCorp',
-    isDefault: true,
+    description: 'Empresa de tecnologia para testes',
+    industry: 'technology',
+    size: 'medium',
+    isDefault: false, // Não será mais default por padrão
     createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-07-01')
-  },
-  {
-    id: '2', 
-    name: 'StartupXYZ',
-    isDefault: false,
-    createdAt: new Date('2024-06-01'),
     updatedAt: new Date('2024-07-01')
   }
 ]

@@ -230,15 +230,25 @@ const useAuthStore = create<AuthStore>()(
 )
 ```
 
-#### HTTP Interceptor com Renovação Automática
+#### API Client Centralizado
 ```typescript
-// authFetch - Interceptor para requisições autenticadas
-export const authFetch = async (url: string, options: RequestInit = {}) => {
-  // 1. Adiciona automaticamente Authorization header
-  // 2. Se receber 401, tenta renovar token automaticamente
-  // 3. Retenta requisição com novo token
-  // 4. Se falhar, limpa auth e redireciona para login
-}
+// Client centralizado com autenticação automática
+import { apiClient } from '@/lib/stores/authStore'
+
+// Requisições públicas (sem autenticação)
+apiClient.get('/auth/login')
+apiClient.post('/users', userData)
+
+// Requisições autenticadas (token incluído automaticamente)
+apiClient.authGet('/users/profile')
+apiClient.authPost('/auth/logout')
+apiClient.authPut('/users/profile', updateData)
+
+// Funcionalidades automáticas:
+// 1. Adiciona automaticamente user-token header
+// 2. Renovação automática em caso de 401
+// 3. Limpeza de auth se renovação falhar
+// 4. Configuração centralizada de headers
 ```
 
 #### Endpoints Implementados

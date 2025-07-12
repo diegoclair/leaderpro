@@ -53,7 +53,8 @@ export default function RegisterPage() {
       })
       router.push('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar conta')
+      // Erro será mostrado via notificação pelo authStore
+      // setError não é mais necessário
     }
   }
 

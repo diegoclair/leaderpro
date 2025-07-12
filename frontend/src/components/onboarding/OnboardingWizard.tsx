@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building2, Users, CheckCircle } from 'lucide-react'
 import { useCompanyStore } from '@/lib/stores/companyStore'
+import { apiClient } from '@/lib/stores/authStore'
 
 interface OnboardingWizardProps {
   onComplete: () => void
@@ -39,21 +40,17 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     setIsLoading(true)
     
     try {
-      // Criar empresa com dados do wizard
-      const newCompany = {
-        id: Date.now().toString(), // Temporary ID
+      // Criar empresa no backend
+      const companyData = {
         name: formData.companyName,
         description: `Empresa de ${formData.industry}`,
         industry: formData.industry,
         size: formData.teamSize,
-        isDefault: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        is_default: true // Primeira empresa sempre é default
       }
 
-      // Adicionar ao store
-      addCompany(newCompany)
-      setActiveCompany(newCompany)
+      // Chamar API para criar empresa
+      await apiClient.authPost('/companies', companyData)
       
       // Marcar onboarding como completo
       localStorage.setItem('onboarding_completed', 'true')
@@ -66,6 +63,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       
     } catch (error) {
       console.error('Erro ao criar empresa:', error)
+      // Mostrar erro para usuário se necessário
     } finally {
       setIsLoading(false)
     }

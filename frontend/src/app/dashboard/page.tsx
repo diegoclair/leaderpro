@@ -88,8 +88,12 @@ export default function Dashboard() {
   }, [people])
 
   useEffect(() => {
-    loadCompanies()
-    loadPeopleData()
+    const initializeData = async () => {
+      await loadCompanies()
+      loadPeopleData()
+    }
+    
+    initializeData()
   }, [loadCompanies, loadPeopleData])
 
   // Mostrar loading se estiver carregando auth ou não deve renderizar

@@ -139,3 +139,25 @@ func (s *authApp) Logout(ctx context.Context, accessToken string) (err error) {
 
 	return nil
 }
+
+func (s *authApp) GetLoggedUserID(ctx context.Context) (int64, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	userUUID := ctx.Value(infra.UserUUIDKey)
+	if userUUID == nil {
+		s.log.Error(ctx, "user UUID not found in context")
+		return 0, resterrors.NewUnauthorizedError("user not authenticated")
+	}
+
+	userID, err := s.dm.User().GetUserIDByUUID(ctx, userUUID.(string))
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return 0, resterrors.NewNotFoundError("user not found")
+		}
+		s.log.Errorw(ctx, "error getting user ID by UUID", logger.Err(err))
+		return 0, err
+	}
+
+	return userID, nil
+}

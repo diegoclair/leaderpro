@@ -55,6 +55,37 @@ func (r *companyRepo) parseCompany(row scanner) (company entity.Company, err err
 	return company, nil
 }
 
+func (r *companyRepo) parseUserCompany(row scanner) (userCompany entity.UserCompany, err error) {
+	var companyUserID, companyID, userID int64
+	
+	err = row.Scan(
+		// Company fields
+		&userCompany.Company.ID,
+		&userCompany.Company.UUID,
+		&userCompany.Company.Name,
+		&userCompany.Company.Description,
+		&userCompany.Company.Industry,
+		&userCompany.Company.Size,
+		&userCompany.Company.CreatedAt,
+		&userCompany.Company.UpdatedAt,
+		&userCompany.Company.CreatedBy,
+		&userCompany.Company.Active,
+		// UserCompany fields (we ignore IDs for UserCompany as they're embedded)
+		&companyUserID,
+		&companyID,
+		&userID,
+		&userCompany.Role,
+		&userCompany.IsDefault,
+		&userCompany.JoinedAt,
+	)
+
+	if err != nil {
+		return userCompany, err
+	}
+
+	return userCompany, nil
+}
+
 func (r *companyRepo) CreateCompany(ctx context.Context, company entity.Company) (createdID int64, err error) {
 	query := `
 		INSERT INTO tab_company (
@@ -156,6 +187,62 @@ func (r *companyRepo) GetCompaniesByUser(ctx context.Context, userID int64) (com
 		companies = append(companies, company)
 	}
 
+	if err = rows.Err(); err != nil {
+		return companies, mysqlutils.HandleMySQLError(err)
+	}
+
+	return companies, nil
+}
+
+func (r *companyRepo) GetUserCompaniesWithDefault(ctx context.Context, userID int64) (companies []entity.UserCompany, err error) {
+	query := `
+		SELECT 
+			c.company_id,
+			c.company_uuid,
+			c.name,
+			c.description,
+			c.industry,
+			c.size,
+			c.created_at,
+			c.updated_at,
+			c.created_by,
+			c.active,
+			cu.company_user_id,
+			cu.company_id,
+			cu.user_id,
+			cu.role,
+			cu.is_default,
+			cu.joined_at
+		FROM tab_company c
+		INNER JOIN tab_company_user cu ON c.company_id = cu.company_id
+		WHERE cu.user_id = ? AND c.active = 1
+		ORDER BY cu.is_default DESC, c.created_at DESC
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return companies, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, userID)
+	if err != nil {
+		return companies, mysqlutils.HandleMySQLError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		userCompany, err := r.parseUserCompany(rows)
+		if err != nil {
+			return companies, mysqlutils.HandleMySQLError(err)
+		}
+		companies = append(companies, userCompany)
+	}
+
+	if err = rows.Err(); err != nil {
+		return companies, mysqlutils.HandleMySQLError(err)
+	}
+
 	return companies, nil
 }
 
@@ -233,6 +320,47 @@ func (r *companyRepo) AddUserToCompany(ctx context.Context, companyID, userID in
 	defer stmt.Close()
 
 	_, err = stmt.ExecContext(ctx, companyID, userID, role)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+
+	return nil
+}
+
+// SetCompanyAsDefault sets a company as default for a user
+func (r *companyRepo) SetCompanyAsDefault(ctx context.Context, companyID, userID int64) (err error) {
+	// First, remove default flag from all user companies
+	removeDefaultQuery := `
+		UPDATE tab_company_user
+		SET is_default = 0
+		WHERE user_id = ?
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, removeDefaultQuery)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, userID)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+
+	// Then set the specified company as default
+	setDefaultQuery := `
+		UPDATE tab_company_user
+		SET is_default = 1
+		WHERE company_id = ? AND user_id = ?
+	`
+
+	stmt2, err := r.db.PrepareContext(ctx, setDefaultQuery)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt2.Close()
+
+	_, err = stmt2.ExecContext(ctx, companyID, userID)
 	if err != nil {
 		return mysqlutils.HandleMySQLError(err)
 	}

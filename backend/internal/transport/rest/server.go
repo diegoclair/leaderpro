@@ -61,13 +61,13 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, ca
 	}
 
 	// shared auth helper
-	authHelper := shared.NewAuthHelper(services.AuthService, services.UserService, authToken)
+	authHelper := shared.NewAuthHelper(services.Auth, services.User, authToken)
 
 	pingHandler := pingroute.NewHandler()
-	authHandler := authroute.NewHandler(services.AuthService, authToken, authHelper)
-	companyHandler := companyroute.NewHandler(services.CompanyService)
-	personHandler := personroute.NewHandler(services.PersonService)
-	userHandler := userroute.NewHandler(services.UserService, authHelper)
+	authHandler := authroute.NewHandler(services.Auth, authToken, authHelper)
+	companyHandler := companyroute.NewHandler(services.Company)
+	personHandler := personroute.NewHandler(services.Person)
+	userHandler := userroute.NewHandler(services.User, authHelper)
 
 	pingRoute := pingroute.NewRouter(pingHandler)
 	authRoute := authroute.NewRouter(authHandler)

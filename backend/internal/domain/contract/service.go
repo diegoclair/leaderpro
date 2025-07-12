@@ -23,12 +23,14 @@ type AuthApp interface {
 	CreateSession(ctx context.Context, session dto.Session) (err error)
 	GetSessionByUUID(ctx context.Context, sessionUUID string) (session dto.Session, err error)
 	Logout(ctx context.Context, accessToken string) (err error)
+	GetLoggedUserID(ctx context.Context) (userID int64, err error)
 }
 
 type CompanyApp interface {
-	CreateCompany(ctx context.Context, company entity.Company) (err error)
+	CreateCompany(ctx context.Context, company entity.Company, isDefault bool) (err error)
 	GetCompanyByUUID(ctx context.Context, companyUUID string) (company entity.Company, err error)
 	GetUserCompanies(ctx context.Context) (companies []entity.Company, err error)
+	GetUserCompaniesWithDefault(ctx context.Context) (companies []entity.UserCompany, err error)
 	UpdateCompany(ctx context.Context, companyUUID string, company entity.Company) (err error)
 	DeleteCompany(ctx context.Context, companyUUID string) (err error)
 	AddUserToCompany(ctx context.Context, companyUUID string, userEmail string, role string) (err error)

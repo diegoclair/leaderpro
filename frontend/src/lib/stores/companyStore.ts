@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Company } from '../types'
 import { mockCompanies } from '../data/mockData'
+import { apiClient } from './authStore'
 
 interface CompanyState {
   companies: Company[]
@@ -13,7 +14,7 @@ interface CompanyState {
   updateCompany: (id: string, updates: Partial<Company>) => void
   deleteCompany: (id: string) => void
   setDefaultCompany: (id: string) => void
-  loadCompanies: () => void
+  loadCompanies: () => Promise<void>
 }
 
 export const useCompanyStore = create<CompanyState>((set, get) => ({
@@ -72,18 +73,47 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
     }))
   },
 
-  loadCompanies: () => {
+  loadCompanies: async () => {
     set({ isLoading: true })
     
-    // Simulate API call - in real app this would be an async API call
-    setTimeout(() => {
-      // Try to restore previously selected company from localStorage
-      let activeCompany = mockCompanies.find(c => c.isDefault) || mockCompanies[0]
+    try {
+      // Buscar empresas da API
+      const companiesFromAPI = await apiClient.authGet('/companies')
       
+      // Converter para o formato esperado pelo frontend
+      const companies: Company[] = companiesFromAPI.map((company: any) => ({
+        id: company.uuid,
+        uuid: company.uuid,
+        name: company.name,
+        description: company.description || '',
+        industry: company.industry || '',
+        size: company.size || '',
+        isDefault: company.is_default || false,
+        createdAt: new Date(company.created_at),
+        updatedAt: new Date(company.created_at)
+      }))
+
+      // Adicionar TechCorp como empresa mock (sempre não-default)
+      const techCorp = mockCompanies.find(c => c.name === 'TechCorp')
+      if (techCorp) {
+        companies.push({ ...techCorp, isDefault: false })
+      }
+
+      // Ordenar: default primeiro, depois por nome
+      companies.sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1
+        if (!a.isDefault && b.isDefault) return 1
+        return a.name.localeCompare(b.name)
+      })
+      
+      // Definir empresa ativa
+      let activeCompany = companies.find(c => c.isDefault) || companies[0] || null
+      
+      // Tentar restaurar empresa previamente selecionada
       if (typeof window !== 'undefined') {
         const savedCompanyId = localStorage.getItem('leaderpro-active-company')
         if (savedCompanyId) {
-          const savedCompany = mockCompanies.find(c => c.id === savedCompanyId)
+          const savedCompany = companies.find(c => c.id === savedCompanyId)
           if (savedCompany) {
             activeCompany = savedCompany
           }
@@ -91,11 +121,24 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
       }
       
       set({
-        companies: mockCompanies,
-        activeCompany: activeCompany,
+        companies,
+        activeCompany,
         isLoading: false
       })
-    }, 100)
+      
+    } catch (error) {
+      console.error('Erro ao carregar empresas:', error)
+      
+      // Fallback para dados mock em caso de erro
+      const companies = mockCompanies.map(c => c.name === 'TechCorp' ? { ...c, isDefault: false } : c)
+      const activeCompany = companies.find(c => c.isDefault) || companies[0] || null
+      
+      set({
+        companies,
+        activeCompany,
+        isLoading: false
+      })
+    }
   }
 }))
 

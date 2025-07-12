@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { apiClient, setAuthStateGetter } from '../api/client'
+import { useNotificationStore } from './notificationStore'
 
 export interface User {
   uuid: string
@@ -54,8 +56,6 @@ export interface RegisterData {
 
 type AuthStore = AuthState & AuthActions
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
@@ -70,20 +70,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true })
         
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-          })
-
-          if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.message || 'Erro ao fazer login')
-          }
-
-          const authResponse = await response.json()
+          const authResponse = await apiClient.post('/auth/login', { email, password })
           
           set({ 
             user: authResponse.user,
@@ -99,6 +86,11 @@ export const useAuthStore = create<AuthStore>()(
           
         } catch (error) {
           set({ isLoading: false })
+          
+          // Mostrar notificação de erro
+          const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login'
+          useNotificationStore.getState().showError('Erro no Login', errorMessage)
+          
           throw error
         }
       },
@@ -107,22 +99,8 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true })
         
         try {
-          // Criar usuário - agora retorna AuthResponse direto
-          const registerResponse = await fetch(`${API_BASE_URL}/users`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-          })
-
-          if (!registerResponse.ok) {
-            const errorData = await registerResponse.json()
-            throw new Error(errorData.message || 'Erro ao criar conta')
-          }
-
           // Backend já faz login automático e retorna user + tokens
-          const authResponse = await registerResponse.json()
+          const authResponse = await apiClient.post('/users', data)
           
           set({ 
             user: authResponse.user,
@@ -138,23 +116,19 @@ export const useAuthStore = create<AuthStore>()(
           
         } catch (error) {
           set({ isLoading: false })
+          
+          // Mostrar notificação de erro
+          const errorMessage = error instanceof Error ? error.message : 'Erro ao criar conta'
+          useNotificationStore.getState().showError('Erro no Registro', errorMessage)
+          
           throw error
         }
       },
 
       logout: async () => {
-        const { tokens } = get()
-        
         try {
-          if (tokens?.accessToken) {
-            await fetch(`${API_BASE_URL}/auth/logout`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${tokens.accessToken}`,
-                'Content-Type': 'application/json',
-              }
-            })
-          }
+          // Usar authPost que já inclui o token automaticamente
+          await apiClient.authPost('/auth/logout')
         } catch (error) {
           console.error('Erro ao fazer logout no servidor:', error)
         } finally {
@@ -171,20 +145,9 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refresh_token: tokens.refreshToken })
+          const newTokens = await apiClient.post('/auth/refresh-token', { 
+            refresh_token: tokens.refreshToken 
           })
-
-          if (!response.ok) {
-            get().clearAuth()
-            throw new Error('Token expirado, faça login novamente')
-          }
-
-          const newTokens = await response.json()
           
           set({ 
             tokens: {
@@ -201,30 +164,9 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       getProfile: async () => {
-        const { tokens } = get()
-        
-        if (!tokens?.accessToken) {
-          throw new Error('Token de acesso não encontrado')
-        }
-
         try {
-          const response = await fetch(`${API_BASE_URL}/users/profile`, {
-            headers: {
-              'Authorization': `Bearer ${tokens.accessToken}`,
-              'Content-Type': 'application/json',
-            }
-          })
-
-          if (!response.ok) {
-            if (response.status === 401) {
-              // Token expirado, tentar renovar
-              await get().refreshToken()
-              return get().getProfile()
-            }
-            throw new Error('Erro ao buscar perfil')
-          }
-
-          const user: User = await response.json()
+          // authGet já gerencia token automaticamente e renovação em caso de 401
+          const user: User = await apiClient.authGet('/users/profile')
           set({ user })
           
         } catch (error) {
@@ -261,47 +203,11 @@ export const useAuthStore = create<AuthStore>()(
   )
 )
 
-// Interceptor para renovação automática de token
-export const authFetch = async (url: string, options: RequestInit = {}) => {
+// Configurar o getter de autenticação para o API client
+setAuthStateGetter(() => {
   const { tokens, refreshToken, clearAuth } = useAuthStore.getState()
-  
-  if (!tokens?.accessToken) {
-    throw new Error('Usuário não autenticado')
-  }
+  return { tokens, refreshToken, clearAuth }
+})
 
-  // Adicionar token de autorização
-  const headers = {
-    ...options.headers,
-    'Authorization': `Bearer ${tokens.accessToken}`,
-    'Content-Type': 'application/json',
-  }
-
-  let response = await fetch(url, {
-    ...options,
-    headers
-  })
-
-  // Se token expirou, tentar renovar
-  if (response.status === 401) {
-    try {
-      await refreshToken()
-      const newTokens = useAuthStore.getState().tokens
-      
-      // Repetir requisição com novo token
-      response = await fetch(url, {
-        ...options,
-        headers: {
-          ...options.headers,
-          'Authorization': `Bearer ${newTokens?.accessToken}`,
-          'Content-Type': 'application/json',
-        }
-      })
-      
-    } catch (error) {
-      clearAuth()
-      throw new Error('Sessão expirada, faça login novamente')
-    }
-  }
-
-  return response
-}
+// Re-exportar o apiClient para facilitar o uso
+export { apiClient }

@@ -1,23 +1,17 @@
 <p align="center">
-    <h1 align="center">GO BOILERPLATE</h1>
+    <h1 align="center">LEADERPRO BACKEND</h1>
 </p>
 <p align="center">
     <em>
-    A robust Go boilerplate for API projects using Domain-Driven Design (DDD) and Clean Architecture principles.
+    AI platform backend that amplifies leadership intelligence using Domain-Driven Design (DDD) and Clean Architecture principles.
     </em>
 </p>
 <p align="center">
-   <a href='https://coveralls.io/github/diegoclair/leaderpro?branch=main'>
-	<img src='https://coveralls.io/repos/github/diegoclair/leaderpro/badge.svg?branch=main' alt='Coverage Status' />
-   </a>
    <a href='https://github.com/diegoclair/leaderpro/commits/main'>
 	<img src="https://img.shields.io/github/last-commit/diegoclair/leaderpro?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
    </a>
    <a href="https://github.com/diegoclair/leaderpro/actions">
      <img src="https://github.com/diegoclair/leaderpro/actions/workflows/ci.yaml/badge.svg" alt="build status">
-   </a>
-   <a href="https://opensource.org/licenses/MIT">
-     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
    </a>
   <a href='https://goreportcard.com/badge/github.com/diegoclair/leaderpro'>
      <img src='https://goreportcard.com/badge/github.com/diegoclair/leaderpro' alt='Go Report'/>
@@ -50,9 +44,35 @@
 - [License](#-license)
 
 ## Description
-This project serves as a boilerplate for creating API projects in Go, incorporating key principles of **Domain-Driven Design (DDD)** and **Clean Architecture**. It aims to provide a solid foundation for building maintainable and scalable Go applications.
+LeaderPro Backend is an AI-powered platform that amplifies leadership intelligence using **Domain-Driven Design (DDD)** and **Clean Architecture** principles. The backend provides APIs for team management, 1:1 meetings, and contextual AI coaching features.
 
-The structure reflects best practices gathered from experience, emphasizing separation of concerns and testability. All layers are thoroughly tested to ensure reliability. Contributions and suggestions for improvement are highly encouraged!
+The platform maintains perfect memory of every team interaction and suggests contextual actions to help leaders become more effective. Built with Go, it provides a solid foundation for scalable leadership intelligence features.
+
+## Features
+
+### ✅ Authentication & User Management
+- **JWT Authentication**: PASETO-based token system with 15-minute access tokens and 24-hour refresh tokens
+- **User Registration**: Streamlined registration with automatic login (single API call)
+- **User Profiles**: Complete profile management with update capabilities
+- **Session Management**: Secure session tracking with Redis cache
+
+### ✅ Core Platform Features  
+- **Company Management**: Multi-company support for team organization
+- **Person Profiles**: Comprehensive team member profile system
+- **1:1 Meetings**: Meeting management and note-taking system
+- **Feedback Tracking**: Direct and mentioned feedback collection
+
+### 🚧 Planned AI Features
+- **Contextual Memory**: Vector database integration for AI-powered insights
+- **Smart Suggestions**: AI-driven action recommendations based on team context
+- **Meeting Analysis**: Automated insights from 1:1 conversations
+- **Performance Tracking**: AI-enhanced performance review capabilities
+
+### 🛠️ Technical Features
+- **Clean Architecture**: Separation of concerns with DDD principles
+- **Comprehensive Testing**: Unit tests with testcontainers for integration testing
+- **API Documentation**: Auto-generated Swagger/OpenAPI documentation
+- **Observability**: Prometheus metrics, Grafana dashboards, Jaeger tracing
 
 ## Project Architecture
 This boilerplate follows the principles of Clean Architecture, organizing code into distinct layers with specific responsibilities.
@@ -88,6 +108,31 @@ A fundamental principle of Clean Architecture is the **Dependency Rule**: source
 
 This structure ensures that changes in outer layers (like `/infra`, `/transport`, UI frameworks, or databases) have minimal impact on the core business logic.
 
+## 🔐 Authentication System
+
+LeaderPro implements a robust JWT authentication system using PASETO tokens:
+
+### Token Types
+- **Access Token**: 15-minute expiration, used for API requests
+- **Refresh Token**: 24-hour expiration, used to generate new access tokens
+
+### Authentication Flow
+1. **Registration**: `POST /users` - Creates user and automatically logs them in
+2. **Login**: `POST /auth/login` - Returns both user data and authentication tokens
+3. **Token Refresh**: `POST /auth/refresh` - Generates new access token using refresh token
+4. **Protected Routes**: All `/users/profile` endpoints require valid access token
+
+### Session Management
+- Sessions are stored in Redis with refresh token mapping
+- User-Agent and Client IP tracking for security
+- Automatic session cleanup on token expiration
+
+### Security Features
+- PASETO symmetric key encryption
+- Redis-based token blacklisting capability
+- Request context includes user UUID and session UUID
+- Middleware-based route protection
+
 ## 💻 Getting Started
 
 ### Prerequisites ❗
@@ -105,15 +150,69 @@ make start
 ```
 Wait for the logs to indicate the services are ready. You should see a message like `your server started on [::]:5000` from the Go application container (`myapp`).
 
-### First Request Example
-Once the application is running, you can send a request to the ping endpoint to verify it's working:
+### API Examples
+
+Once the application is running, you can interact with the LeaderPro API:
+
+#### 1. Health Check
 ```bash
 curl -X GET http://localhost:5000/ping
 ```
-You should receive the following JSON response:
 ```json
 {
     "message": "pong"
+}
+```
+
+#### 2. User Registration (Auto-login)
+```bash
+curl -X POST http://localhost:5000/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "password": "password123",
+    "phone": "+1234567890"
+  }'
+```
+```json
+{
+  "user": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890"
+  },
+  "auth": {
+    "access_token": "v2.local.Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2...",
+    "access_token_expires_at": "2025-01-07T10:30:00Z",
+    "refresh_token": "v2.local.H6Gdh5kiOTyyaQ3_bNykYDeYHO21...",
+    "refresh_token_expires_at": "2025-01-08T10:15:00Z"
+  }
+}
+```
+
+#### 3. User Login
+```bash
+curl -X POST http://localhost:5000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }'
+```
+
+#### 4. Get User Profile (Protected Route)
+```bash
+curl -X GET http://localhost:5000/users/profile \
+  -H "Authorization: v2.local.Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+```
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1234567890"
 }
 ```
 
@@ -154,7 +253,7 @@ make docs
 This updates the files in the `/docs` directory.
 
 ## 🤝 Contributing
-Contributions are welcome! Improving this boilerplate helps the Go community. Here are ways you can contribute:
+Contributions are welcome! Improving LeaderPro helps the leadership development community. Here are ways you can contribute:
 
 -   **Submit Pull Requests**: Review open PRs, and submit your own enhancements or bug fixes.
 -   **[Join the Discussions](https://github.com/diegoclair/leaderpro/discussions)**: Share insights, provide feedback, or ask questions.
@@ -166,9 +265,28 @@ Contributions are welcome! Improving this boilerplate helps the Go community. He
 1.  **Fork the Repository**: Start by forking the project repository to your GitHub account.
 2.  **Clone Locally**: Clone the forked repository to your local machine.
     ```sh
-    git clone https://github.com/<your_username>/go-boilerplate
+    git clone https://github.com/<your_username>/leaderpro
     ```
 3.  **Create a New Branch**: Use a descriptive branch name.
     ```sh
     git checkout -b feature/describe-your-feature
     ```
+4.  **Make Changes**: Implement your feature or bug fix following the existing code patterns.
+5.  **Run Tests**: Ensure all tests pass before submitting.
+    ```sh
+    make tests
+    ```
+6.  **Update Documentation**: Update README or add API documentation if needed.
+7.  **Commit Your Changes**: Write clear, descriptive commit messages.
+    ```sh
+    git commit -m "feat: add new leadership insight feature"
+    ```
+8.  **Push and Submit PR**: Push your branch and create a pull request.
+    ```sh
+    git push origin feature/describe-your-feature
+    ```
+
+</details>
+
+## 📄 License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

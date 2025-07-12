@@ -179,6 +179,34 @@ frontend/src/
 
 ## Common Patterns
 
+### API Client Centralizado (Frontend) - ⭐ IMPORTANTE
+**SEMPRE use o apiClient centralizado para requisições HTTP:**
+
+```typescript
+// ✅ CORRETO - Use apiClient para todas as requisições
+import { apiClient } from '@/lib/stores/authStore'
+
+// Requisições públicas (sem autenticação)
+const loginData = await apiClient.post('/auth/login', { email, password })
+const userData = await apiClient.post('/users', registrationData)
+
+// Requisições autenticadas (token automático + renovação)
+const profile = await apiClient.authGet('/users/profile')
+await apiClient.authPost('/auth/logout')
+await apiClient.authPut('/users/profile', updateData)
+await apiClient.authDelete('/companies/123')
+
+// ❌ INCORRETO - Nunca use fetch() diretamente
+// fetch('/api/endpoint') // NÃO FAÇA ISSO
+```
+
+**Benefícios do apiClient:**
+- ✅ Headers de autenticação (`user-token`) incluídos automaticamente
+- ✅ Renovação automática de token em caso de 401
+- ✅ Gerenciamento centralizado de erros
+- ✅ Configuração única - mudanças de header em 1 lugar só
+- ✅ Type safety com TypeScript
+
 ### TypeScript (Frontend)
 ```typescript
 // Zustand store pattern
@@ -243,4 +271,11 @@ type GetUserUseCase struct {
 - `frontend/src/app/auth/` - Login/registration pages
 - `frontend/src/app/profile/[id]/page.tsx` - Person profile pages
 - `frontend/src/lib/stores/` - Zustand state management
+- `frontend/src/lib/api/client.ts` - **API Client centralizado** (use sempre!)
 - `frontend/src/components/` - Reusable UI components
+
+### Autenticação Backend
+- **Header esperado**: `user-token` (não `Authorization`)
+- **Middleware**: `serverMiddleware/auth.go` valida header em rotas privadas
+- **Tokens**: PASETO com 15min (access) + 24h (refresh)
+- **Logout**: `POST /auth/logout` invalida sessão no Redis

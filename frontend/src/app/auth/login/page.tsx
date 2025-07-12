@@ -33,7 +33,8 @@ export default function LoginPage() {
       await login(formData.email, formData.password)
       router.push('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login')
+      // Erro será mostrado via notificação pelo authStore
+      // setError não é mais necessário
     }
   }
 

@@ -32,7 +32,7 @@ func TestHandler_handleCreateCompany(t *testing.T) {
 			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
 				if body != nil {
 					companyReq := body.(viewmodel.CompanyRequest)
-					m.CompanyAppMock.EXPECT().CreateCompany(ctx, companyReq.ToEntity()).Return(nil).Times(1)
+					m.CompanyAppMock.EXPECT().CreateCompany(ctx, companyReq.ToEntity(), companyReq.IsDefault).Return(nil).Times(1)
 				}
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -51,7 +51,7 @@ func TestHandler_handleCreateCompany(t *testing.T) {
 			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
 				if body != nil {
 					companyReq := body.(viewmodel.CompanyRequest)
-					m.CompanyAppMock.EXPECT().CreateCompany(ctx, companyReq.ToEntity()).Return(fmt.Errorf("error to create company")).Times(1)
+					m.CompanyAppMock.EXPECT().CreateCompany(ctx, companyReq.ToEntity(), companyReq.IsDefault).Return(fmt.Errorf("error to create company")).Times(1)
 				}
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -108,11 +108,11 @@ func TestHandler_handleGetCompanies(t *testing.T) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
 			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
-				mockCompanies := []entity.Company{
-					{UUID: "company-1", Name: "Company 1"},
-					{UUID: "company-2", Name: "Company 2"},
+				mockCompanies := []entity.UserCompany{
+					{Company: entity.Company{UUID: "company-1", Name: "Company 1"}, IsDefault: true},
+					{Company: entity.Company{UUID: "company-2", Name: "Company 2"}, IsDefault: false},
 				}
-				m.CompanyAppMock.EXPECT().GetUserCompanies(ctx).Return(mockCompanies, nil).Times(1)
+				m.CompanyAppMock.EXPECT().GetUserCompaniesWithDefault(ctx).Return(mockCompanies, nil).Times(1)
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -126,7 +126,7 @@ func TestHandler_handleGetCompanies(t *testing.T) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
 			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
-				m.CompanyAppMock.EXPECT().GetUserCompanies(ctx).Return(nil, fmt.Errorf("error to get companies")).Times(1)
+				m.CompanyAppMock.EXPECT().GetUserCompaniesWithDefault(ctx).Return(nil, fmt.Errorf("error to get companies")).Times(1)
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusServiceUnavailable, recorder.Code)

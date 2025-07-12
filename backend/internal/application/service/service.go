@@ -9,12 +9,12 @@ import (
 )
 
 type Apps struct {
-	UserService     contract.UserApp
-	AuthService     contract.AuthApp
-	CompanyService  contract.CompanyApp
-	PersonService   contract.PersonApp
-	OneOnOneService contract.OneOnOneApp
-	FeedbackService contract.FeedbackApp
+	User     contract.UserApp
+	Auth     contract.AuthApp
+	Company  contract.CompanyApp
+	Person   contract.PersonApp
+	OneOnOne contract.OneOnOneApp
+	Feedback contract.FeedbackApp
 }
 
 // New to get instance of all services
@@ -23,15 +23,16 @@ func New(infra domain.Infrastructure, accessTokenDuration time.Duration) (*Apps,
 		return nil, err
 	}
 
-	userSvc := newUserSvc(infra)
+	userApp := newUserSvc(infra)
+	authApp := newAuthApp(infra, userApp, accessTokenDuration)
 
 	return &Apps{
-		UserService:     userSvc,
-		AuthService:     newAuthApp(infra, userSvc, accessTokenDuration),
-		CompanyService:  newCompanyService(infra),
-		PersonService:   newPersonService(infra),
-		OneOnOneService: newOneOnOneService(infra),
-		FeedbackService: newFeedbackService(infra),
+		User:     userApp,
+		Auth:     authApp,
+		Company:  newCompanyService(infra, authApp),
+		Person:   newPersonService(infra),
+		OneOnOne: newOneOnOneService(infra),
+		Feedback: newFeedbackService(infra),
 	}, nil
 }
 

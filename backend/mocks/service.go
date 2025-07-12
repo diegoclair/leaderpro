@@ -199,6 +199,21 @@ func (mr *MockAuthAppMockRecorder) CreateSession(ctx, session any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockAuthApp)(nil).CreateSession), ctx, session)
 }
 
+// GetLoggedUserID mocks base method.
+func (m *MockAuthApp) GetLoggedUserID(ctx context.Context) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLoggedUserID", ctx)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLoggedUserID indicates an expected call of GetLoggedUserID.
+func (mr *MockAuthAppMockRecorder) GetLoggedUserID(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoggedUserID", reflect.TypeOf((*MockAuthApp)(nil).GetLoggedUserID), ctx)
+}
+
 // GetSessionByUUID mocks base method.
 func (m *MockAuthApp) GetSessionByUUID(ctx context.Context, sessionUUID string) (dto.Session, error) {
 	m.ctrl.T.Helper()
@@ -282,17 +297,17 @@ func (mr *MockCompanyAppMockRecorder) AddUserToCompany(ctx, companyUUID, userEma
 }
 
 // CreateCompany mocks base method.
-func (m *MockCompanyApp) CreateCompany(ctx context.Context, company entity.Company) error {
+func (m *MockCompanyApp) CreateCompany(ctx context.Context, company entity.Company, isDefault bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCompany", ctx, company)
+	ret := m.ctrl.Call(m, "CreateCompany", ctx, company, isDefault)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateCompany indicates an expected call of CreateCompany.
-func (mr *MockCompanyAppMockRecorder) CreateCompany(ctx, company any) *gomock.Call {
+func (mr *MockCompanyAppMockRecorder) CreateCompany(ctx, company, isDefault any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCompany", reflect.TypeOf((*MockCompanyApp)(nil).CreateCompany), ctx, company)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCompany", reflect.TypeOf((*MockCompanyApp)(nil).CreateCompany), ctx, company, isDefault)
 }
 
 // DeleteCompany mocks base method.
@@ -337,6 +352,21 @@ func (m *MockCompanyApp) GetUserCompanies(ctx context.Context) ([]entity.Company
 func (mr *MockCompanyAppMockRecorder) GetUserCompanies(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCompanies", reflect.TypeOf((*MockCompanyApp)(nil).GetUserCompanies), ctx)
+}
+
+// GetUserCompaniesWithDefault mocks base method.
+func (m *MockCompanyApp) GetUserCompaniesWithDefault(ctx context.Context) ([]entity.UserCompany, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserCompaniesWithDefault", ctx)
+	ret0, _ := ret[0].([]entity.UserCompany)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserCompaniesWithDefault indicates an expected call of GetUserCompaniesWithDefault.
+func (mr *MockCompanyAppMockRecorder) GetUserCompaniesWithDefault(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCompaniesWithDefault", reflect.TypeOf((*MockCompanyApp)(nil).GetUserCompaniesWithDefault), ctx)
 }
 
 // UpdateCompany mocks base method.
