@@ -28,7 +28,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type SvcMocks struct {
+type AppMocks struct {
 	UserAppMock    *mocks.MockUserApp
 	AuthAppMock    *mocks.MockAuthApp
 	PersonAppMock  *mocks.MockPersonApp
@@ -37,11 +37,11 @@ type SvcMocks struct {
 	CacheMock      *mocks.MockCacheManager
 }
 
-func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.Controller) {
+func GetServerTest(t *testing.T) (m AppMocks, server goswag.Echo, ctrl *gomock.Controller) {
 	t.Helper()
 
 	ctrl = gomock.NewController(t)
-	m = SvcMocks{
+	m = AppMocks{
 		UserAppMock:    mocks.NewMockUserApp(ctrl),
 		AuthAppMock:    mocks.NewMockAuthApp(ctrl),
 		PersonAppMock:  mocks.NewMockPersonApp(ctrl),
@@ -50,6 +50,7 @@ func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.C
 		CacheMock:      mocks.NewMockCacheManager(ctrl),
 	}
 
+	cfg := configmock.New()
 	server = goswag.NewEcho()
 	server.Echo().HTTPErrorHandler = func(err error, c echo.Context) {
 		_ = routeutils.HandleError(c, err)
@@ -67,7 +68,7 @@ func GetServerTest(t *testing.T) (m SvcMocks, server goswag.Echo, ctrl *gomock.C
 
 	userHandler := userroute.NewHandler(m.UserAppMock, authHelper)
 	userRoute := userroute.NewRouter(userHandler)
-	authHandler := authroute.NewHandler(m.AuthAppMock, m.AuthTokenMock, authHelper)
+	authHandler := authroute.NewHandler(m.AuthAppMock, m.AuthTokenMock, authHelper, cfg.GetLogger())
 	authRoute := authroute.NewRouter(authHandler)
 	personHandler := personroute.NewHandler(m.PersonAppMock)
 	personRoute := personroute.NewRouter(personHandler)
@@ -112,7 +113,7 @@ var (
 	sessionUUID = uuid.NewV4().String()
 )
 
-func AddAuthorization(ctx context.Context, t *testing.T, req *http.Request, m SvcMocks) {
+func AddAuthorization(ctx context.Context, t *testing.T, req *http.Request, m AppMocks) {
 	t.Helper()
 
 	token := addAuthorizationWithNoCache(ctx, t, req)
@@ -145,15 +146,15 @@ func GetTestContext(t *testing.T, req *http.Request, w http.ResponseWriter, auth
 type PrivateEndpointTest struct {
 	Name          string
 	Body          any
-	SetupAuth     func(ctx context.Context, t *testing.T, req *http.Request, m SvcMocks)
-	BuildMocks    func(ctx context.Context, m SvcMocks, body any)
+	SetupAuth     func(ctx context.Context, t *testing.T, req *http.Request, m AppMocks)
+	BuildMocks    func(ctx context.Context, m AppMocks, body any)
 	CheckResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 }
 
 var PrivateEndpointValidations = []PrivateEndpointTest{
 	{
 		Name: "Should return error when token is invalid",
-		SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m SvcMocks) {
+		SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m AppMocks) {
 			req.Header.Set(infra.TokenKey.String(), "invalid token")
 		},
 		CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -174,10 +175,10 @@ var PrivateEndpointValidations = []PrivateEndpointTest{
 	},
 	{
 		Name: "Should return error when token is invalid",
-		SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m SvcMocks) {
+		SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m AppMocks) {
 			addAuthorizationWithNoCache(ctx, t, req)
 		},
-		BuildMocks: func(ctx context.Context, m SvcMocks, body any) {
+		BuildMocks: func(ctx context.Context, m AppMocks, body any) {
 			m.CacheMock.EXPECT().GetString(gomock.Any(), gomock.Any()).Return("invalid", nil).Times(1)
 		},
 		CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {

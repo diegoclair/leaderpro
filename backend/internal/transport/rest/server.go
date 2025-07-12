@@ -33,7 +33,7 @@ type Server struct {
 }
 
 func StartRestServer(ctx context.Context, cfg *config.Config, infra domain.Infrastructure, services *service.Apps, appName, port string) *Server {
-	server := NewRestServer(services, cfg.GetAuthToken(), infra.CacheManager(), appName)
+	server := NewRestServer(services, cfg.GetAuthToken(), infra, appName)
 	if port == "" {
 		port = "5000"
 	}
@@ -53,7 +53,7 @@ func StartRestServer(ctx context.Context, cfg *config.Config, infra domain.Infra
 	return server
 }
 
-func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, cache contract.CacheManager, appName string) *Server {
+func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, infra domain.Infrastructure, appName string) *Server {
 	router := goswag.NewEcho(resterrors.GoSwagDefaultResponseErrors()...)
 	router.Echo().Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	router.Echo().HTTPErrorHandler = func(err error, c echo.Context) {
@@ -64,7 +64,7 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, ca
 	authHelper := shared.NewAuthHelper(services.Auth, services.User, authToken)
 
 	pingHandler := pingroute.NewHandler()
-	authHandler := authroute.NewHandler(services.Auth, authToken, authHelper)
+	authHandler := authroute.NewHandler(services.Auth, authToken, authHelper, infra.Logger())
 	companyHandler := companyroute.NewHandler(services.Company)
 	personHandler := personroute.NewHandler(services.Person)
 	userHandler := userroute.NewHandler(services.User, authHelper)
@@ -77,7 +77,7 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, ca
 
 	swaggerRoute := swaggerroute.NewRouter(router.Echo())
 
-	server := &Server{Router: router, cache: cache}
+	server := &Server{Router: router, cache: infra.CacheManager()}
 	server.addRouters(authRoute)
 	server.addRouters(companyRoute)
 	server.addRouters(personRoute)

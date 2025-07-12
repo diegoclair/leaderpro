@@ -35,7 +35,7 @@ type CompanyApp interface {
 }
 
 type PersonApp interface {
-	CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (err error)
+	CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (createdPerson entity.Person, err error)
 	GetPersonByUUID(ctx context.Context, personUUID string) (person entity.Person, err error)
 	GetCompanyPeople(ctx context.Context, companyUUID string) (people []entity.Person, err error)
 	UpdatePerson(ctx context.Context, personUUID string, person entity.Person) (err error)

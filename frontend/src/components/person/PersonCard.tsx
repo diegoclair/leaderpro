@@ -40,21 +40,21 @@ export function PersonCard({
                 {person.name}
               </h3>
               <p className="text-sm text-muted-foreground truncate">
-                {person.role}
+                {person.position || person.role || 'Cargo não informado'}
               </p>
               
-              {person.personalInfo.location && (
+              {person.department && (
                 <div className="flex items-center gap-1 mt-1">
                   <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
-                    {person.personalInfo.location}
+                    {person.department}
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          {person.personalInfo.hasChildren && (
+          {person.hasKids && (
             <Badge variant="outline" className="text-xs">
               Tem filhos
             </Badge>
@@ -83,7 +83,7 @@ export function PersonCard({
             <p className="text-sm text-muted-foreground">
               Na empresa há{' '}
               <span className="font-medium">
-                {formatTimeAgoWithoutSuffix(person.startDate)}
+                {person.startDate ? formatTimeAgoWithoutSuffix(person.startDate) : 'não informado'}
               </span>
             </p>
           </div>

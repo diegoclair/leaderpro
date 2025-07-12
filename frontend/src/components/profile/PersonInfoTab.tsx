@@ -89,55 +89,50 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-            <p className="text-sm">{person.email}</p>
+            <Label className="text-sm font-medium text-muted-foreground">Departamento/Squad</Label>
+            <p className="text-sm">{person.department || 'Não informado'}</p>
           </div>
           <div>
-            <Label className="text-sm font-medium text-muted-foreground">Localização</Label>
-            <p className="text-sm">{person.personalInfo.location || 'Não informado'}</p>
-          </div>
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">Situação Familiar</Label>
-            <div className="flex gap-2 mt-1">
-              {person.personalInfo.hasChildren && (
-                <Badge variant="outline">Tem filhos</Badge>
+            <Label className="text-sm font-medium text-muted-foreground">Contato</Label>
+            <div className="space-y-1">
+              {person.email && (
+                <p className="text-sm">📧 {person.email}</p>
               )}
-              {person.personalInfo.hasPets && (
-                <Badge variant="outline">Tem pets</Badge>
+              {person.phone && (
+                <p className="text-sm">📞 {person.phone}</p>
               )}
-              {!person.personalInfo.hasChildren && !person.personalInfo.hasPets && (
+              {!person.email && !person.phone && (
                 <p className="text-sm text-muted-foreground">Não informado</p>
               )}
             </div>
           </div>
-          {person.personalInfo.pets && person.personalInfo.pets.length > 0 && (
+          <div>
+            <Label className="text-sm font-medium text-muted-foreground">Situação Familiar</Label>
+            <div className="flex gap-2 mt-1">
+              {person.hasKids && (
+                <Badge variant="outline">Tem filhos</Badge>
+              )}
+              {!person.hasKids && (
+                <p className="text-sm text-muted-foreground">Não informado</p>
+              )}
+            </div>
+          </div>
+          {person.interests && (
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Pets</Label>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {person.personalInfo.pets.map((pet, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {pet}
-                  </Badge>
-                ))}
-              </div>
+              <Label className="text-sm font-medium text-muted-foreground">Interesses</Label>
+              <p className="text-sm">{person.interests}</p>
             </div>
           )}
-          {person.personalInfo.hobbies && person.personalInfo.hobbies.length > 0 && (
+          {person.personality && (
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Hobbies</Label>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {person.personalInfo.hobbies.map((hobby, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {hobby}
-                  </Badge>
-                ))}
-              </div>
+              <Label className="text-sm font-medium text-muted-foreground">Personalidade</Label>
+              <p className="text-sm">{person.personality}</p>
             </div>
           )}
-          {person.personalInfo.personalNotes && (
+          {person.notes && (
             <div>
-              <Label className="text-sm font-medium text-muted-foreground">Notas Pessoais</Label>
-              <p className="text-sm text-muted-foreground">{person.personalInfo.personalNotes}</p>
+              <Label className="text-sm font-medium text-muted-foreground">Notas</Label>
+              <p className="text-sm text-muted-foreground">{person.notes}</p>
             </div>
           )}
         </CardContent>

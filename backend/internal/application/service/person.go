@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/diegoclair/go_utils/logger"
 	"github.com/diegoclair/go_utils/mysqlutils"
@@ -29,7 +30,7 @@ func newPersonService(infra domain.Infrastructure, authApp contract.AuthApp) con
 	}
 }
 
-func (s *personService) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) error {
+func (s *personService) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (entity.Person, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -40,16 +41,16 @@ func (s *personService) CreatePerson(ctx context.Context, person entity.Person, 
 	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
 	if err != nil {
 		if mysqlutils.SQLNotFound(err.Error()) {
-			return resterrors.NewNotFoundError("company not found")
+			return person, resterrors.NewNotFoundError("company not found")
 		}
 		s.log.Errorw(ctx, "error getting company by UUID", logger.Err(err))
-		return err
+		return person, err
 	}
 
 	// Validate that the company belongs to the logged user
 	userID, err := s.authApp.GetLoggedUserID(ctx)
 	if err != nil {
-		return err
+		return person, err
 	}
 
 	if company.UserOwnerID != userID {
@@ -57,7 +58,7 @@ func (s *personService) CreatePerson(ctx context.Context, person entity.Person, 
 			logger.Int64("company_owner_id", company.UserOwnerID),
 			logger.Int64("logged_user_id", userID),
 		)
-		return resterrors.NewUnauthorizedError("you don't have permission to add people to this company")
+		return person, resterrors.NewUnauthorizedError("you don't have permission to add people to this company")
 	}
 
 	// Set the company ID and creator in the person entity
@@ -69,8 +70,13 @@ func (s *personService) CreatePerson(ctx context.Context, person entity.Person, 
 	personID, err := s.dm.Person().CreatePerson(ctx, person)
 	if err != nil {
 		s.log.Errorw(ctx, "error creating person", logger.Err(err))
-		return err
+		return person, err
 	}
+
+	// Set the ID and timestamps for the response
+	person.ID = personID
+	person.CreatedAt = time.Now()
+	person.UpdatedAt = time.Now()
 
 	s.log.Infow(ctx, "person created successfully",
 		logger.Int64("person_id", personID),
@@ -79,30 +85,259 @@ func (s *personService) CreatePerson(ctx context.Context, person entity.Person, 
 		logger.String("company_name", company.Name),
 	)
 
-	return nil
+	return person, nil
 }
 
 func (s *personService) GetPersonByUUID(ctx context.Context, personUUID string) (entity.Person, error) {
-	// TODO: Implement
-	return entity.Person{}, nil
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	person, err := s.dm.Person().GetPersonByUUID(ctx, personUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return person, resterrors.NewNotFoundError("person not found")
+		}
+		s.log.Errorw(ctx, "error getting person by UUID", logger.Err(err))
+		return person, err
+	}
+
+	// Validate that the person belongs to a company owned by the logged user
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return person, err
+	}
+
+	// Validate ownership by checking if user owns any company that contains this person
+	userCompanies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
+	if err != nil {
+		s.log.Errorw(ctx, "error getting user companies", logger.Err(err))
+		return person, err
+	}
+
+	hasAccess := false
+	for _, company := range userCompanies {
+		if company.ID == person.CompanyID {
+			hasAccess = true
+			break
+		}
+	}
+
+	if !hasAccess {
+		s.log.Errorw(ctx, "user trying to access person from company they don't own",
+			logger.Int64("person_company_id", person.CompanyID),
+			logger.Int64("logged_user_id", userID),
+		)
+		return person, resterrors.NewUnauthorizedError("you don't have permission to access this person")
+	}
+
+	return person, nil
 }
 
 func (s *personService) GetCompanyPeople(ctx context.Context, companyUUID string) ([]entity.Person, error) {
-	// TODO: Implement
-	return []entity.Person{}, nil
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company by UUID and validate it belongs to the logged user
+	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return nil, resterrors.NewNotFoundError("company not found")
+		}
+		s.log.Errorw(ctx, "error getting company by UUID", logger.Err(err))
+		return nil, err
+	}
+
+	// Validate that the company belongs to the logged user
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if company.UserOwnerID != userID {
+		s.log.Errorw(ctx, "user trying to get people from company they don't own",
+			logger.Int64("company_owner_id", company.UserOwnerID),
+			logger.Int64("logged_user_id", userID),
+		)
+		return nil, resterrors.NewUnauthorizedError("you don't have permission to access people from this company")
+	}
+
+	// Get people by company ID
+	people, err := s.dm.Person().GetPersonsByCompany(ctx, company.ID)
+	if err != nil {
+		s.log.Errorw(ctx, "error getting people by company", logger.Err(err))
+		return nil, err
+	}
+
+	s.log.Infow(ctx, "people retrieved successfully",
+		logger.Int("people_count", len(people)),
+		logger.Int64("company_id", company.ID),
+		logger.String("company_name", company.Name),
+	)
+
+	return people, nil
 }
 
 func (s *personService) UpdatePerson(ctx context.Context, personUUID string, person entity.Person) error {
-	// TODO: Implement
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get existing person to validate ownership
+	existingPerson, err := s.dm.Person().GetPersonByUUID(ctx, personUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return resterrors.NewNotFoundError("person not found")
+		}
+		s.log.Errorw(ctx, "error getting person by UUID", logger.Err(err))
+		return err
+	}
+
+	// Validate that the person belongs to a company owned by the logged user
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Validate ownership by checking if user owns any company that contains this person
+	userCompanies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
+	if err != nil {
+		s.log.Errorw(ctx, "error getting user companies", logger.Err(err))
+		return err
+	}
+
+	hasAccess := false
+	for _, company := range userCompanies {
+		if company.ID == existingPerson.CompanyID {
+			hasAccess = true
+			break
+		}
+	}
+
+	if !hasAccess {
+		s.log.Errorw(ctx, "user trying to update person from company they don't own",
+			logger.Int64("person_company_id", existingPerson.CompanyID),
+			logger.Int64("logged_user_id", userID),
+		)
+		return resterrors.NewUnauthorizedError("you don't have permission to update this person")
+	}
+
+	// Update the person
+	err = s.dm.Person().UpdatePerson(ctx, existingPerson.ID, person)
+	if err != nil {
+		s.log.Errorw(ctx, "error updating person", logger.Err(err))
+		return err
+	}
+
+	s.log.Infow(ctx, "person updated successfully",
+		logger.String("person_uuid", personUUID),
+		logger.String("person_name", person.Name),
+		logger.Int64("company_id", existingPerson.CompanyID),
+	)
+
 	return nil
 }
 
 func (s *personService) DeletePerson(ctx context.Context, personUUID string) error {
-	// TODO: Implement
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get existing person to validate ownership
+	existingPerson, err := s.dm.Person().GetPersonByUUID(ctx, personUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return resterrors.NewNotFoundError("person not found")
+		}
+		s.log.Errorw(ctx, "error getting person by UUID", logger.Err(err))
+		return err
+	}
+
+	// Validate that the person belongs to a company owned by the logged user
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Validate ownership by checking if user owns any company that contains this person
+	userCompanies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
+	if err != nil {
+		s.log.Errorw(ctx, "error getting user companies", logger.Err(err))
+		return err
+	}
+
+	hasAccess := false
+	var companyName string
+	for _, company := range userCompanies {
+		if company.ID == existingPerson.CompanyID {
+			hasAccess = true
+			companyName = company.Name
+			break
+		}
+	}
+
+	if !hasAccess {
+		s.log.Errorw(ctx, "user trying to delete person from company they don't own",
+			logger.Int64("person_company_id", existingPerson.CompanyID),
+			logger.Int64("logged_user_id", userID),
+		)
+		return resterrors.NewUnauthorizedError("you don't have permission to delete this person")
+	}
+
+	// Delete the person (soft delete)
+	err = s.dm.Person().DeletePerson(ctx, existingPerson.ID)
+	if err != nil {
+		s.log.Errorw(ctx, "error deleting person", logger.Err(err))
+		return err
+	}
+
+	s.log.Infow(ctx, "person deleted successfully",
+		logger.String("person_uuid", personUUID),
+		logger.String("person_name", existingPerson.Name),
+		logger.Int64("company_id", existingPerson.CompanyID),
+		logger.String("company_name", companyName),
+	)
+
 	return nil
 }
 
 func (s *personService) SearchPeople(ctx context.Context, companyUUID string, search string) ([]entity.Person, error) {
-	// TODO: Implement
-	return []entity.Person{}, nil
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company by UUID and validate it belongs to the logged user
+	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return nil, resterrors.NewNotFoundError("company not found")
+		}
+		s.log.Errorw(ctx, "error getting company by UUID", logger.Err(err))
+		return nil, err
+	}
+
+	// Validate that the company belongs to the logged user
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if company.UserOwnerID != userID {
+		s.log.Errorw(ctx, "user trying to search people from company they don't own",
+			logger.Int64("company_owner_id", company.UserOwnerID),
+			logger.Int64("logged_user_id", userID),
+		)
+		return nil, resterrors.NewUnauthorizedError("you don't have permission to search people from this company")
+	}
+
+	// Search people by company ID and search term
+	people, err := s.dm.Person().SearchPeople(ctx, company.ID, search)
+	if err != nil {
+		s.log.Errorw(ctx, "error searching people", logger.Err(err))
+		return nil, err
+	}
+
+	s.log.Infow(ctx, "people search completed successfully",
+		logger.Int("people_count", len(people)),
+		logger.String("search_term", search),
+		logger.Int64("company_id", company.ID),
+	)
+
+	return people, nil
 }

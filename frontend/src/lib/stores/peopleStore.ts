@@ -11,6 +11,7 @@ import {
   getSuggestionsByPerson,
   getUpcomingOneOnOnes
 } from '../data/mockData'
+import { apiClient } from '../api/client'
 
 interface PeopleState {
   people: Person[]
@@ -34,6 +35,7 @@ interface PeopleState {
   markSuggestionAsUsed: (id: string) => void
   
   loadPeopleData: () => void
+  loadPeopleFromAPI: (companyUuid: string) => Promise<void>
 
   // Selectors
   getPeopleByCompany: (companyId: string) => Person[]
@@ -119,7 +121,7 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
   loadPeopleData: () => {
     set({ isLoading: true })
     
-    // Simulate API call
+    // Simulate API call (fallback for mock data)
     setTimeout(() => {
       set({
         people: mockPeople,
@@ -129,6 +131,66 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         isLoading: false
       })
     }, 150)
+  },
+
+  loadPeopleFromAPI: async (companyUuid: string) => {
+    set({ isLoading: true })
+    
+    try {
+      // Fetch people from API
+      const response = await apiClient.authGet(`/companies/${companyUuid}/people`)
+      
+      // Convert API response to frontend format
+      const apiPeople = Array.isArray(response) ? response : []
+      const people: Person[] = apiPeople.map((apiPerson: any) => ({
+        id: apiPerson.uuid || '',
+        uuid: apiPerson.uuid || '',
+        companyId: companyUuid, // Use the company UUID as companyId
+        name: apiPerson.name || '',
+        email: apiPerson.email,
+        position: apiPerson.position,
+        department: apiPerson.department,
+        phone: apiPerson.phone,
+        birthday: apiPerson.birthday && apiPerson.birthday !== '' ? new Date(apiPerson.birthday) : undefined,
+        startDate: apiPerson.start_date && apiPerson.start_date !== '' ? new Date(apiPerson.start_date) : undefined,
+        isManager: apiPerson.is_manager || false,
+        managerUUID: apiPerson.manager_uuid,
+        notes: apiPerson.notes,
+        hasKids: apiPerson.has_kids || false,
+        interests: apiPerson.interests,
+        personality: apiPerson.personality,
+        createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),
+        age: apiPerson.age,
+        tenure: apiPerson.tenure,
+        // Legacy compatibility
+        role: apiPerson.position,
+        personalInfo: {
+          hasChildren: apiPerson.has_kids,
+          interests: apiPerson.interests ? [apiPerson.interests] : [],
+          personalNotes: apiPerson.notes,
+          location: apiPerson.department // Use department as location for display
+        }
+      }))
+
+      set({
+        people,
+        // Keep existing mock data for other features not yet implemented
+        oneOnOneSessions: mockOneOnOneSessions,
+        feedbacks: mockFeedbacks,
+        aiSuggestions: mockAISuggestions,
+        isLoading: false
+      })
+    } catch (error) {
+      console.error('Error loading people from API:', error)
+      // Fallback to mock data on error
+      set({
+        people: [],
+        oneOnOneSessions: mockOneOnOneSessions,
+        feedbacks: mockFeedbacks,
+        aiSuggestions: mockAISuggestions,
+        isLoading: false
+      })
+    }
   },
 
   // Selectors
@@ -199,3 +261,4 @@ export const useAddFeedback = () => usePeopleStore(state => state.addFeedback)
 export const useAddAISuggestion = () => usePeopleStore(state => state.addAISuggestion)
 export const useMarkSuggestionAsUsed = () => usePeopleStore(state => state.markSuggestionAsUsed)
 export const useLoadPeopleData = () => usePeopleStore(state => state.loadPeopleData)
+export const useLoadPeopleFromAPI = () => usePeopleStore(state => state.loadPeopleFromAPI)

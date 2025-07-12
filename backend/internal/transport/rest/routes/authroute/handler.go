@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/diegoclair/go_utils/logger"
 	"github.com/diegoclair/leaderpro/infra"
 	infraContract "github.com/diegoclair/leaderpro/infra/contract"
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
@@ -24,14 +25,16 @@ type Handler struct {
 	authService contract.AuthApp
 	authToken   infraContract.AuthToken
 	authHelper  *shared.AuthHelper
+	log         logger.Logger
 }
 
-func NewHandler(authService contract.AuthApp, authToken infraContract.AuthToken, authHelper *shared.AuthHelper) *Handler {
+func NewHandler(authService contract.AuthApp, authToken infraContract.AuthToken, authHelper *shared.AuthHelper, log logger.Logger) *Handler {
 	Once.Do(func() {
 		instance = &Handler{
 			authService: authService,
 			authToken:   authToken,
 			authHelper:  authHelper,
+			log:         log,
 		}
 	})
 
@@ -57,6 +60,8 @@ func (s *Handler) handleLogin(c echo.Context) error {
 
 func (s *Handler) handleRefreshToken(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
+	s.log.Info(ctx, "Starting refresh token")
+	defer s.log.Info(ctx, "Finished refresh token")
 
 	input := viewmodel.RefreshTokenRequest{}
 

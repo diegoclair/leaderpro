@@ -7,35 +7,29 @@ import (
 )
 
 type PersonRequest struct {
-	Name        string     `json:"name" validate:"required,min=2,max=450"`
-	Email       string     `json:"email,omitempty" validate:"omitempty,email"`
-	Position    string     `json:"position,omitempty"`
-	Department  string     `json:"department,omitempty"`
-	Phone       string     `json:"phone,omitempty"`
-	Birthday    *time.Time `json:"birthday,omitempty"`
-	StartDate   *time.Time `json:"start_date,omitempty"`
-	IsManager   bool       `json:"is_manager"`
-	ManagerUUID string     `json:"manager_uuid,omitempty"`
-	Notes       string     `json:"notes,omitempty"`
-	HasKids     bool       `json:"has_kids"`
-	Interests   string     `json:"interests,omitempty"`
-	Personality string     `json:"personality,omitempty"`
+	Name       string     `json:"name" validate:"required,min=2,max=450"`
+	Email      string     `json:"email,omitempty" validate:"omitempty,email"`
+	Position   string     `json:"position,omitempty"`
+	Department string     `json:"department,omitempty"`
+	Phone      string     `json:"phone,omitempty"`
+	StartDate  *time.Time `json:"start_date,omitempty"`
+	Notes      string     `json:"notes,omitempty"`
 }
 
 func (p PersonRequest) ToEntity() entity.Person {
 	return entity.Person{
-		Name:        p.Name,
-		Email:       p.Email,
-		Position:    p.Position,
-		Department:  p.Department,
-		Phone:       p.Phone,
-		Birthday:    p.Birthday,
-		StartDate:   p.StartDate,
-		IsManager:   p.IsManager,
-		Notes:       p.Notes,
-		HasKids:     p.HasKids,
-		Interests:   p.Interests,
-		Personality: p.Personality,
+		Name:       p.Name,
+		Email:      p.Email,
+		Position:   p.Position,
+		Department: p.Department,
+		Phone:      p.Phone,
+		StartDate:  p.StartDate,
+		Notes:      p.Notes,
+		// Set defaults for fields not in the simplified form
+		IsManager:   false,
+		HasKids:     false,
+		Interests:   "",
+		Personality: "",
 	}
 }
 
@@ -76,4 +70,8 @@ func (p *PersonResponse) FillFromEntity(person entity.Person) {
 	p.CreatedAt = person.CreatedAt
 	p.Age = person.GetAge()
 	p.Tenure = person.GetTenure()
+	
+	// Manager UUID will be resolved in a future enhancement if needed
+	// For now, we keep it empty since we don't have a direct relationship
+	p.ManagerUUID = ""
 }

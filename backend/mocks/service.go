@@ -380,11 +380,12 @@ func (m *MockPersonApp) EXPECT() *MockPersonAppMockRecorder {
 }
 
 // CreatePerson mocks base method.
-func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) error {
+func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (entity.Person, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePerson", ctx, person, companyUUID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(entity.Person)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreatePerson indicates an expected call of CreatePerson.

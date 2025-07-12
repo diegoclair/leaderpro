@@ -30,7 +30,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		buildMocks func(ctx context.Context, m test.SvcMocks, args args, echoContext echo.Context)
+		buildMocks func(ctx context.Context, m test.AppMocks, args args, echoContext echo.Context)
 		wantErr    bool
 		errMsg     string
 	}{
@@ -44,7 +44,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 				userAgent: "TestAgent/1.0",
 				clientIP:  "192.168.1.100",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args, echoContext echo.Context) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args, echoContext echo.Context) {
 				// Mock Login
 				user := entity.User{
 					ID:   1,
@@ -97,7 +97,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 					Password: "wrongpassword",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args, echoContext echo.Context) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args, echoContext echo.Context) {
 				m.AuthAppMock.EXPECT().Login(ctx, args.loginInput).
 					Return(entity.User{}, fmt.Errorf("invalid credentials")).Times(1)
 			},
@@ -112,7 +112,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args, echoContext echo.Context) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args, echoContext echo.Context) {
 				user := entity.User{ID: 1, UUID: "user-uuid-123"}
 				m.AuthAppMock.EXPECT().Login(ctx, args.loginInput).Return(user, nil).Times(1)
 				m.AuthTokenMock.EXPECT().CreateAccessToken(ctx, gomock.Any()).
@@ -129,7 +129,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args, echoContext echo.Context) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args, echoContext echo.Context) {
 				user := entity.User{ID: 1, UUID: "user-uuid-123"}
 				tokenPayload := contract.TokenPayload{ExpiredAt: time.Now().Add(15 * time.Minute)}
 
@@ -150,7 +150,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args, echoContext echo.Context) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args, echoContext echo.Context) {
 				user := entity.User{ID: 1, UUID: "user-uuid-123"}
 				tokenPayload := contract.TokenPayload{ExpiredAt: time.Now().Add(15 * time.Minute)}
 				refreshTokenPayload := contract.TokenPayload{ExpiredAt: time.Now().Add(24 * time.Hour)}
@@ -173,7 +173,7 @@ func TestAuthHelper_DoLogin(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			m := test.SvcMocks{
+			m := test.AppMocks{
 				AuthAppMock:   mocks.NewMockAuthApp(ctrl),
 				UserAppMock:   mocks.NewMockUserApp(ctrl),
 				AuthTokenMock: infraMocks.NewMockAuthToken(ctrl),

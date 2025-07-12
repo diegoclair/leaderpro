@@ -46,12 +46,15 @@ func (s *Handler) handleCreatePerson(c echo.Context) error {
 
 	person := input.ToEntity()
 
-	err = s.personService.CreatePerson(ctx, person, companyUUID)
+	createdPerson, err := s.personService.CreatePerson(ctx, person, companyUUID)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
 
-	return routeutils.ResponseCreated(c)
+	response := viewmodel.PersonResponse{}
+	response.FillFromEntity(createdPerson)
+
+	return routeutils.ResponseCreated(c, response)
 }
 
 func (s *Handler) handleGetCompanyPeople(c echo.Context) error {

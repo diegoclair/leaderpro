@@ -8,175 +8,119 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Tagline:** "Become a smarter leader"
 
-## Product Context
+## Architecture & Tech Stack
 
-- **Problem**: 70% of leaders are promoted without adequate training, resulting in ineffective 1:1s and superficial performance reviews
-- **Solution**: Multidimensional contextual AI that combines personal + temporal + geographic + historical data
-- **Differentiator**: Virtual coach that remembers everything and suggests actions based on complete context
-- **Model**: B2C (R$ 49.90/month) - individual leader pays
-- **Member Get Member Strategy**: 50% discount per valid referral (accumulative)
-
-## Project Structure
-
-### Current State
-- `/backend/` - Go boilerplate with DDD/Clean Architecture (needs LeaderPro implementation)
-- `/frontend/` - **✅ IMPLEMENTED** - Complete Next.js 15.3.5 frontend with all core features
-- `/plan/` - Complete project planning documentation
-- `/.github/workflows/` - GitHub Actions for frontend deployment to GitHub Pages
-
-### Key Documentation
-- **`/frontend/README.md`** - Frontend architecture, TypeScript types, components, and stores
-- **`/backend/README.md`** - Go boilerplate documentation with Clean Architecture
-- **`/plan/000001-projeto-leaderpro.md`** - Business plan, market analysis, and strategy
-
-## Technology Stack
-
-### Backend (Go/Golang)
-- **Current**: Go 1.24.2 boilerplate with Echo v4.13.3, GORM, MySQL 8.0.32, Redis 7.4.2
-- **Auth**: PASETO tokens (15m access, 24h refresh)
-- **Testing**: Testcontainers for integration tests, go-sqlmock for unit tests
+### Backend (Go) - Clean Architecture + DDD
+- **Go 1.24.5** with Echo v4.13.3 framework
+- **Database**: MySQL 8.0.32 with GORM ORM  
+- **Cache**: Redis 7.4.2 for sessions and caching
+- **Auth**: PASETO tokens (15min access, 24h refresh) via `user-token` header
+- **Testing**: Testcontainers + go-sqlmock for unit/integration tests
 - **Observability**: Prometheus, Grafana, Jaeger tracing
-- **To implement**: LeaderPro-specific endpoints for:
-  - Companies and team member management
-  - 1:1 meetings and notes
-  - AI integration (OpenAI/Claude API)
-  - Vector database for contextual memory
+- **Architecture**: Domain-Driven Design with Clean Architecture principles
 
-### Frontend (Next.js) - ✅ IMPLEMENTED
-- **Framework**: Next.js 15.3.5 with App Router
-- **Language**: TypeScript with strict mode
+### Frontend (Next.js) - ✅ FULLY IMPLEMENTED  
+- **Next.js 15.3.5** with App Router and React 19.0.0
+- **TypeScript** with strict mode, path alias `@/*` → `./src/*`
 - **Styling**: TailwindCSS v4 + shadcn/ui components
-- **State**: Zustand for global state management
-- **Icons**: Lucide React
-- **Date Utils**: date-fns
-- **Deploy**: GitHub Pages via GitHub Actions
+- **State**: Zustand stores with localStorage persistence
+- **Icons**: Lucide React, **Date Utils**: date-fns
+- **Deploy**: GitHub Pages via GitHub Actions (auto-deploy on main push)
 
 ## Development Commands
 
-### Frontend (Next.js) - ✅ WORKING
+### Frontend (Next.js)
 ```bash
 cd frontend
-
-# Development server (with Turbopack)
-npm run dev
-
-# Production build (static export)
-npm run build
-
-# Start production server
-npm run start
-
-# Linting
-npm run lint
-
-# Type checking (manual - not in package.json)
-npx tsc --noEmit
+npm run dev        # Development server with Turbopack (http://localhost:3000)
+npm run build      # Production build with static export
+npm run lint       # ESLint linting
+npx tsc --noEmit   # TypeScript type checking
 ```
 
-### Backend (Go) - BOILERPLATE READY
+### Backend (Go)
 ```bash
 cd backend
+make start         # Start all services (MySQL, Redis, Go app) via Docker
+make tests         # Run all tests with coverage
+make mocks         # Generate mocks for testing
+make docs          # Generate Swagger API docs
+make clean-volumes # Clean Docker volumes if needed
 
-# Start all services (MySQL, Redis, App)
-make start
-
-# Run tests with coverage
-make tests
-
-# Generate mocks for testing
-make mocks
-
-# Generate API documentation (Swagger)
-make docs
-
-# Clean Docker volumes (if needed)
-make clean-volumes
-
-# Access Swagger UI (after start)
-# http://localhost:5000/swagger/
-
-# Individual operations
-docker compose up --build    # Same as make start
-go test -v -cover ./...      # Same as make tests
-
-# Single test file
-go test -v -cover ./internal/domain/...
+# Individual commands
+go test -v -cover ./internal/domain/...  # Run specific test
 ```
 
-### Deployment
-```bash
-# Frontend deploys automatically via GitHub Actions on push to main branch
-# Live at: https://diegoclair.github.io/leaderpro/
-```
+**Note**: The user typically handles `make start` manually, so don't run it automatically.
+
+### Key URLs After Starting
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000  
+- **Swagger Docs**: http://localhost:5000/swagger/
+- **Live Demo**: https://diegoclair.github.io/leaderpro/
 
 ## Architecture Overview
 
-### Backend Architecture (Clean Architecture)
+### Backend - Clean Architecture Flow
+**Dependency Rule**: `transport` → `application` → `domain` ← `infra`
+
 ```
 backend/
-├── cmd/              # Application entry point
-├── internal/         # Core application code
-│   ├── domain/       # Business logic, entities, interfaces
-│   ├── application/  # Use cases/services
-│   └── transport/    # HTTP handlers (Echo framework)
-├── infra/            # Infrastructure implementations
-│   ├── data/         # Database repositories
-│   ├── cache/        # Redis implementation
-│   └── logger/       # Logging infrastructure
-├── migrator/         # Database migrations
-├── docs/             # Generated Swagger docs
-└── mocks/            # Generated mocks for testing
+├── cmd/main.go               # App entry point
+├── internal/
+│   ├── domain/entity/        # Business entities (User, Company, Person)
+│   ├── application/service/  # Use cases/business logic  
+│   └── transport/rest/       # HTTP handlers + routes
+├── infra/
+│   ├── data/mysql/          # Database repositories
+│   ├── cache/               # Redis implementation
+│   └── auth/                # PASETO token management
+├── migrator/mysql/sql/      # Database migrations
+└── mocks/                   # Generated test mocks
 ```
 
-### Frontend Architecture
+### Frontend - Feature-Based Architecture  
 ```
 frontend/src/
-├── app/                    # Next.js 15 App Router
-│   ├── page.tsx            # Home (auth redirect)
-│   ├── dashboard/          # Main dashboard
-│   ├── auth/              # Login/registration pages
+├── app/                     # Next.js App Router pages
+│   ├── auth/               # Login/register pages
+│   ├── dashboard/          # Main dashboard  
 │   └── profile/[id]/       # Person profile pages
-├── components/             
-│   ├── ui/                 # shadcn/ui components
-│   ├── person/             # Person profiles, cards
-│   ├── profile/            # Profile tabs (info, history, feedback, chat)
-│   ├── company/            # Company selector
-│   └── layout/             # Header, navigation, theme toggle
-├── hooks/                  # Custom React hooks
-│   ├── use-mentions.ts     # @mention functionality
-│   └── use-create-person.ts# Auto-create from mentions
-├── lib/                    
-│   ├── stores/             # Zustand state stores
-│   ├── types/              # TypeScript definitions
-│   └── utils/              # Date, name utilities
-└── stores/                 # Legacy - migrated to lib/stores/
+├── components/
+│   ├── ui/                 # shadcn/ui base components
+│   ├── auth/               # AuthGuard, auth forms
+│   ├── company/            # CompanySelector
+│   └── profile/            # Profile tabs + @mention system
+├── lib/
+│   ├── stores/             # Zustand stores (auth, company, people)
+│   ├── api/client.ts       # ⭐ Centralized API client 
+│   └── types/              # TypeScript definitions
+└── hooks/                  # Custom React hooks
 ```
 
-## Core Features
+## Implementation Status
 
-### ✅ Implemented (Frontend)
-- Multi-company/project support with persistence
-- Complete person profile management
-- 1:1 meeting system with notes
-- @mention system with auto-suggestions
-- Feedback tracking (direct + mentioned)
-- Dark/light theme toggle
-- Responsive design
+### ✅ Completed Features
+**Frontend (Next.js)**: Complete implementation with all core features
+- Multi-company management with persistence
+- Person profile management with @mention system  
+- 1:1 meeting system with notes and AI suggestions (mocked)
+- Feedback tracking (direct + mentioned across people)
+- Dark/light theme toggle + responsive design
 
-### ✅ Recently Implemented
-- **Authentication System** - User login/signup with PASETO tokens
-- **Company Management** - Create, read companies with role/default settings
-- **User-Company Association** - Direct ownership model (simplified from many-to-many)
-- **Onboarding Flow** - Automatic onboarding when no companies exist
-- **Database Integration** - Full MySQL integration with Clean Architecture
+**Backend (Go)**: Authentication + company + person management implemented
+- PASETO-based JWT authentication (15min/24h tokens)
+- User registration/login with automatic token refresh
+- Company CRUD operations with user ownership model
+- **Person Management API** - Complete CRUD endpoints for people
+- MySQL integration with Clean Architecture
+- Onboarding flow (frontend wizard → backend company creation)
 
-### ⏳ Pending Implementation
-1. **Person Management API** - Complete person CRUD endpoints
-2. **Member Get Member System** - Referral tracking and discount management
-3. **AI Integration** - OpenAI/Claude for contextual suggestions
-4. **Vector Database** - AI memory with Pinecone/Weaviate
-5. **Real-time Sync** - WebSockets for collaboration
-6. **Calendar Integration** - Google/Outlook
+### ⏳ Next Priorities
+1. **1:1 Meetings API** - Backend endpoints for meeting notes
+2. **AI Integration** - OpenAI/Claude API for contextual suggestions
+3. **Member Get Member System** - Referral tracking with discounts
+4. **Advanced Person Features** - Manager relationships, search, filtering
 
 ## Member Get Member Strategy
 
@@ -211,138 +155,80 @@ frontend/src/
 4. **Prompt Engineering**: Generate suggestions
 5. **Response Caching**: Redis for frequent queries
 
-## Common Patterns
+## Critical Development Patterns
 
-### API Client Centralizado (Frontend) - ⭐ IMPORTANTE
-**SEMPRE use o apiClient centralizado para requisições HTTP:**
+### ⭐ Frontend API Client - ALWAYS USE
+**NEVER use fetch() directly. Always use the centralized apiClient:**
 
 ```typescript
-// ✅ CORRETO - Use apiClient para todas as requisições
-import { apiClient } from '@/lib/stores/authStore'
+import { apiClient } from '@/lib/api/client'
 
-// Requisições públicas (sem autenticação)
-const loginData = await apiClient.post('/auth/login', { email, password })
-const userData = await apiClient.post('/users', registrationData)
+// ✅ Public requests (no auth)
+await apiClient.post('/auth/login', { email, password })
+await apiClient.post('/users', userData)
 
-// Requisições autenticadas (token automático + renovação)
-const profile = await apiClient.authGet('/users/profile')
-await apiClient.authPost('/auth/logout')
-await apiClient.authPut('/users/profile', updateData)
-await apiClient.authDelete('/companies/123')
+// ✅ Authenticated requests (auto token + refresh)
+await apiClient.authGet('/users/profile')
+await apiClient.authPost('/companies', companyData)
+await apiClient.authPut('/users/profile', updates)
 
-// ❌ INCORRETO - Nunca use fetch() diretamente
-// fetch('/api/endpoint') // NÃO FAÇA ISSO
+// ❌ NEVER do this
+// fetch('/api/endpoint') // DON'T DO THIS
 ```
 
-**Benefícios do apiClient:**
-- ✅ Headers de autenticação (`user-token`) incluídos automaticamente
-- ✅ Renovação automática de token em caso de 401
-- ✅ Gerenciamento centralizado de erros
-- ✅ Configuração única - mudanças de header em 1 lugar só
-- ✅ Type safety com TypeScript
+**Why apiClient is mandatory:**
+- Automatic `user-token` header injection
+- Automatic token refresh on 401 errors  
+- Centralized error handling + notifications
+- TypeScript type safety
 
-### TypeScript (Frontend)
-```typescript
-// Zustand store pattern
-interface CompanyState {
-  companies: Company[]
-  activeCompany: Company | null
-  isLoading: boolean
-  
-  loadCompanies: () => Promise<void>
-  addCompany: (company: Company) => void
-}
+### Backend Authentication
+- **Header**: `user-token` (NOT `Authorization`)
+- **Middleware**: `serverMiddleware/auth.go` validates protected routes  
+- **Tokens**: PASETO with 15min access + 24h refresh
+- **Session Storage**: Redis with user context
 
-// Onboarding flow - automatic based on data
-const needsOnboarding = isAuthenticated && companies.length === 0
-
-// Company creation with backend sync
-const response = await apiClient.authPost('/companies', {
-  name: 'TechCorp',
-  industry: 'technology',
-  size: 'medium',
-  role: 'CTO',
-  is_default: true
-})
-
-// Date formatting
-formatRelativeDate(date) // "2 days ago"
-formatDate(date, "PPP") // "January 7, 2025"
-```
-
-### Go (Backend)
+### Go Clean Architecture Pattern
 ```go
-// Clean Architecture flow
-// transport -> application -> domain -> infra
-
+// Flow: transport → application → domain ← infra
 // Repository interface (domain layer)
 type CompanyRepository interface {
     CreateCompany(ctx context.Context, company entity.Company) (int64, error)
     GetCompaniesByUser(ctx context.Context, userID int64) ([]entity.Company, error)
 }
 
-// Use case (application layer)
-type CompanyService struct {
-    dm      contract.DataManager
-    authApp contract.AuthApp
-}
-
+// Service (application layer)  
 func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Company) (entity.Company, error) {
-    userID, err := s.authApp.GetLoggedUserID(ctx)
-    if err != nil {
-        return company, err
-    }
+    userID, err := s.authApp.GetLoggedUserID(ctx) // Get from auth context
     company.UserOwnerID = userID
-    
-    companyID, err := s.dm.Company().CreateCompany(ctx, company)
-    if err != nil {
-        return company, err
-    }
-    company.ID = companyID
-    return company, nil
+    return s.dm.Company().CreateCompany(ctx, company)
 }
 ```
 
-## Development Environment
+## Key Entry Points & Files
 
-### Prerequisites
-- **Docker** (for backend services: MySQL, Redis, Prometheus, Grafana, Jaeger)
-- **Go 1.22+** (for backend development)
-- **Node.js 18+** (for frontend development)
-
-### Configuration Files
-- **Backend**: `/backend/deployment/config-local.toml` (database, Redis, auth settings)
-- **Frontend**: TypeScript strict mode, path alias `@/*` → `./src/*`
-- **Ports**: App (5000), MySQL (3306), Redis (6379)
-
-## Important Notes
-
-- **Current Status**: Frontend completed, backend authentication + company management implemented
-- **Live Demo**: https://diegoclair.github.io/leaderpro/
-- **Data Storage**: MySQL database for companies/users, localStorage for frontend state
-- **AI Features**: Mocked in frontend (backend integration pending)
-- **Authentication**: Full PASETO token-based auth with refresh tokens
-- **Next Steps**: Implement person management API and AI integration
-
-## Key Files and Entry Points
-
-### Backend Entry Points
+### Backend Critical Files
 - `backend/cmd/main.go` - Application startup
-- `backend/internal/transport/rest/server.go` - HTTP server setup
-- `backend/internal/domain/entity/` - Core business entities (Person, Company, OneOnOne)
+- `backend/internal/domain/entity/` - Business entities (User, Company, Person, OneOnOne)
+- `backend/internal/application/service/` - Business logic services
+- `backend/internal/transport/rest/routes/` - HTTP route handlers
 - `backend/migrator/mysql/sql/` - Database migrations
 
-### Frontend Entry Points  
-- `frontend/src/app/page.tsx` - Home page (auth redirect)
-- `frontend/src/app/dashboard/page.tsx` - Main dashboard
-- `frontend/src/app/auth/` - Login/registration pages
-- `frontend/src/app/profile/[id]/page.tsx` - Person profile pages
-- `frontend/src/lib/stores/` - Zustand state management
-- `frontend/src/lib/api/client.ts` - **API Client centralizado** (use sempre!)
-- `frontend/src/components/` - Reusable UI components
+### Frontend Critical Files  
+- `frontend/src/app/` - Next.js App Router pages (auth, dashboard, profile)
+- `frontend/src/lib/api/client.ts` - ⭐ **Centralized API client** (use always!)
+- `frontend/src/lib/stores/` - Zustand state stores (auth, company, people)
+- `frontend/src/components/` - UI components organized by feature
+- `frontend/src/lib/types/index.ts` - TypeScript type definitions
 
-### Autenticação Backend
-- **Header esperado**: `user-token` (não `Authorization`)
-- **Middleware**: `serverMiddleware/auth.go` valida header em rotas privadas
-- **Tokens**: PASETO com 15min (access) + 24h (refresh)
-- **Logout**: `POST /auth/logout` invalida sessão no Redis
+## Environment & Configuration
+
+### Prerequisites
+- **Docker** (backend services)
+- **Go 1.24.5+** (backend development)
+- **Node.js 18+** (frontend development)
+
+### Configuration
+- **Backend Config**: `backend/deployment/config-local.toml`  
+- **Frontend ENV**: `NEXT_PUBLIC_API_URL` (defaults to http://localhost:5000)
+- **Default Ports**: Frontend (3000), Backend (5000), MySQL (3306), Redis (6379)

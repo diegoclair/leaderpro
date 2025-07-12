@@ -53,7 +53,6 @@ The platform maintains perfect memory of every team interaction and suggests con
 ### Simplified Company-User Relationship
 The application uses a simplified ownership model where:
 - Each company belongs directly to one user via `user_owner_id`
-- No junction table (`tab_company_user`) needed
 - Each user can own multiple companies
 - Frontend onboarding creates the user's first company automatically
 

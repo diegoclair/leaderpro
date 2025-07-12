@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PersonCard } from '@/components/person/PersonCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,12 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
-import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData } from '@/lib/stores/peopleStore'
+import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadPeopleFromAPI } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
 import { getMockDaysAgo, getMockAverageDays } from '@/lib/utils/dates'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
+import AddPersonModal, { PersonFormData } from '@/components/person/AddPersonModal'
+import { apiClient } from '@/lib/api/client'
+import { useNotificationStore } from '@/lib/stores/notificationStore'
 
 export default function Dashboard() {
   const { isLoading, shouldRender, needsOnboarding, completeOnboarding } = useAuthRedirect({ requireAuth: true })
@@ -23,6 +26,12 @@ export default function Dashboard() {
   const companies = useCompanyStore(state => state.companies)
   const loadCompanies = useLoadCompanies()
   const loadPeopleData = useLoadPeopleData()
+  const loadPeopleFromAPI = useLoadPeopleFromAPI()
+  const { showSuccess, showError } = useNotificationStore()
+  
+  // Modal state
+  const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false)
+  const [isCreatingPerson, setIsCreatingPerson] = useState(false)
 
   // Carregar empresas uma única vez quando o componente monta
   useEffect(() => {
@@ -37,14 +46,14 @@ export default function Dashboard() {
   // Filter people by active company
   const people = React.useMemo(() => {
     if (!activeCompany) return []
-    return allPeople.filter(person => person.companyId === activeCompany.id)
+    return allPeople.filter(person => person.companyId === activeCompany.uuid)
   }, [allPeople, activeCompany])
   
   // Calculate upcoming 1:1s locally
   const upcomingOneOnOnes = React.useMemo(() => {
     if (!activeCompany) return []
     
-    const companyPeople = allPeople.filter(person => person.companyId === activeCompany.id)
+    const companyPeople = allPeople.filter(person => person.companyId === activeCompany.uuid)
     const upcomingMeetings: Array<{
       id: string
       personId: string
@@ -98,9 +107,53 @@ export default function Dashboard() {
   useEffect(() => {
     // Carregar pessoas quando estiver pronto (após empresas carregadas)
     if (shouldRender && !needsOnboarding && activeCompany) {
-      loadPeopleData()
+      loadPeopleFromAPI(activeCompany.uuid)
     }
-  }, [loadPeopleData, shouldRender, needsOnboarding, activeCompany])
+  }, [loadPeopleFromAPI, shouldRender, needsOnboarding, activeCompany])
+
+  // Function to create person
+  const handleCreatePerson = async (personData: PersonFormData): Promise<boolean> => {
+    if (!activeCompany) {
+      showError('Erro', 'Nenhuma empresa selecionada')
+      return false
+    }
+
+    setIsCreatingPerson(true)
+    try {
+      // Convert form data to API format
+      const apiData = {
+        name: personData.name,
+        email: personData.email || undefined,
+        position: personData.position || undefined,
+        department: personData.department || undefined,
+        phone: personData.phone || undefined,
+        start_date: personData.start_date ? new Date(personData.start_date).toISOString() : undefined,
+        notes: personData.notes || undefined
+      }
+
+      // Remove undefined fields
+      Object.keys(apiData).forEach(key => {
+        if (apiData[key as keyof typeof apiData] === undefined) {
+          delete apiData[key as keyof typeof apiData]
+        }
+      })
+
+      await apiClient.authPost(`/companies/${activeCompany.uuid}/people`, apiData)
+      
+      showSuccess('Sucesso', `${personData.name} foi adicionado(a) ao seu time!`)
+      
+      // Reload people data to show the new person
+      await loadPeopleFromAPI(activeCompany.uuid)
+      
+      return true
+    } catch (error) {
+      console.error('Error creating person:', error)
+      showError('Erro', 'Não foi possível adicionar a pessoa. Tente novamente.')
+      return false
+    } finally {
+      setIsCreatingPerson(false)
+    }
+  }
 
   // Mostrar loading se estiver carregando auth ou não deve renderizar
   if (isLoading || !shouldRender) {
@@ -278,7 +331,11 @@ export default function Dashboard() {
               </p>
             </div>
             {people.length > 0 && (
-              <Button className="gap-2" size="lg">
+              <Button 
+                className="gap-2" 
+                size="lg"
+                onClick={() => setIsAddPersonModalOpen(true)}
+              >
                 <Users className="h-4 w-4" />
                 Adicionar pessoa
               </Button>
@@ -297,7 +354,11 @@ export default function Dashboard() {
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                   Adicione as pessoas do seu time para começar a registrar 1:1s e acompanhar o desenvolvimento de cada uma.
                 </p>
-                <Button className="gap-2" size="lg">
+                <Button 
+                  className="gap-2" 
+                  size="lg"
+                  onClick={() => setIsAddPersonModalOpen(true)}
+                >
                   <Users className="h-4 w-4" />
                   Adicionar primeira pessoa
                 </Button>
@@ -348,6 +409,14 @@ export default function Dashboard() {
         )}
       </div>
       </main>
+
+      {/* Add Person Modal */}
+      <AddPersonModal
+        open={isAddPersonModalOpen}
+        onClose={() => setIsAddPersonModalOpen(false)}
+        onCreatePerson={handleCreatePerson}
+        isLoading={isCreatingPerson}
+      />
     </div>
   )
 }

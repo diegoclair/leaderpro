@@ -26,10 +26,10 @@ func TestHandler_handleCreateCompany(t *testing.T) {
 				Name: "Test Company",
 				Role: "Tech Lead",
 			},
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					companyReq := body.(viewmodel.CompanyRequest)
 					m.CompanyAppMock.EXPECT().CreateCompany(ctx, companyReq.ToEntity()).Return(entity.Company{}, nil).Times(1)
@@ -45,10 +45,10 @@ func TestHandler_handleCreateCompany(t *testing.T) {
 				Name: "Test Company",
 				Role: "Manager",
 			},
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					companyReq := body.(viewmodel.CompanyRequest)
 					m.CompanyAppMock.EXPECT().CreateCompany(ctx, companyReq.ToEntity()).Return(entity.Company{}, fmt.Errorf("error to create company")).Times(1)
@@ -104,10 +104,10 @@ func TestHandler_handleGetCompanies(t *testing.T) {
 	tests := append(test.PrivateEndpointValidations,
 		test.PrivateEndpointTest{
 			Name: "Should complete request with no error",
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				mockCompanies := []entity.Company{
 					{UUID: "company-1", Name: "Company 1"},
 					{UUID: "company-2", Name: "Company 2"},
@@ -122,10 +122,10 @@ func TestHandler_handleGetCompanies(t *testing.T) {
 		},
 		test.PrivateEndpointTest{
 			Name: "Should return error when get companies fails",
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				m.CompanyAppMock.EXPECT().GetUserCompanies(ctx).Return(nil, fmt.Errorf("error to get companies")).Times(1)
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -173,7 +173,7 @@ func TestHandler_handleGetCompanyByUUID(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -181,7 +181,7 @@ func TestHandler_handleGetCompanyByUUID(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				mockCompany := entity.Company{
 					UUID: args.companyUUID,
 					Name: "Test Company",
@@ -198,7 +198,7 @@ func TestHandler_handleGetCompanyByUUID(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.CompanyAppMock.EXPECT().GetCompanyByUUID(ctx, args.companyUUID).Return(entity.Company{}, fmt.Errorf("company not found")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
@@ -243,7 +243,7 @@ func TestHandler_handleUpdateCompany(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -251,10 +251,10 @@ func TestHandler_handleUpdateCompany(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 				body: viewmodel.CompanyRequest{
-					Name:        "Updated Company",
+					Name: "Updated Company",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CompanyRequest)
 				m.CompanyAppMock.EXPECT().UpdateCompany(ctx, args.companyUUID, body.ToEntity()).Return(nil).Times(1)
 			},
@@ -270,7 +270,7 @@ func TestHandler_handleUpdateCompany(t *testing.T) {
 					Name: "Updated Company",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CompanyRequest)
 				m.CompanyAppMock.EXPECT().UpdateCompany(ctx, args.companyUUID, body.ToEntity()).Return(fmt.Errorf("error to update company")).Times(1)
 			},
@@ -320,7 +320,7 @@ func TestHandler_handleDeleteCompany(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -328,7 +328,7 @@ func TestHandler_handleDeleteCompany(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.CompanyAppMock.EXPECT().DeleteCompany(ctx, args.companyUUID).Return(nil).Times(1)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -340,7 +340,7 @@ func TestHandler_handleDeleteCompany(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.CompanyAppMock.EXPECT().DeleteCompany(ctx, args.companyUUID).Return(fmt.Errorf("error to delete company")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {

@@ -14,12 +14,27 @@ export type Company = {
 
 export type Person = {
   id: string
+  uuid: string
   companyId: string
   name: string
-  role: string
   email?: string
-  startDate: Date
-  personalInfo: {
+  position?: string
+  department?: string
+  phone?: string
+  birthday?: Date
+  startDate?: Date
+  isManager: boolean
+  managerUUID?: string
+  notes?: string
+  hasKids: boolean
+  interests?: string
+  personality?: string
+  createdAt: Date
+  age?: number
+  tenure?: number
+  // Legacy fields for compatibility
+  role?: string
+  personalInfo?: {
     hasChildren?: boolean
     hasPets?: boolean
     location?: string

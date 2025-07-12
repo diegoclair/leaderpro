@@ -15,7 +15,9 @@ import {
   Dog,
   Clock
 } from 'lucide-react'
-import { useAllPeopleFromStore } from '@/lib/stores/peopleStore'
+import { useAllPeopleFromStore, useLoadPeopleFromAPI } from '@/lib/stores/peopleStore'
+import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
+import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { Person } from '@/lib/types'
 import { PersonInfoTab } from '@/components/profile/PersonInfoTab'
 import { PersonHistoryTab } from '@/components/profile/PersonHistoryTab'
@@ -27,30 +29,19 @@ import { formatTimeAgoWithoutSuffix, getMockDaysAgo } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
 
 export default function ProfilePage() {
+  const { isLoading: authLoading, shouldRender } = useAuthRedirect({ requireAuth: true })
   const params = useParams()
   const router = useRouter()
   const allPeople = useAllPeopleFromStore()
+  const loadPeopleFromAPI = useLoadPeopleFromAPI()
+  const activeCompany = useActiveCompany()
+  const loadCompanies = useLoadCompanies()
   
   // Get tab from URL or default to 'info' (using window for static export compatibility)
   const [activeTab, setActiveTab] = useState('info')
+  const [isLoading, setIsLoading] = useState(false)
   
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      const tab = urlParams.get('tab')
-      if (tab) {
-        setActiveTab(tab)
-      }
-    }
-  }, [])
-
-  // Update URL when tab changes
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab)
-    const newUrl = `/profile/${params.id}?tab=${tab}`
-    router.replace(newUrl, { scroll: false })
-  }
-  
+  // All hooks must be called before any conditional returns
   const {
     showCreatePersonDialog,
     personToCreate,
@@ -63,15 +54,89 @@ export default function ProfilePage() {
     handleCreatePerson
   } = useCreatePerson()
   
-  const person = allPeople.find(p => p.id === params.id) as Person | undefined
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const tab = urlParams.get('tab')
+      if (tab) {
+        setActiveTab(tab)
+      }
+    }
+  }, [])
+
+  // Load companies and people data if not available (happens on page refresh)
+  useEffect(() => {
+    const loadDataIfNeeded = async () => {
+      if (!isLoading && shouldRender) {
+        // First load companies if we don't have any
+        const { companies } = useCompanyStore.getState()
+        if (companies.length === 0) {
+          try {
+            await loadCompanies()
+          } catch (error) {
+            console.error('Error loading companies:', error)
+            return
+          }
+        }
+
+        // Then load people if we have an active company but no people
+        if (activeCompany && allPeople.length === 0) {
+          setIsLoading(true)
+          try {
+            await loadPeopleFromAPI(activeCompany.uuid)
+          } catch (error) {
+            console.error('Error loading people:', error)
+          } finally {
+            setIsLoading(false)
+          }
+        }
+      }
+    }
+
+    loadDataIfNeeded()
+  }, [activeCompany, allPeople.length, loadPeopleFromAPI, loadCompanies, isLoading, shouldRender])
+
+  // Don't render anything until we have tried to load data
+  if (authLoading || !shouldRender) {
+    return null
+  }
+
+  // Update URL when tab changes
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    const newUrl = `/profile/${params.id}?tab=${tab}`
+    router.replace(newUrl, { scroll: false })
+  }
   
-  if (!person) {
+  const person = allPeople.find(p => p.id === params.id || p.uuid === params.id) as Person | undefined
+  
+  // Show loading while fetching people data or if we don't have active company yet
+  if (isLoading || !activeCompany || (!person && allPeople.length === 0)) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <main className="container mx-auto px-6 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-lg font-semibold mb-2">Carregando...</h2>
+            <p className="text-muted-foreground">Buscando informações da pessoa</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+  
+  // Only show "not found" if we have loaded people data and still don't have the person
+  if (!person && allPeople.length > 0) {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
         <main className="container mx-auto px-6 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-2">Pessoa não encontrada</h1>
+            <p className="text-muted-foreground mb-4">
+              A pessoa que você está procurando não foi encontrada ou pode não existir.
+            </p>
             <Button onClick={() => router.back()} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
@@ -108,18 +173,18 @@ export default function ProfilePage() {
             
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">{person.name}</h1>
-              <p className="text-lg text-muted-foreground mb-4">{person.role}</p>
+              <p className="text-lg text-muted-foreground mb-4">{person.position || person.role || 'Cargo não informado'}</p>
               
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                {person.personalInfo.location && (
+                {person.department && (
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
-                    {person.personalInfo.location}
+                    {person.department}
                   </div>
                 )}
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  Na empresa há {formatTimeAgoWithoutSuffix(person.startDate)}
+                  Na empresa há {person.startDate ? formatTimeAgoWithoutSuffix(person.startDate) : 'não informado'}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
@@ -128,16 +193,20 @@ export default function ProfilePage() {
               </div>
               
               <div className="flex gap-2 mt-4">
-                {person.personalInfo.hasChildren && (
+                {person.hasKids && (
                   <Badge variant="secondary" className="gap-1">
                     <User className="h-3 w-3" />
                     Tem filhos
                   </Badge>
                 )}
-                {person.personalInfo.hasPets && (
-                  <Badge variant="secondary" className="gap-1">
-                    <Dog className="h-3 w-3" />
-                    Tem pets
+                {person.email && (
+                  <Badge variant="outline" className="gap-1">
+                    📧 {person.email}
+                  </Badge>
+                )}
+                {person.phone && (
+                  <Badge variant="outline" className="gap-1">
+                    📞 {person.phone}
                   </Badge>
                 )}
               </div>

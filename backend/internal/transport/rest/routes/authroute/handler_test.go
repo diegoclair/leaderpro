@@ -31,7 +31,7 @@ func TestHandler_handleLogin(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -42,7 +42,7 @@ func TestHandler_handleLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
 				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
@@ -82,7 +82,7 @@ func TestHandler_handleLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
 				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{}, fmt.Errorf("error to login")).Times(1)
@@ -100,7 +100,7 @@ func TestHandler_handleLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
 				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
@@ -119,7 +119,7 @@ func TestHandler_handleLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
 				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
@@ -139,7 +139,7 @@ func TestHandler_handleLogin(t *testing.T) {
 					Password: "12345678",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.Login)
 
 				m.AuthAppMock.EXPECT().Login(ctx, body.ToDto()).Return(entity.User{ID: 1, UUID: "uuid"}, nil).Times(1)
@@ -195,7 +195,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -207,7 +207,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					RefreshToken: "r123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				input := args.body.(viewmodel.RefreshTokenRequest)
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, input.RefreshToken).
 					Return(contract.TokenPayload{
@@ -253,7 +253,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					RefreshToken: "r123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).Return(contract.TokenPayload{}, fmt.Errorf("error to verify token")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
@@ -268,7 +268,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					RefreshToken: "r123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				input := args.body.(viewmodel.RefreshTokenRequest)
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, input.RefreshToken).
 					Return(contract.TokenPayload{
@@ -294,7 +294,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					RefreshToken: "r123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
@@ -321,7 +321,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					RefreshToken: "r123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
@@ -349,7 +349,7 @@ func TestHandler_handleRefreshToken(t *testing.T) {
 					RefreshToken: "r123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.AuthTokenMock.EXPECT().VerifyToken(ctx, gomock.Any()).
 					Return(contract.TokenPayload{
 						SessionUUID: args.sessionUUID,
@@ -415,10 +415,10 @@ func TestHandler_handleLogout(t *testing.T) {
 	tests := append(test.PrivateEndpointValidations,
 		test.PrivateEndpointTest{
 			Name: "Should complete request with no error",
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				m.AuthAppMock.EXPECT().Logout(ctx, gomock.Any()).Return(nil).Times(1)
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -427,10 +427,10 @@ func TestHandler_handleLogout(t *testing.T) {
 		},
 		test.PrivateEndpointTest{
 			Name: "Should return error when logout fails",
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				m.AuthAppMock.EXPECT().Logout(ctx, gomock.Any()).Return(fmt.Errorf("error to logout")).Times(1)
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {

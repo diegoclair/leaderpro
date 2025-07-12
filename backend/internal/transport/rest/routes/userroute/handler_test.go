@@ -30,7 +30,7 @@ func TestHandler_handleCreateUser(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -43,9 +43,9 @@ func TestHandler_handleCreateUser(t *testing.T) {
 					Phone:    "+1234567890",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CreateUser)
-				
+
 				// Mock CreateUser
 				mockUser := entity.User{
 					ID:    1,
@@ -97,17 +97,17 @@ func TestHandler_handleCreateUser(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				
+
 				// Verify AuthResponse structure
 				var response viewmodel.AuthResponse
 				err := json.Unmarshal(recorder.Body.Bytes(), &response)
 				require.NoError(t, err)
-				
+
 				// Check user data
 				require.Equal(t, "user-uuid-123", response.User.UUID)
 				require.Equal(t, "John Doe", response.User.Name)
 				require.Equal(t, "john.doe@example.com", response.User.Email)
-				
+
 				// Check auth tokens
 				require.Equal(t, "access-token-123", response.Auth.AccessToken)
 				require.Equal(t, "refresh-token-123", response.Auth.RefreshToken)
@@ -134,7 +134,7 @@ func TestHandler_handleCreateUser(t *testing.T) {
 					Password: "password123",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CreateUser)
 				m.UserAppMock.EXPECT().CreateUser(ctx, body.ToEntity()).Return(entity.User{}, fmt.Errorf("error to create user")).Times(1)
 				// No login mocks needed since CreateUser fails before reaching login
@@ -154,9 +154,9 @@ func TestHandler_handleCreateUser(t *testing.T) {
 					Phone:    "+1234567890",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CreateUser)
-				
+
 				// Mock CreateUser - succeeds
 				mockUser := entity.User{
 					ID:    1,
@@ -189,9 +189,9 @@ func TestHandler_handleCreateUser(t *testing.T) {
 					Phone:    "+1234567890",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CreateUser)
-				
+
 				// Mock CreateUser - succeeds
 				mockUser := entity.User{
 					ID:    1,
@@ -228,9 +228,9 @@ func TestHandler_handleCreateUser(t *testing.T) {
 					Phone:    "+1234567890",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.CreateUser)
-				
+
 				// Mock CreateUser - succeeds
 				mockUser := entity.User{
 					ID:    1,
@@ -308,10 +308,10 @@ func TestHandler_handleGetProfile(t *testing.T) {
 	tests := append(test.PrivateEndpointValidations,
 		test.PrivateEndpointTest{
 			Name: "Should complete request with no error",
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				mockUser := entity.User{
 					UUID:  "user-uuid-123",
 					Name:  "John Doe",
@@ -327,10 +327,10 @@ func TestHandler_handleGetProfile(t *testing.T) {
 		},
 		test.PrivateEndpointTest{
 			Name: "Should return error when get profile fails",
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				m.UserAppMock.EXPECT().GetProfile(ctx).Return(entity.User{}, fmt.Errorf("error to get profile")).Times(1)
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -378,10 +378,10 @@ func TestHandler_handleUpdateProfile(t *testing.T) {
 				Name:  "John Updated",
 				Phone: "+9876543210",
 			},
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					updateUser := body.(viewmodel.UpdateUser)
 					mockUser := entity.User{
@@ -400,10 +400,10 @@ func TestHandler_handleUpdateProfile(t *testing.T) {
 		test.PrivateEndpointTest{
 			Name: "Should return error when body is invalid",
 			Body: "invalid body", // This will cause Bind() to fail
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				// No mocks needed since Bind() fails before reaching service
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -416,10 +416,10 @@ func TestHandler_handleUpdateProfile(t *testing.T) {
 			Body: viewmodel.UpdateUser{
 				Name: "John Updated",
 			},
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					updateUser := body.(viewmodel.UpdateUser)
 					m.UserAppMock.EXPECT().UpdateProfile(ctx, updateUser.ToEntity()).Return(entity.User{}, fmt.Errorf("error to update profile")).Times(1)

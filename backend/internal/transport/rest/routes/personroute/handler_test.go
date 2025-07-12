@@ -29,10 +29,10 @@ func TestHandler_handleCreatePerson(t *testing.T) {
 				Department: "Engineering",
 				Phone:      "+1234567890",
 			},
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					personReq := body.(viewmodel.PersonRequest)
 					m.PersonAppMock.EXPECT().CreatePerson(ctx, "company-uuid-123", personReq.ToEntity()).Return(nil).Times(1)
@@ -50,10 +50,10 @@ func TestHandler_handleCreatePerson(t *testing.T) {
 				Position:   "Software Engineer",
 				Department: "Engineering",
 			},
-			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.SvcMocks) {
+			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
 			},
-			BuildMocks: func(ctx context.Context, m test.SvcMocks, body any) {
+			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					personReq := body.(viewmodel.PersonRequest)
 					m.PersonAppMock.EXPECT().CreatePerson(ctx, "company-uuid-123", personReq.ToEntity()).Return(fmt.Errorf("error to create person")).Times(1)
@@ -114,7 +114,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -122,7 +122,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				mockPeople := []entity.Person{
 					{UUID: "person-1", Name: "John Doe"},
 					{UUID: "person-2", Name: "Jane Smith"},
@@ -141,7 +141,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 				companyUUID: "company-uuid-123",
 				search:      "John",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				mockPeople := []entity.Person{
 					{UUID: "person-1", Name: "John Doe"},
 				}
@@ -157,7 +157,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 			args: args{
 				companyUUID: "company-uuid-123",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.PersonAppMock.EXPECT().GetCompanyPeople(ctx, args.companyUUID).Return(nil, fmt.Errorf("error to get people")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
@@ -205,7 +205,7 @@ func TestHandler_handleGetPersonByUUID(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -214,7 +214,7 @@ func TestHandler_handleGetPersonByUUID(t *testing.T) {
 				companyUUID: "company-uuid-123",
 				personUUID:  "person-uuid-456",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				mockPerson := entity.Person{
 					UUID: args.personUUID,
 					Name: "John Doe",
@@ -232,7 +232,7 @@ func TestHandler_handleGetPersonByUUID(t *testing.T) {
 				companyUUID: "company-uuid-123",
 				personUUID:  "person-uuid-456",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.PersonAppMock.EXPECT().GetPersonByUUID(ctx, args.personUUID).Return(entity.Person{}, fmt.Errorf("person not found")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
@@ -278,7 +278,7 @@ func TestHandler_handleUpdatePerson(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -291,7 +291,7 @@ func TestHandler_handleUpdatePerson(t *testing.T) {
 					Position: "Senior Engineer",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.PersonRequest)
 				m.PersonAppMock.EXPECT().UpdatePerson(ctx, args.personUUID, body.ToEntity()).Return(nil).Times(1)
 			},
@@ -308,7 +308,7 @@ func TestHandler_handleUpdatePerson(t *testing.T) {
 					Name: "John Updated",
 				},
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				body := args.body.(viewmodel.PersonRequest)
 				m.PersonAppMock.EXPECT().UpdatePerson(ctx, args.personUUID, body.ToEntity()).Return(fmt.Errorf("error to update person")).Times(1)
 			},
@@ -359,7 +359,7 @@ func TestHandler_handleDeletePerson(t *testing.T) {
 	tests := []struct {
 		name          string
 		args          args
-		buildMocks    func(ctx context.Context, m test.SvcMocks, args args)
+		buildMocks    func(ctx context.Context, m test.AppMocks, args args)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -368,7 +368,7 @@ func TestHandler_handleDeletePerson(t *testing.T) {
 				companyUUID: "company-uuid-123",
 				personUUID:  "person-uuid-456",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.PersonAppMock.EXPECT().DeletePerson(ctx, args.personUUID).Return(nil).Times(1)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -381,7 +381,7 @@ func TestHandler_handleDeletePerson(t *testing.T) {
 				companyUUID: "company-uuid-123",
 				personUUID:  "person-uuid-456",
 			},
-			buildMocks: func(ctx context.Context, m test.SvcMocks, args args) {
+			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
 				m.PersonAppMock.EXPECT().DeletePerson(ctx, args.personUUID).Return(fmt.Errorf("error to delete person")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
