@@ -30,6 +30,31 @@ func newPersonService(infra domain.Infrastructure, authApp contract.AuthApp) con
 	}
 }
 
+// validateUserCompanyAccess checks if the logged user has access to a specific company
+// Returns the company entity if access is granted, or error if not
+func (s *personService) validateUserCompanyAccess(ctx context.Context, userID, companyID int64) (entity.Company, error) {
+	company, err := s.dm.Company().GetCompanyByID(ctx, companyID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return company, resterrors.NewNotFoundError("company not found")
+		}
+		s.log.Errorw(ctx, "error getting company by ID", logger.Err(err))
+		return company, err
+	}
+
+	// Check if the company belongs to the logged user
+	if company.UserOwnerID != userID {
+		s.log.Errorw(ctx, "user trying to access company they don't own",
+			logger.Int64("company_id", companyID),
+			logger.Int64("company_owner_id", company.UserOwnerID),
+			logger.Int64("logged_user_id", userID),
+		)
+		return company, resterrors.NewUnauthorizedError("you don't have permission to access this company")
+	}
+
+	return company, nil
+}
+
 func (s *personService) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (entity.Person, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
@@ -107,27 +132,10 @@ func (s *personService) GetPersonByUUID(ctx context.Context, personUUID string) 
 		return person, err
 	}
 
-	// Validate ownership by checking if user owns any company that contains this person
-	userCompanies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
+	// Validate user has access to the person's company
+	_, err = s.validateUserCompanyAccess(ctx, userID, person.CompanyID)
 	if err != nil {
-		s.log.Errorw(ctx, "error getting user companies", logger.Err(err))
 		return person, err
-	}
-
-	hasAccess := false
-	for _, company := range userCompanies {
-		if company.ID == person.CompanyID {
-			hasAccess = true
-			break
-		}
-	}
-
-	if !hasAccess {
-		s.log.Errorw(ctx, "user trying to access person from company they don't own",
-			logger.Int64("person_company_id", person.CompanyID),
-			logger.Int64("logged_user_id", userID),
-		)
-		return person, resterrors.NewUnauthorizedError("you don't have permission to access this person")
 	}
 
 	return person, nil
@@ -197,27 +205,10 @@ func (s *personService) UpdatePerson(ctx context.Context, personUUID string, per
 		return err
 	}
 
-	// Validate ownership by checking if user owns any company that contains this person
-	userCompanies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
+	// Validate user has access to the person's company
+	_, err = s.validateUserCompanyAccess(ctx, userID, existingPerson.CompanyID)
 	if err != nil {
-		s.log.Errorw(ctx, "error getting user companies", logger.Err(err))
 		return err
-	}
-
-	hasAccess := false
-	for _, company := range userCompanies {
-		if company.ID == existingPerson.CompanyID {
-			hasAccess = true
-			break
-		}
-	}
-
-	if !hasAccess {
-		s.log.Errorw(ctx, "user trying to update person from company they don't own",
-			logger.Int64("person_company_id", existingPerson.CompanyID),
-			logger.Int64("logged_user_id", userID),
-		)
-		return resterrors.NewUnauthorizedError("you don't have permission to update this person")
 	}
 
 	// Update the person
@@ -256,29 +247,10 @@ func (s *personService) DeletePerson(ctx context.Context, personUUID string) err
 		return err
 	}
 
-	// Validate ownership by checking if user owns any company that contains this person
-	userCompanies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
+	// Validate user has access to the person's company and get company for logging
+	company, err := s.validateUserCompanyAccess(ctx, userID, existingPerson.CompanyID)
 	if err != nil {
-		s.log.Errorw(ctx, "error getting user companies", logger.Err(err))
 		return err
-	}
-
-	hasAccess := false
-	var companyName string
-	for _, company := range userCompanies {
-		if company.ID == existingPerson.CompanyID {
-			hasAccess = true
-			companyName = company.Name
-			break
-		}
-	}
-
-	if !hasAccess {
-		s.log.Errorw(ctx, "user trying to delete person from company they don't own",
-			logger.Int64("person_company_id", existingPerson.CompanyID),
-			logger.Int64("logged_user_id", userID),
-		)
-		return resterrors.NewUnauthorizedError("you don't have permission to delete this person")
 	}
 
 	// Delete the person (soft delete)
@@ -292,7 +264,7 @@ func (s *personService) DeletePerson(ctx context.Context, personUUID string) err
 		logger.String("person_uuid", personUUID),
 		logger.String("person_name", existingPerson.Name),
 		logger.Int64("company_id", existingPerson.CompanyID),
-		logger.String("company_name", companyName),
+		logger.String("company_name", company.Name),
 	)
 
 	return nil

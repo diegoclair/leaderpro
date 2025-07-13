@@ -89,6 +89,10 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
+            <Label className="text-sm font-medium text-muted-foreground">Data de Início</Label>
+            <p className="text-sm">{person.startDate ? new Date(person.startDate).toLocaleDateString('pt-BR') : 'Não informado'}</p>
+          </div>
+          <div>
             <Label className="text-sm font-medium text-muted-foreground">Departamento/Squad</Label>
             <p className="text-sm">{person.department || 'Não informado'}</p>
           </div>
@@ -102,17 +106,6 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
                 <p className="text-sm">📞 {person.phone}</p>
               )}
               {!person.email && !person.phone && (
-                <p className="text-sm text-muted-foreground">Não informado</p>
-              )}
-            </div>
-          </div>
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">Situação Familiar</Label>
-            <div className="flex gap-2 mt-1">
-              {person.hasKids && (
-                <Badge variant="outline">Tem filhos</Badge>
-              )}
-              {!person.hasKids && (
                 <p className="text-sm text-muted-foreground">Não informado</p>
               )}
             </div>

@@ -1,17 +1,20 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Calendar } from 'lucide-react'
+import { Person } from '@/lib/types'
 
-interface AddPersonModalProps {
+interface PersonModalProps {
   open: boolean
   onClose: () => void
-  onCreatePerson: (personData: PersonFormData) => Promise<boolean>
+  mode: 'create' | 'edit'
+  person?: Person // Only needed for edit mode
+  onSubmit: (personData: PersonFormData) => Promise<boolean>
   isLoading?: boolean
 }
 
@@ -25,12 +28,14 @@ export interface PersonFormData {
   notes?: string
 }
 
-export default function AddPersonModal({
+export default function PersonModal({
   open,
   onClose,
-  onCreatePerson,
+  mode,
+  person,
+  onSubmit,
   isLoading = false
-}: AddPersonModalProps) {
+}: PersonModalProps) {
   const [formData, setFormData] = useState<PersonFormData>({
     name: '',
     email: '',
@@ -43,6 +48,35 @@ export default function AddPersonModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasTypedName, setHasTypedName] = useState(false)
   const dateInputRef = useRef<HTMLInputElement>(null)
+
+  // Load person data into form when modal opens (for edit mode)
+  useEffect(() => {
+    if (open) {
+      if (mode === 'edit' && person) {
+        setFormData({
+          name: person.name || '',
+          email: person.email || '',
+          position: person.position || '',
+          department: person.department || '',
+          phone: person.phone || '',
+          start_date: person.startDate ? formatDateForDisplay(person.startDate instanceof Date ? person.startDate.toISOString().split('T')[0] : person.startDate) : '',
+          notes: person.notes || ''
+        })
+      } else {
+        // Reset form for create mode
+        setFormData({
+          name: '',
+          email: '',
+          position: '',
+          department: '',
+          phone: '',
+          start_date: '',
+          notes: ''
+        })
+      }
+      setHasTypedName(false)
+    }
+  }, [open, mode, person])
 
   // Check if date is valid (dd/mm/yyyy format)
   const isDateValid = (dateString: string): boolean => {
@@ -112,6 +146,37 @@ export default function AddPersonModal({
     }))
   }
 
+  const handlePhoneChange = (value: string) => {
+    // Remove non-digits
+    const digits = value.replace(/\D/g, '')
+    
+    // Limit to 11 digits (Brazilian mobile maximum)
+    const limitedDigits = digits.slice(0, 11)
+    
+    let formattedValue = ''
+    
+    if (limitedDigits.length === 0) {
+      formattedValue = ''
+    } else if (limitedDigits.length <= 2) {
+      // (XX
+      formattedValue = `(${limitedDigits}`
+    } else if (limitedDigits.length <= 6) {
+      // (XX) XXXX
+      formattedValue = `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2)}`
+    } else if (limitedDigits.length <= 10) {
+      // (XX) XXXX-XXXX (landline format)
+      formattedValue = `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2, 6)}-${limitedDigits.slice(6)}`
+    } else {
+      // (XX) XXXXX-XXXX (mobile format with 11 digits)
+      formattedValue = `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2, 7)}-${limitedDigits.slice(7)}`
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      phone: formattedValue
+    }))
+  }
+
   // Handle calendar picker (YYYY-MM-DD format from date input)
   const handleCalendarChange = (value: string) => {
     if (value) {
@@ -152,44 +217,44 @@ export default function AddPersonModal({
     setIsSubmitting(true)
     try {
       // Convert date to backend format before sending
-      const backendDate = formData.start_date ? formatDateForBackend(formData.start_date) : ''
-      const dataToSend = {
-        ...formData,
-        start_date: backendDate || undefined
+      let startDateForBackend: string | undefined = undefined
+      if (formData.start_date) {
+        const backendDate = formatDateForBackend(formData.start_date)
+        if (backendDate) {
+          // Convert YYYY-MM-DD to RFC3339 format (ISO 8601) that Go expects
+          startDateForBackend = `${backendDate}T00:00:00Z`
+        }
       }
       
-      const success = await onCreatePerson(dataToSend)
+      const dataToSend = {
+        ...formData,
+        start_date: startDateForBackend
+      }
+      
+      const success = await onSubmit(dataToSend)
       if (success) {
-        // Reset form and close modal
-        setFormData({
-          name: '',
-          email: '',
-          position: '',
-          department: '',
-          phone: '',
-          start_date: '',
-          notes: ''
-        })
+        if (mode === 'create') {
+          // Reset form for create mode
+          setFormData({
+            name: '',
+            email: '',
+            position: '',
+            department: '',
+            phone: '',
+            start_date: '',
+            notes: ''
+          })
+        }
         onClose()
       }
     } catch (error) {
-      console.error('Error creating person:', error)
+      console.error('Error submitting person:', error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleClose = () => {
-    // Reset form when closing
-    setFormData({
-      name: '',
-      email: '',
-      position: '',
-      department: '',
-      phone: '',
-      start_date: '',
-      notes: ''
-    })
     setHasTypedName(false)
     setIsSubmitting(false)
     onClose()
@@ -202,13 +267,21 @@ export default function AddPersonModal({
     }
   }
 
+  // Dynamic content based on mode
+  const modalTitle = mode === 'create' ? 'Adicionar Nova Pessoa' : 'Editar Pessoa'
+  const modalDescription = mode === 'create' 
+    ? 'Adicione uma nova pessoa ao seu time. Apenas o nome é obrigatório.'
+    : `Atualize as informações de ${person?.name}. Apenas o nome é obrigatório.`
+  const submitButtonText = mode === 'create' ? 'Adicionar Pessoa' : 'Salvar Alterações'
+  const loadingButtonText = mode === 'create' ? 'Adicionando...' : 'Salvando...'
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Nova Pessoa</DialogTitle>
+          <DialogTitle>{modalTitle}</DialogTitle>
           <DialogDescription>
-            Adicione uma nova pessoa ao seu time. Apenas o nome é obrigatório.
+            {modalDescription}
           </DialogDescription>
         </DialogHeader>
         
@@ -246,9 +319,11 @@ export default function AddPersonModal({
               <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
               <Input
                 id="phone"
+                type="tel"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 placeholder="(11) 99999-9999"
+                maxLength={15}
               />
             </div>
           </div>
@@ -341,7 +416,7 @@ export default function AddPersonModal({
             disabled={!formData.name.trim() || isSubmitting || isLoading}
             className="min-w-[120px]"
           >
-            {(isSubmitting || isLoading) ? 'Adicionando...' : 'Adicionar Pessoa'}
+            {(isSubmitting || isLoading) ? loadingButtonText : submitButtonText}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { Company } from '../types'
-import { mockCompanies } from '../data/mockData'
 import { apiClient } from './authStore'
 
 interface CompanyState {

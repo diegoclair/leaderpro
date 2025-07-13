@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Person } from '@/lib/types'
-import { getFeedbacksByPerson } from '@/lib/data/mockData'
 import { formatTimeAgo } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
+import { useAllFeedbacks } from '@/lib/stores/peopleStore'
 
 interface PersonFeedbackTabProps {
   person: Person
@@ -15,7 +15,8 @@ interface PersonFeedbackTabProps {
 }
 
 export function PersonFeedbackTab({ person, allPeople }: PersonFeedbackTabProps) {
-  const personFeedbacks = getFeedbacksByPerson(person.id)
+  const allFeedbacks = useAllFeedbacks()
+  const personFeedbacks = allFeedbacks.filter(feedback => feedback.personId === person.id)
 
   return (
     <Card>

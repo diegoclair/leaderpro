@@ -1,9 +1,7 @@
-import { mockPeople } from '@/lib/data/mockData'
-
 export async function generateStaticParams() {
-  return mockPeople.map((person) => ({
-    id: person.id,
-  }))
+  // Static generation disabled since people are now dynamic from API
+  // Dynamic routes are handled at runtime via [id] dynamic segment
+  return []
 }
 
 export default function ProfileLayout({

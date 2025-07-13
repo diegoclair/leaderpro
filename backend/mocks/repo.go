@@ -389,6 +389,21 @@ func (mr *MockCompanyRepoMockRecorder) GetCompaniesByUser(ctx, userID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompaniesByUser", reflect.TypeOf((*MockCompanyRepo)(nil).GetCompaniesByUser), ctx, userID)
 }
 
+// GetCompanyByID mocks base method.
+func (m *MockCompanyRepo) GetCompanyByID(ctx context.Context, companyID int64) (entity.Company, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompanyByID", ctx, companyID)
+	ret0, _ := ret[0].(entity.Company)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCompanyByID indicates an expected call of GetCompanyByID.
+func (mr *MockCompanyRepoMockRecorder) GetCompanyByID(ctx, companyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompanyByID", reflect.TypeOf((*MockCompanyRepo)(nil).GetCompanyByID), ctx, companyID)
+}
+
 // GetCompanyByUUID mocks base method.
 func (m *MockCompanyRepo) GetCompanyByUUID(ctx context.Context, companyUUID string) (entity.Company, error) {
 	m.ctrl.T.Helper()

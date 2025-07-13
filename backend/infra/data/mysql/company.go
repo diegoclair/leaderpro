@@ -101,6 +101,26 @@ func (r *companyRepo) CreateCompany(ctx context.Context, company entity.Company)
 	return createdID, nil
 }
 
+func (r *companyRepo) GetCompanyByID(ctx context.Context, companyID int64) (company entity.Company, err error) {
+	query := companySelectBase + `
+		WHERE c.company_id = ? AND c.active = 1
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return company, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, companyID)
+	company, err = r.parseCompany(row)
+	if err != nil {
+		return company, mysqlutils.HandleMySQLError(err)
+	}
+
+	return company, nil
+}
+
 func (r *companyRepo) GetCompanyByUUID(ctx context.Context, companyUUID string) (company entity.Company, err error) {
 	query := companySelectBase + `
 		WHERE c.company_uuid = ? AND c.active = 1

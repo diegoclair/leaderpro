@@ -13,10 +13,12 @@ import {
   Calendar, 
   User, 
   Dog,
-  Clock
+  Clock,
+  Edit3
 } from 'lucide-react'
-import { useAllPeopleFromStore, useLoadPeopleFromAPI } from '@/lib/stores/peopleStore'
+import { useAllPeopleFromStore, useLoadPeopleFromAPI, useUpdatePerson } from '@/lib/stores/peopleStore'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
+import { apiClient } from '@/lib/stores/authStore'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { Person } from '@/lib/types'
 import { PersonInfoTab } from '@/components/profile/PersonInfoTab'
@@ -25,6 +27,7 @@ import { PersonFeedbackTab } from '@/components/profile/PersonFeedbackTab'
 import { PersonChatTab } from '@/components/profile/PersonChatTab'
 import { useCreatePerson } from '@/hooks/useCreatePerson'
 import CreatePersonDialog from '@/components/profile/CreatePersonDialog'
+import PersonModal, { PersonFormData } from '@/components/person/PersonModal'
 import { formatTimeAgoWithoutSuffix, getMockDaysAgo } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
 
@@ -34,12 +37,14 @@ export default function ProfilePage() {
   const router = useRouter()
   const allPeople = useAllPeopleFromStore()
   const loadPeopleFromAPI = useLoadPeopleFromAPI()
+  const updatePerson = useUpdatePerson()
   const activeCompany = useActiveCompany()
   const loadCompanies = useLoadCompanies()
   
   // Get tab from URL or default to 'info' (using window for static export compatibility)
   const [activeTab, setActiveTab] = useState('info')
   const [isLoading, setIsLoading] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   
   // All hooks must be called before any conditional returns
   const {
@@ -107,6 +112,32 @@ export default function ProfilePage() {
     const newUrl = `/profile/${params.id}?tab=${tab}`
     router.replace(newUrl, { scroll: false })
   }
+
+  const handleEditPerson = async (personData: PersonFormData): Promise<boolean> => {
+    if (!activeCompany || !person) return false
+
+    try {
+      // Call API to update person
+      await apiClient.authPut(`/companies/${activeCompany.uuid}/people/${person.uuid}`, personData)
+
+      // Update local store
+      const updatedPersonData: Partial<Person> = {
+        name: personData.name,
+        email: personData.email,
+        position: personData.position,
+        department: personData.department,
+        phone: personData.phone,
+        startDate: personData.start_date ? new Date(personData.start_date.replace('T00:00:00Z', '')) : undefined,
+        notes: personData.notes,
+      }
+
+      updatePerson(person.id, updatedPersonData)
+      return true
+    } catch (error) {
+      console.error('Error updating person:', error)
+      return false
+    }
+  }
   
   const person = allPeople.find(p => p.id === params.id || p.uuid === params.id) as Person | undefined
   
@@ -172,7 +203,17 @@ export default function ProfilePage() {
             </Avatar>
             
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{person.name}</h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold">{person.name}</h1>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEditModal(true)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              </div>
               <p className="text-lg text-muted-foreground mb-4">{person.position || person.role || 'Cargo não informado'}</p>
               
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -258,6 +299,14 @@ export default function ProfilePage() {
         setNewPersonName={setNewPersonName}
         setNewPersonRole={setNewPersonRole}
         onCreatePerson={() => handleCreatePerson(person.companyId)}
+      />
+
+      <PersonModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        mode="edit"
+        person={person}
+        onSubmit={handleEditPerson}
       />
     </div>
   )

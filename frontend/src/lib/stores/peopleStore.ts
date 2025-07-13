@@ -1,16 +1,5 @@
 import { create } from 'zustand'
 import { Person, OneOnOneSession, Feedback, AISuggestion } from '../types'
-import { 
-  mockPeople, 
-  mockOneOnOneSessions, 
-  mockFeedbacks, 
-  mockAISuggestions,
-  getPersonsByCompany,
-  getSessionsByPerson,
-  getFeedbacksByPerson,
-  getSuggestionsByPerson,
-  getUpcomingOneOnOnes
-} from '../data/mockData'
 import { apiClient } from '../api/client'
 
 interface PeopleState {
@@ -121,16 +110,15 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
   loadPeopleData: () => {
     set({ isLoading: true })
     
-    // Simulate API call (fallback for mock data)
-    setTimeout(() => {
-      set({
-        people: mockPeople,
-        oneOnOneSessions: mockOneOnOneSessions,
-        feedbacks: mockFeedbacks,
-        aiSuggestions: mockAISuggestions,
-        isLoading: false
-      })
-    }, 150)
+    // No longer using mock data - this should not be called
+    console.warn('loadPeopleData called - should use loadPeopleFromAPI instead')
+    set({
+      people: [],
+      oneOnOneSessions: [],
+      feedbacks: [],
+      aiSuggestions: [],
+      isLoading: false
+    })
   },
 
   loadPeopleFromAPI: async (companyUuid: string) => {
@@ -174,20 +162,20 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
 
       set({
         people,
-        // Keep existing mock data for other features not yet implemented
-        oneOnOneSessions: mockOneOnOneSessions,
-        feedbacks: mockFeedbacks,
-        aiSuggestions: mockAISuggestions,
+        // TODO: Implement API endpoints for these features
+        oneOnOneSessions: [],
+        feedbacks: [],
+        aiSuggestions: [],
         isLoading: false
       })
     } catch (error) {
       console.error('Error loading people from API:', error)
-      // Fallback to mock data on error
+      // Fallback to empty data on error
       set({
         people: [],
-        oneOnOneSessions: mockOneOnOneSessions,
-        feedbacks: mockFeedbacks,
-        aiSuggestions: mockAISuggestions,
+        oneOnOneSessions: [],
+        feedbacks: [],
+        aiSuggestions: [],
         isLoading: false
       })
     }

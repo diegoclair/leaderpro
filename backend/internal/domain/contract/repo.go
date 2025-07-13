@@ -35,6 +35,7 @@ type UserRepo interface {
 
 type CompanyRepo interface {
 	CreateCompany(ctx context.Context, company entity.Company) (createdID int64, err error)
+	GetCompanyByID(ctx context.Context, companyID int64) (company entity.Company, err error)
 	GetCompanyByUUID(ctx context.Context, companyUUID string) (company entity.Company, err error)
 	GetCompaniesByUser(ctx context.Context, userID int64) (companies []entity.Company, err error)
 	UpdateCompany(ctx context.Context, companyID int64, company entity.Company) (err error)

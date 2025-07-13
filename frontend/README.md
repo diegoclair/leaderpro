@@ -68,9 +68,7 @@ src/
 │   ├── utils/           # Funções utilitárias
 │   │   ├── dates.ts     # Formatação de datas
 │   │   └── names.ts     # Utilitários de nomes
-│   ├── utils.ts         # Utilitários principais (cn function)
-│   └── data/            # Dados mockados (temporário)
-│       └── mockData.ts
+│   └── utils.ts         # Utilitários principais (cn function)
 └── hooks/               # Custom React hooks
     ├── useMentions.ts   # Hook para sistema de @menções
     ├── useCreatePerson.ts # Hook para criação de pessoas

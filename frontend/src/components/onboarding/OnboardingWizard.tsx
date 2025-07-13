@@ -194,17 +194,16 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 </div>
 
                 <div>
-                  <Label htmlFor="teamSize">Tamanho da equipe</Label>
+                  <Label htmlFor="teamSize">Tamanho da empresa</Label>
                   <Select value={formData.teamSize} onValueChange={(value) => handleChange('teamSize', value)}>
                     <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Quantas pessoas você lidera?" />
+                      <SelectValue placeholder="Selecione o tamanho da empresa" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1-5">1-5 pessoas</SelectItem>
-                      <SelectItem value="6-15">6-15 pessoas</SelectItem>
-                      <SelectItem value="16-50">16-50 pessoas</SelectItem>
-                      <SelectItem value="51-100">51-100 pessoas</SelectItem>
-                      <SelectItem value="100+">Mais de 100 pessoas</SelectItem>
+                      <SelectItem value="small">Pequena (2-10 pessoas)</SelectItem>
+                      <SelectItem value="medium">Média (11-50 pessoas)</SelectItem>
+                      <SelectItem value="large">Grande (51-200 pessoas)</SelectItem>
+                      <SelectItem value="enterprise">Corporação (200+ pessoas)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

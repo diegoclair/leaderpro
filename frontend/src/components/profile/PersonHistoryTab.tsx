@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Person } from '@/lib/types'
-import { getSessionsByPerson } from '@/lib/data/mockData'
 import { formatTimeAgo, formatShortDate } from '@/lib/utils/dates'
+import { useAllSessions } from '@/lib/stores/peopleStore'
 
 interface PersonHistoryTabProps {
   person: Person
@@ -16,7 +16,8 @@ interface PersonHistoryTabProps {
 
 export function PersonHistoryTab({ person, allPeople, onCreatePerson }: PersonHistoryTabProps) {
   const router = useRouter()
-  const personSessions = getSessionsByPerson(person.id)
+  const allSessions = useAllSessions()
+  const personSessions = allSessions.filter(session => session.personId === person.id)
 
   return (
     <Card>

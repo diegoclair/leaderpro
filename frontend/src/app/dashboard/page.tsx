@@ -15,7 +15,7 @@ import { getMockDaysAgo, getMockAverageDays } from '@/lib/utils/dates'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
-import AddPersonModal, { PersonFormData } from '@/components/person/AddPersonModal'
+import PersonModal, { PersonFormData } from '@/components/person/PersonModal'
 import { apiClient } from '@/lib/api/client'
 import { useNotificationStore } from '@/lib/stores/notificationStore'
 
@@ -127,7 +127,7 @@ export default function Dashboard() {
         position: personData.position || undefined,
         department: personData.department || undefined,
         phone: personData.phone || undefined,
-        start_date: personData.start_date ? new Date(personData.start_date).toISOString() : undefined,
+        start_date: personData.start_date || undefined,
         notes: personData.notes || undefined
       }
 
@@ -411,10 +411,11 @@ export default function Dashboard() {
       </main>
 
       {/* Add Person Modal */}
-      <AddPersonModal
+      <PersonModal
         open={isAddPersonModalOpen}
         onClose={() => setIsAddPersonModalOpen(false)}
-        onCreatePerson={handleCreatePerson}
+        mode="create"
+        onSubmit={handleCreatePerson}
         isLoading={isCreatingPerson}
       />
     </div>
