@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Building2 } from 'lucide-react'
+import { COMPANY_SIZES, INDUSTRIES } from '@/lib/constants/company'
 
 interface CompanyModalProps {
   open: boolean
@@ -23,25 +24,6 @@ export interface CompanyFormData {
   is_default: boolean
 }
 
-const INDUSTRIES = [
-  { value: 'technology', label: 'Tecnologia' },
-  { value: 'finance', label: 'Financeiro' },
-  { value: 'healthcare', label: 'Saúde' },
-  { value: 'education', label: 'Educação' },
-  { value: 'retail', label: 'Varejo' },
-  { value: 'manufacturing', label: 'Manufatura' },
-  { value: 'consulting', label: 'Consultoria' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'real_estate', label: 'Imóveis' },
-  { value: 'other', label: 'Outro' }
-]
-
-const COMPANY_SIZES = [
-  { value: 'small', label: 'Pequena (2-10 pessoas)' },
-  { value: 'medium', label: 'Média (11-50 pessoas)' },
-  { value: 'large', label: 'Grande (51-200 pessoas)' },
-  { value: 'enterprise', label: 'Corporação (200+ pessoas)' }
-]
 
 export default function CompanyModal({
   open,

@@ -13,8 +13,11 @@ import (
 const GroupRouteName = "companies/:company_uuid/people"
 
 const (
-	RootRoute         = ""
-	PersonByUUIDRoute = "/:person_uuid"
+	RootRoute            = ""
+	PersonByUUIDRoute    = "/:person_uuid"
+	PersonNotesRoute     = "/:person_uuid/notes"
+	PersonTimelineRoute  = "/:person_uuid/timeline"
+	PersonMentionsRoute  = "/:person_uuid/mentions"
 )
 
 type PersonRouter struct {
@@ -79,5 +82,44 @@ func (r *PersonRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 		Returns([]models.ReturnType{{StatusCode: http.StatusNoContent}}).
 		PathParam("company_uuid", "company uuid", goswag.StringType, true).
 		PathParam("person_uuid", "person uuid", goswag.StringType, true).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	router.POST(PersonNotesRoute, r.ctrl.handleCreateNote).
+		Summary("Create a note for a person").
+		Description("Create a new note (1:1, feedback, or observation) for a person").
+		Read(viewmodel.CreateNoteRequest{}).
+		Returns([]models.ReturnType{{StatusCode: http.StatusCreated}}).
+		PathParam("company_uuid", "company uuid", goswag.StringType, true).
+		PathParam("person_uuid", "person uuid", goswag.StringType, true).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	router.GET(PersonTimelineRoute, r.ctrl.handleGetPersonTimeline).
+		Summary("Get person timeline").
+		Description("Get timeline of direct notes for a person (1:1s and observations, excluding feedbacks/mentions)").
+		Returns([]models.ReturnType{
+			{
+				StatusCode: http.StatusOK,
+				Body:       viewmodel.PaginatedResponse[[]viewmodel.TimelineResponse]{},
+			},
+		}).
+		PathParam("company_uuid", "company uuid", goswag.StringType, true).
+		PathParam("person_uuid", "person uuid", goswag.StringType, true).
+		QueryParam("page", "page number", goswag.NumberType, false).
+		QueryParam("quantity", "items per page", goswag.NumberType, false).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	router.GET(PersonMentionsRoute, r.ctrl.handleGetPersonMentions).
+		Summary("Get person mentions").
+		Description("Get notes where this person was mentioned (feedbacks received)").
+		Returns([]models.ReturnType{
+			{
+				StatusCode: http.StatusOK,
+				Body:       viewmodel.PaginatedResponse[[]viewmodel.MentionResponse]{},
+			},
+		}).
+		PathParam("company_uuid", "company uuid", goswag.StringType, true).
+		PathParam("person_uuid", "person uuid", goswag.StringType, true).
+		QueryParam("page", "page number", goswag.NumberType, false).
+		QueryParam("quantity", "items per page", goswag.NumberType, false).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
 }

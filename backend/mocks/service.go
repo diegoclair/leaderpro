@@ -379,6 +379,21 @@ func (m *MockPersonApp) EXPECT() *MockPersonAppMockRecorder {
 	return m.recorder
 }
 
+// CreateNote mocks base method.
+func (m *MockPersonApp) CreateNote(ctx context.Context, note entity.Note, companyUUID, personUUID string) (entity.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateNote", ctx, note, companyUUID, personUUID)
+	ret0, _ := ret[0].(entity.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateNote indicates an expected call of CreateNote.
+func (mr *MockPersonAppMockRecorder) CreateNote(ctx, note, companyUUID, personUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockPersonApp)(nil).CreateNote), ctx, note, companyUUID, personUUID)
+}
+
 // CreatePerson mocks base method.
 func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (entity.Person, error) {
 	m.ctrl.T.Helper()
@@ -392,6 +407,20 @@ func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person, 
 func (mr *MockPersonAppMockRecorder) CreatePerson(ctx, person, companyUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockPersonApp)(nil).CreatePerson), ctx, person, companyUUID)
+}
+
+// DeleteNote mocks base method.
+func (m *MockPersonApp) DeleteNote(ctx context.Context, noteUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNote", ctx, noteUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNote indicates an expected call of DeleteNote.
+func (mr *MockPersonAppMockRecorder) DeleteNote(ctx, noteUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockPersonApp)(nil).DeleteNote), ctx, noteUUID)
 }
 
 // DeletePerson mocks base method.
@@ -438,6 +467,38 @@ func (mr *MockPersonAppMockRecorder) GetPersonByUUID(ctx, personUUID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonByUUID", reflect.TypeOf((*MockPersonApp)(nil).GetPersonByUUID), ctx, personUUID)
 }
 
+// GetPersonMentions mocks base method.
+func (m *MockPersonApp) GetPersonMentions(ctx context.Context, personUUID string, take, skip int64) ([]entity.MentionEntry, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonMentions", ctx, personUUID, take, skip)
+	ret0, _ := ret[0].([]entity.MentionEntry)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPersonMentions indicates an expected call of GetPersonMentions.
+func (mr *MockPersonAppMockRecorder) GetPersonMentions(ctx, personUUID, take, skip any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonMentions", reflect.TypeOf((*MockPersonApp)(nil).GetPersonMentions), ctx, personUUID, take, skip)
+}
+
+// GetPersonTimeline mocks base method.
+func (m *MockPersonApp) GetPersonTimeline(ctx context.Context, personUUID string, take, skip int64) ([]entity.TimelineEntry, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonTimeline", ctx, personUUID, take, skip)
+	ret0, _ := ret[0].([]entity.TimelineEntry)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPersonTimeline indicates an expected call of GetPersonTimeline.
+func (mr *MockPersonAppMockRecorder) GetPersonTimeline(ctx, personUUID, take, skip any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonTimeline", reflect.TypeOf((*MockPersonApp)(nil).GetPersonTimeline), ctx, personUUID, take, skip)
+}
+
 // SearchPeople mocks base method.
 func (m *MockPersonApp) SearchPeople(ctx context.Context, companyUUID, search string) ([]entity.Person, error) {
 	m.ctrl.T.Helper()
@@ -453,6 +514,20 @@ func (mr *MockPersonAppMockRecorder) SearchPeople(ctx, companyUUID, search any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchPeople", reflect.TypeOf((*MockPersonApp)(nil).SearchPeople), ctx, companyUUID, search)
 }
 
+// UpdateNote mocks base method.
+func (m *MockPersonApp) UpdateNote(ctx context.Context, noteUUID string, note entity.Note) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNote", ctx, noteUUID, note)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateNote indicates an expected call of UpdateNote.
+func (mr *MockPersonAppMockRecorder) UpdateNote(ctx, noteUUID, note any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockPersonApp)(nil).UpdateNote), ctx, noteUUID, note)
+}
+
 // UpdatePerson mocks base method.
 func (m *MockPersonApp) UpdatePerson(ctx context.Context, personUUID string, person entity.Person) error {
 	m.ctrl.T.Helper()
@@ -465,259 +540,4 @@ func (m *MockPersonApp) UpdatePerson(ctx context.Context, personUUID string, per
 func (mr *MockPersonAppMockRecorder) UpdatePerson(ctx, personUUID, person any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePerson", reflect.TypeOf((*MockPersonApp)(nil).UpdatePerson), ctx, personUUID, person)
-}
-
-// MockOneOnOneApp is a mock of OneOnOneApp interface.
-type MockOneOnOneApp struct {
-	ctrl     *gomock.Controller
-	recorder *MockOneOnOneAppMockRecorder
-	isgomock struct{}
-}
-
-// MockOneOnOneAppMockRecorder is the mock recorder for MockOneOnOneApp.
-type MockOneOnOneAppMockRecorder struct {
-	mock *MockOneOnOneApp
-}
-
-// NewMockOneOnOneApp creates a new mock instance.
-func NewMockOneOnOneApp(ctrl *gomock.Controller) *MockOneOnOneApp {
-	mock := &MockOneOnOneApp{ctrl: ctrl}
-	mock.recorder = &MockOneOnOneAppMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockOneOnOneApp) EXPECT() *MockOneOnOneAppMockRecorder {
-	return m.recorder
-}
-
-// CreateOneOnOne mocks base method.
-func (m *MockOneOnOneApp) CreateOneOnOne(ctx context.Context, oneOnOne entity.OneOnOne) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOneOnOne", ctx, oneOnOne)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateOneOnOne indicates an expected call of CreateOneOnOne.
-func (mr *MockOneOnOneAppMockRecorder) CreateOneOnOne(ctx, oneOnOne any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOneOnOne", reflect.TypeOf((*MockOneOnOneApp)(nil).CreateOneOnOne), ctx, oneOnOne)
-}
-
-// DeleteOneOnOne mocks base method.
-func (m *MockOneOnOneApp) DeleteOneOnOne(ctx context.Context, oneOnOneUUID string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteOneOnOne", ctx, oneOnOneUUID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteOneOnOne indicates an expected call of DeleteOneOnOne.
-func (mr *MockOneOnOneAppMockRecorder) DeleteOneOnOne(ctx, oneOnOneUUID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOneOnOne", reflect.TypeOf((*MockOneOnOneApp)(nil).DeleteOneOnOne), ctx, oneOnOneUUID)
-}
-
-// GetManagerOneOnOnes mocks base method.
-func (m *MockOneOnOneApp) GetManagerOneOnOnes(ctx context.Context, take, skip int64) ([]entity.OneOnOne, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetManagerOneOnOnes", ctx, take, skip)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetManagerOneOnOnes indicates an expected call of GetManagerOneOnOnes.
-func (mr *MockOneOnOneAppMockRecorder) GetManagerOneOnOnes(ctx, take, skip any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetManagerOneOnOnes", reflect.TypeOf((*MockOneOnOneApp)(nil).GetManagerOneOnOnes), ctx, take, skip)
-}
-
-// GetOneOnOneByUUID mocks base method.
-func (m *MockOneOnOneApp) GetOneOnOneByUUID(ctx context.Context, oneOnOneUUID string) (entity.OneOnOne, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOneOnOneByUUID", ctx, oneOnOneUUID)
-	ret0, _ := ret[0].(entity.OneOnOne)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOneOnOneByUUID indicates an expected call of GetOneOnOneByUUID.
-func (mr *MockOneOnOneAppMockRecorder) GetOneOnOneByUUID(ctx, oneOnOneUUID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneOnOneByUUID", reflect.TypeOf((*MockOneOnOneApp)(nil).GetOneOnOneByUUID), ctx, oneOnOneUUID)
-}
-
-// GetOverdueOneOnOnes mocks base method.
-func (m *MockOneOnOneApp) GetOverdueOneOnOnes(ctx context.Context) ([]entity.OneOnOne, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOverdueOneOnOnes", ctx)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOverdueOneOnOnes indicates an expected call of GetOverdueOneOnOnes.
-func (mr *MockOneOnOneAppMockRecorder) GetOverdueOneOnOnes(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOverdueOneOnOnes", reflect.TypeOf((*MockOneOnOneApp)(nil).GetOverdueOneOnOnes), ctx)
-}
-
-// GetPersonOneOnOnes mocks base method.
-func (m *MockOneOnOneApp) GetPersonOneOnOnes(ctx context.Context, personUUID string, take, skip int64) ([]entity.OneOnOne, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPersonOneOnOnes", ctx, personUUID, take, skip)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetPersonOneOnOnes indicates an expected call of GetPersonOneOnOnes.
-func (mr *MockOneOnOneAppMockRecorder) GetPersonOneOnOnes(ctx, personUUID, take, skip any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonOneOnOnes", reflect.TypeOf((*MockOneOnOneApp)(nil).GetPersonOneOnOnes), ctx, personUUID, take, skip)
-}
-
-// GetUpcomingOneOnOnes mocks base method.
-func (m *MockOneOnOneApp) GetUpcomingOneOnOnes(ctx context.Context) ([]entity.OneOnOne, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUpcomingOneOnOnes", ctx)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUpcomingOneOnOnes indicates an expected call of GetUpcomingOneOnOnes.
-func (mr *MockOneOnOneAppMockRecorder) GetUpcomingOneOnOnes(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpcomingOneOnOnes", reflect.TypeOf((*MockOneOnOneApp)(nil).GetUpcomingOneOnOnes), ctx)
-}
-
-// UpdateOneOnOne mocks base method.
-func (m *MockOneOnOneApp) UpdateOneOnOne(ctx context.Context, oneOnOneUUID string, oneOnOne entity.OneOnOne) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOneOnOne", ctx, oneOnOneUUID, oneOnOne)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateOneOnOne indicates an expected call of UpdateOneOnOne.
-func (mr *MockOneOnOneAppMockRecorder) UpdateOneOnOne(ctx, oneOnOneUUID, oneOnOne any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOneOnOne", reflect.TypeOf((*MockOneOnOneApp)(nil).UpdateOneOnOne), ctx, oneOnOneUUID, oneOnOne)
-}
-
-// MockFeedbackApp is a mock of FeedbackApp interface.
-type MockFeedbackApp struct {
-	ctrl     *gomock.Controller
-	recorder *MockFeedbackAppMockRecorder
-	isgomock struct{}
-}
-
-// MockFeedbackAppMockRecorder is the mock recorder for MockFeedbackApp.
-type MockFeedbackAppMockRecorder struct {
-	mock *MockFeedbackApp
-}
-
-// NewMockFeedbackApp creates a new mock instance.
-func NewMockFeedbackApp(ctrl *gomock.Controller) *MockFeedbackApp {
-	mock := &MockFeedbackApp{ctrl: ctrl}
-	mock.recorder = &MockFeedbackAppMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockFeedbackApp) EXPECT() *MockFeedbackAppMockRecorder {
-	return m.recorder
-}
-
-// CreateFeedback mocks base method.
-func (m *MockFeedbackApp) CreateFeedback(ctx context.Context, feedback entity.Feedback) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateFeedback", ctx, feedback)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateFeedback indicates an expected call of CreateFeedback.
-func (mr *MockFeedbackAppMockRecorder) CreateFeedback(ctx, feedback any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFeedback", reflect.TypeOf((*MockFeedbackApp)(nil).CreateFeedback), ctx, feedback)
-}
-
-// DeleteFeedback mocks base method.
-func (m *MockFeedbackApp) DeleteFeedback(ctx context.Context, feedbackUUID string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteFeedback", ctx, feedbackUUID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteFeedback indicates an expected call of DeleteFeedback.
-func (mr *MockFeedbackAppMockRecorder) DeleteFeedback(ctx, feedbackUUID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFeedback", reflect.TypeOf((*MockFeedbackApp)(nil).DeleteFeedback), ctx, feedbackUUID)
-}
-
-// GetFeedbackByUUID mocks base method.
-func (m *MockFeedbackApp) GetFeedbackByUUID(ctx context.Context, feedbackUUID string) (entity.Feedback, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeedbackByUUID", ctx, feedbackUUID)
-	ret0, _ := ret[0].(entity.Feedback)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetFeedbackByUUID indicates an expected call of GetFeedbackByUUID.
-func (mr *MockFeedbackAppMockRecorder) GetFeedbackByUUID(ctx, feedbackUUID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedbackByUUID", reflect.TypeOf((*MockFeedbackApp)(nil).GetFeedbackByUUID), ctx, feedbackUUID)
-}
-
-// GetFeedbackSummary mocks base method.
-func (m *MockFeedbackApp) GetFeedbackSummary(ctx context.Context, personUUID, period string) (entity.FeedbackSummary, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeedbackSummary", ctx, personUUID, period)
-	ret0, _ := ret[0].(entity.FeedbackSummary)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetFeedbackSummary indicates an expected call of GetFeedbackSummary.
-func (mr *MockFeedbackAppMockRecorder) GetFeedbackSummary(ctx, personUUID, period any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedbackSummary", reflect.TypeOf((*MockFeedbackApp)(nil).GetFeedbackSummary), ctx, personUUID, period)
-}
-
-// GetPersonFeedback mocks base method.
-func (m *MockFeedbackApp) GetPersonFeedback(ctx context.Context, personUUID string, take, skip int64) ([]entity.Feedback, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPersonFeedback", ctx, personUUID, take, skip)
-	ret0, _ := ret[0].([]entity.Feedback)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetPersonFeedback indicates an expected call of GetPersonFeedback.
-func (mr *MockFeedbackAppMockRecorder) GetPersonFeedback(ctx, personUUID, take, skip any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonFeedback", reflect.TypeOf((*MockFeedbackApp)(nil).GetPersonFeedback), ctx, personUUID, take, skip)
-}
-
-// UpdateFeedback mocks base method.
-func (m *MockFeedbackApp) UpdateFeedback(ctx context.Context, feedbackUUID string, feedback entity.Feedback) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateFeedback", ctx, feedbackUUID, feedback)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateFeedback indicates an expected call of UpdateFeedback.
-func (mr *MockFeedbackAppMockRecorder) UpdateFeedback(ctx, feedbackUUID, feedback any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFeedback", reflect.TypeOf((*MockFeedbackApp)(nil).UpdateFeedback), ctx, feedbackUUID, feedback)
 }

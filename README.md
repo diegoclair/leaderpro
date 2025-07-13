@@ -93,6 +93,64 @@ Coach de 1:1s com IA contextual
 - **Vector Database** - Memória contextual (Pinecone/Weaviate)
 - **APIs externas** - Calendários, feriados, dados contextuais
 
+## 🔧 Melhorias Técnicas Recentes
+
+### ✅ Sistema de Gênero Completo
+**Implementação full-stack para texto contextualizado em português:**
+
+**Backend (Go):**
+- **Migração** `000003_add_gender_to_person.sql` - Campo ENUM('male', 'female', 'other')
+- **Entity** atualizada com campo `Gender *string`
+- **ViewModels** com validação `oneof=male female other`
+- **Repository** com queries e mappings atualizados
+
+**Frontend (Next.js/TypeScript):**
+- **Tipos** atualizados em `/lib/types/index.ts`
+- **Formulário** PersonModal com Select de gênero (Masculino/Feminino/Outro)
+- **Utilitários** `/lib/utils/gender.ts` para texto contextual português
+- **Store** peopleStore.ts com mapeamento do campo gender
+
+**Resultado:** "Sabrina foi **mencionada**" vs "João foi **mencionado**" vs fallback "mencionado(a)"
+
+### ✅ Timeline e Categorização Corrigida
+**Problema:** Timeline mostrava "Anotação" para tudo
+**Solução:** Correção da estrutura de dados API vs Frontend
+
+- **Interface corrigida** em PersonTimeline.tsx (`type` vs `source_type`)
+- **Categorização adequada:** "Reunião 1:1", "Feedback", "Observação"
+- **Componentes atualizados** PersonMentions.tsx e PersonTimeline.tsx
+- **API mapping** correto entre backend e frontend
+
+### ✅ Constantes Centralizadas (`/lib/constants/`)
+**Eliminação de duplicação de código e magic strings:**
+
+- **📝 `/notes.ts`** - Source types, feedback types/categories, labels e cores
+- **🏢 `/company.ts`** - Padrões brasileiros SEBRAE/IBGE para tamanho empresa  
+- **📱 `/api.ts`** - Endpoints centralizados para consistência
+- **🔤 `/messages.ts`** - Mensagens de erro/sucesso padronizadas
+- **✅ `/validation.ts`** - Regras de validação compartilhadas
+
+**Helper functions:** `getNoteSourceTypeLabel()`, `getFeedbackTypeColor()`, etc.
+
+### ✅ Componentes Compartilhados (`/components/ui/`)
+**Reutilização e consistência visual:**
+
+- **🔄 `LoadingSpinner`** - Eliminando ~10 duplicações diferentes
+- **🎨 `AppLogo`** - Logo centralizada (~4 duplicações eliminadas)
+- **📱 `PhoneInput`** - Máscara brasileira (+55) compartilhada
+- **🔒 `PasswordInput`** - Input com toggle visibilidade olho/olho-riscado
+- **📝 `MentionsInputComponent`** - Sistema @mentions com react-mentions
+- **🔘 Select components** - Tratamento correto de valores vazios
+
+### ✅ Segurança e Performance
+**Padrões obrigatórios para evitar bugs de segurança:**
+
+- **🔐 Storage Manager** - `storageManager.set/get/clearAll()` previne vazamento entre usuários
+- **🚀 API Client centralizado** - `apiClient.authGet/authPost()` com token refresh automático
+- **📊 Timeline otimizada** - Separação correta Historical vs Mentions
+- **🎯 Mentions personalizadas** - Nome + gênero da pessoa vs genérico "Você"
+- **🛡️ Validação robusta** - Select constraints, enum validation, type safety
+
 ## 🎨 Identidade da Marca
 
 ### Posicionamento

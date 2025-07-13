@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/diegoclair/leaderpro/internal/application/service"
+	"github.com/diegoclair/leaderpro/internal/domain"
 	"github.com/diegoclair/leaderpro/internal/transport/rest"
 )
 
@@ -18,6 +19,6 @@ func main() {
 	//	@schemes		http
 	//	@servers.url http://localhost:5000
 
-	server := rest.NewRestServer(&service.Apps{}, nil, nil, "")
+	server := rest.NewRestServer(&service.Apps{}, nil, domain.NewInfrastructureServices(), "")
 	server.Router.GenerateSwagger()
 }

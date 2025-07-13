@@ -14,6 +14,7 @@ type PersonRequest struct {
 	Phone      string     `json:"phone,omitempty"`
 	StartDate  *time.Time `json:"start_date,omitempty"`
 	Notes      string     `json:"notes,omitempty"`
+	Gender     *string    `json:"gender,omitempty" validate:"omitempty,oneof=male female other"`
 }
 
 func (p PersonRequest) ToEntity() entity.Person {
@@ -25,6 +26,7 @@ func (p PersonRequest) ToEntity() entity.Person {
 		Phone:      p.Phone,
 		StartDate:  p.StartDate,
 		Notes:      p.Notes,
+		Gender:     p.Gender,
 		// Set defaults for fields not in the simplified form
 		IsManager:   false,
 		HasKids:     false,
@@ -46,6 +48,7 @@ type PersonResponse struct {
 	ManagerUUID string     `json:"manager_uuid,omitempty"`
 	Notes       string     `json:"notes,omitempty"`
 	HasKids     bool       `json:"has_kids"`
+	Gender      *string    `json:"gender,omitempty"`
 	Interests   string     `json:"interests,omitempty"`
 	Personality string     `json:"personality,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`
@@ -65,6 +68,7 @@ func (p *PersonResponse) FillFromEntity(person entity.Person) {
 	p.IsManager = person.IsManager
 	p.Notes = person.Notes
 	p.HasKids = person.HasKids
+	p.Gender = person.Gender
 	p.Interests = person.Interests
 	p.Personality = person.Personality
 	p.CreatedAt = person.CreatedAt

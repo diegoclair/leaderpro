@@ -8,8 +8,13 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building2, Users, CheckCircle } from 'lucide-react'
-import { useAddCompany } from '@/lib/stores/companyStore'
+import { useAddCompany, useSetActiveCompany } from '@/lib/stores/companyStore'
 import { apiClient } from '@/lib/stores/authStore'
+import { IndustrySelect } from '@/components/forms/industry-select'
+import { CompanySizeSelect } from '@/components/forms/company-size-select'
+import { AppLogo } from '@/components/ui/app-logo'
+import { LoadingPage } from '@/components/ui/loading-spinner'
+import { ErrorMessage } from '@/components/ui/error-message'
 
 interface OnboardingWizardProps {
   onComplete: () => void
@@ -18,9 +23,11 @@ interface OnboardingWizardProps {
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const router = useRouter()
   const addCompany = useAddCompany()
+  const setActiveCompany = useSetActiveCompany()
   
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     companyName: '',
     industry: '',
@@ -38,6 +45,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
   const handleComplete = async () => {
     setIsLoading(true)
+    setError('')
     
     try {
       // Criar empresa no backend
@@ -55,8 +63,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       const response = await apiClient.authPost('/companies', companyData)
       console.log('✅ Empresa criada com sucesso:', response)
       
-      // Adicionar empresa diretamente ao store
-      addCompany({
+      // Criar objeto da empresa
+      const newCompany = {
         id: response.uuid,
         uuid: response.uuid,
         name: response.name,
@@ -66,8 +74,15 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         isDefault: response.is_default || true,
         createdAt: new Date(response.created_at),
         updatedAt: new Date(response.created_at)
-      })
+      }
+
+      // Adicionar empresa ao store
+      addCompany(newCompany)
       
+      // IMPORTANTE: Definir como empresa ativa imediatamente
+      setActiveCompany(newCompany)
+      
+      console.log('✅ Empresa definida como ativa:', newCompany.name)
       
       // Chamar callback
       onComplete()
@@ -78,13 +93,9 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     } catch (error) {
       console.error('❌ Erro ao criar empresa:', error)
       
-      // Mostrar erro detalhado para debug
-      if (error instanceof Error) {
-        console.error('Mensagem do erro:', error.message)
-      }
-      
-      // TODO: Mostrar notificação de erro para o usuário
-      alert(`Erro ao criar empresa: ${error instanceof Error ? error.message : 'Erro desconhecido'}`)
+      // Definir mensagem de erro para o usuário
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao criar empresa'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -176,36 +187,20 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="industry">Setor/Indústria</Label>
-                  <Select value={formData.industry} onValueChange={(value) => handleChange('industry', value)}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Selecione o setor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="technology">Tecnologia</SelectItem>
-                      <SelectItem value="finance">Financeiro</SelectItem>
-                      <SelectItem value="healthcare">Saúde</SelectItem>
-                      <SelectItem value="education">Educação</SelectItem>
-                      <SelectItem value="retail">Varejo</SelectItem>
-                      <SelectItem value="manufacturing">Indústria</SelectItem>
-                      <SelectItem value="consulting">Consultoria</SelectItem>
-                      <SelectItem value="other">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <IndustrySelect
+                    value={formData.industry}
+                    onValueChange={(value) => handleChange('industry', value)}
+                    className="mt-2"
+                  />
                 </div>
 
                 <div>
                   <Label htmlFor="teamSize">Tamanho da empresa</Label>
-                  <Select value={formData.teamSize} onValueChange={(value) => handleChange('teamSize', value)}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Selecione o tamanho da empresa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="small">Pequena (2-10 pessoas)</SelectItem>
-                      <SelectItem value="medium">Média (11-50 pessoas)</SelectItem>
-                      <SelectItem value="large">Grande (51-200 pessoas)</SelectItem>
-                      <SelectItem value="enterprise">Corporação (200+ pessoas)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <CompanySizeSelect
+                    value={formData.teamSize}
+                    onValueChange={(value) => handleChange('teamSize', value)}
+                    className="mt-2"
+                  />
                 </div>
               </CardContent>
             </>
@@ -238,6 +233,12 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           )}
 
           <CardContent className="pt-0">
+            {error && (
+              <ErrorMessage className="mb-4">
+                {error}
+              </ErrorMessage>
+            )}
+            
             <div className="flex gap-3">
               {step > 1 && (
                 <Button
@@ -245,6 +246,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   variant="outline"
                   onClick={() => setStep(step - 1)}
                   className="flex-1"
+                  disabled={isLoading}
                 >
                   Voltar
                 </Button>

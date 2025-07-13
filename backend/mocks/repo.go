@@ -71,32 +71,18 @@ func (mr *MockDataManagerMockRecorder) Company() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Company", reflect.TypeOf((*MockDataManager)(nil).Company))
 }
 
-// Feedback mocks base method.
-func (m *MockDataManager) Feedback() contract.FeedbackRepo {
+// Note mocks base method.
+func (m *MockDataManager) Note() contract.NoteRepo {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Feedback")
-	ret0, _ := ret[0].(contract.FeedbackRepo)
+	ret := m.ctrl.Call(m, "Note")
+	ret0, _ := ret[0].(contract.NoteRepo)
 	return ret0
 }
 
-// Feedback indicates an expected call of Feedback.
-func (mr *MockDataManagerMockRecorder) Feedback() *gomock.Call {
+// Note indicates an expected call of Note.
+func (mr *MockDataManagerMockRecorder) Note() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Feedback", reflect.TypeOf((*MockDataManager)(nil).Feedback))
-}
-
-// OneOnOne mocks base method.
-func (m *MockDataManager) OneOnOne() contract.OneOnOneRepo {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OneOnOne")
-	ret0, _ := ret[0].(contract.OneOnOneRepo)
-	return ret0
-}
-
-// OneOnOne indicates an expected call of OneOnOne.
-func (mr *MockDataManagerMockRecorder) OneOnOne() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OneOnOne", reflect.TypeOf((*MockDataManager)(nil).OneOnOne))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Note", reflect.TypeOf((*MockDataManager)(nil).Note))
 }
 
 // Person mocks base method.
@@ -545,275 +531,161 @@ func (mr *MockPersonRepoMockRecorder) UpdatePerson(ctx, personID, person any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePerson", reflect.TypeOf((*MockPersonRepo)(nil).UpdatePerson), ctx, personID, person)
 }
 
-// MockOneOnOneRepo is a mock of OneOnOneRepo interface.
-type MockOneOnOneRepo struct {
+// MockNoteRepo is a mock of NoteRepo interface.
+type MockNoteRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockOneOnOneRepoMockRecorder
+	recorder *MockNoteRepoMockRecorder
 	isgomock struct{}
 }
 
-// MockOneOnOneRepoMockRecorder is the mock recorder for MockOneOnOneRepo.
-type MockOneOnOneRepoMockRecorder struct {
-	mock *MockOneOnOneRepo
+// MockNoteRepoMockRecorder is the mock recorder for MockNoteRepo.
+type MockNoteRepoMockRecorder struct {
+	mock *MockNoteRepo
 }
 
-// NewMockOneOnOneRepo creates a new mock instance.
-func NewMockOneOnOneRepo(ctrl *gomock.Controller) *MockOneOnOneRepo {
-	mock := &MockOneOnOneRepo{ctrl: ctrl}
-	mock.recorder = &MockOneOnOneRepoMockRecorder{mock}
+// NewMockNoteRepo creates a new mock instance.
+func NewMockNoteRepo(ctrl *gomock.Controller) *MockNoteRepo {
+	mock := &MockNoteRepo{ctrl: ctrl}
+	mock.recorder = &MockNoteRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockOneOnOneRepo) EXPECT() *MockOneOnOneRepoMockRecorder {
+func (m *MockNoteRepo) EXPECT() *MockNoteRepoMockRecorder {
 	return m.recorder
 }
 
-// CreateOneOnOne mocks base method.
-func (m *MockOneOnOneRepo) CreateOneOnOne(ctx context.Context, oneOnOne entity.OneOnOne) (int64, error) {
+// CreateNote mocks base method.
+func (m *MockNoteRepo) CreateNote(ctx context.Context, note entity.Note) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOneOnOne", ctx, oneOnOne)
+	ret := m.ctrl.Call(m, "CreateNote", ctx, note)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateOneOnOne indicates an expected call of CreateOneOnOne.
-func (mr *MockOneOnOneRepoMockRecorder) CreateOneOnOne(ctx, oneOnOne any) *gomock.Call {
+// CreateNote indicates an expected call of CreateNote.
+func (mr *MockNoteRepoMockRecorder) CreateNote(ctx, note any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOneOnOne", reflect.TypeOf((*MockOneOnOneRepo)(nil).CreateOneOnOne), ctx, oneOnOne)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteRepo)(nil).CreateNote), ctx, note)
 }
 
-// DeleteOneOnOne mocks base method.
-func (m *MockOneOnOneRepo) DeleteOneOnOne(ctx context.Context, oneOnOneID int64) error {
+// CreateNoteMention mocks base method.
+func (m *MockNoteRepo) CreateNoteMention(ctx context.Context, mention entity.NoteMention) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteOneOnOne", ctx, oneOnOneID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteOneOnOne indicates an expected call of DeleteOneOnOne.
-func (mr *MockOneOnOneRepoMockRecorder) DeleteOneOnOne(ctx, oneOnOneID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOneOnOne", reflect.TypeOf((*MockOneOnOneRepo)(nil).DeleteOneOnOne), ctx, oneOnOneID)
-}
-
-// GetOneOnOneByUUID mocks base method.
-func (m *MockOneOnOneRepo) GetOneOnOneByUUID(ctx context.Context, oneOnOneUUID string) (entity.OneOnOne, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOneOnOneByUUID", ctx, oneOnOneUUID)
-	ret0, _ := ret[0].(entity.OneOnOne)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOneOnOneByUUID indicates an expected call of GetOneOnOneByUUID.
-func (mr *MockOneOnOneRepoMockRecorder) GetOneOnOneByUUID(ctx, oneOnOneUUID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneOnOneByUUID", reflect.TypeOf((*MockOneOnOneRepo)(nil).GetOneOnOneByUUID), ctx, oneOnOneUUID)
-}
-
-// GetOneOnOnesByManager mocks base method.
-func (m *MockOneOnOneRepo) GetOneOnOnesByManager(ctx context.Context, managerID, take, skip int64) ([]entity.OneOnOne, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOneOnOnesByManager", ctx, managerID, take, skip)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetOneOnOnesByManager indicates an expected call of GetOneOnOnesByManager.
-func (mr *MockOneOnOneRepoMockRecorder) GetOneOnOnesByManager(ctx, managerID, take, skip any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneOnOnesByManager", reflect.TypeOf((*MockOneOnOneRepo)(nil).GetOneOnOnesByManager), ctx, managerID, take, skip)
-}
-
-// GetOneOnOnesByPerson mocks base method.
-func (m *MockOneOnOneRepo) GetOneOnOnesByPerson(ctx context.Context, personID, take, skip int64) ([]entity.OneOnOne, int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOneOnOnesByPerson", ctx, personID, take, skip)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetOneOnOnesByPerson indicates an expected call of GetOneOnOnesByPerson.
-func (mr *MockOneOnOneRepoMockRecorder) GetOneOnOnesByPerson(ctx, personID, take, skip any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneOnOnesByPerson", reflect.TypeOf((*MockOneOnOneRepo)(nil).GetOneOnOnesByPerson), ctx, personID, take, skip)
-}
-
-// GetOverdueOneOnOnes mocks base method.
-func (m *MockOneOnOneRepo) GetOverdueOneOnOnes(ctx context.Context, managerID int64) ([]entity.OneOnOne, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOverdueOneOnOnes", ctx, managerID)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOverdueOneOnOnes indicates an expected call of GetOverdueOneOnOnes.
-func (mr *MockOneOnOneRepoMockRecorder) GetOverdueOneOnOnes(ctx, managerID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOverdueOneOnOnes", reflect.TypeOf((*MockOneOnOneRepo)(nil).GetOverdueOneOnOnes), ctx, managerID)
-}
-
-// GetUpcomingOneOnOnes mocks base method.
-func (m *MockOneOnOneRepo) GetUpcomingOneOnOnes(ctx context.Context, managerID int64) ([]entity.OneOnOne, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUpcomingOneOnOnes", ctx, managerID)
-	ret0, _ := ret[0].([]entity.OneOnOne)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUpcomingOneOnOnes indicates an expected call of GetUpcomingOneOnOnes.
-func (mr *MockOneOnOneRepoMockRecorder) GetUpcomingOneOnOnes(ctx, managerID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpcomingOneOnOnes", reflect.TypeOf((*MockOneOnOneRepo)(nil).GetUpcomingOneOnOnes), ctx, managerID)
-}
-
-// UpdateOneOnOne mocks base method.
-func (m *MockOneOnOneRepo) UpdateOneOnOne(ctx context.Context, oneOnOneID int64, oneOnOne entity.OneOnOne) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOneOnOne", ctx, oneOnOneID, oneOnOne)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateOneOnOne indicates an expected call of UpdateOneOnOne.
-func (mr *MockOneOnOneRepoMockRecorder) UpdateOneOnOne(ctx, oneOnOneID, oneOnOne any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOneOnOne", reflect.TypeOf((*MockOneOnOneRepo)(nil).UpdateOneOnOne), ctx, oneOnOneID, oneOnOne)
-}
-
-// MockFeedbackRepo is a mock of FeedbackRepo interface.
-type MockFeedbackRepo struct {
-	ctrl     *gomock.Controller
-	recorder *MockFeedbackRepoMockRecorder
-	isgomock struct{}
-}
-
-// MockFeedbackRepoMockRecorder is the mock recorder for MockFeedbackRepo.
-type MockFeedbackRepoMockRecorder struct {
-	mock *MockFeedbackRepo
-}
-
-// NewMockFeedbackRepo creates a new mock instance.
-func NewMockFeedbackRepo(ctrl *gomock.Controller) *MockFeedbackRepo {
-	mock := &MockFeedbackRepo{ctrl: ctrl}
-	mock.recorder = &MockFeedbackRepoMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockFeedbackRepo) EXPECT() *MockFeedbackRepoMockRecorder {
-	return m.recorder
-}
-
-// CreateFeedback mocks base method.
-func (m *MockFeedbackRepo) CreateFeedback(ctx context.Context, feedback entity.Feedback) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateFeedback", ctx, feedback)
+	ret := m.ctrl.Call(m, "CreateNoteMention", ctx, mention)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateFeedback indicates an expected call of CreateFeedback.
-func (mr *MockFeedbackRepoMockRecorder) CreateFeedback(ctx, feedback any) *gomock.Call {
+// CreateNoteMention indicates an expected call of CreateNoteMention.
+func (mr *MockNoteRepoMockRecorder) CreateNoteMention(ctx, mention any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFeedback", reflect.TypeOf((*MockFeedbackRepo)(nil).CreateFeedback), ctx, feedback)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNoteMention", reflect.TypeOf((*MockNoteRepo)(nil).CreateNoteMention), ctx, mention)
 }
 
-// DeleteFeedback mocks base method.
-func (m *MockFeedbackRepo) DeleteFeedback(ctx context.Context, feedbackID int64) error {
+// DeleteMentionsByNote mocks base method.
+func (m *MockNoteRepo) DeleteMentionsByNote(ctx context.Context, noteID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteFeedback", ctx, feedbackID)
+	ret := m.ctrl.Call(m, "DeleteMentionsByNote", ctx, noteID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteFeedback indicates an expected call of DeleteFeedback.
-func (mr *MockFeedbackRepoMockRecorder) DeleteFeedback(ctx, feedbackID any) *gomock.Call {
+// DeleteMentionsByNote indicates an expected call of DeleteMentionsByNote.
+func (mr *MockNoteRepoMockRecorder) DeleteMentionsByNote(ctx, noteID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFeedback", reflect.TypeOf((*MockFeedbackRepo)(nil).DeleteFeedback), ctx, feedbackID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMentionsByNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteMentionsByNote), ctx, noteID)
 }
 
-// GetFeedbackByGiver mocks base method.
-func (m *MockFeedbackRepo) GetFeedbackByGiver(ctx context.Context, giverID, take, skip int64) ([]entity.Feedback, int64, error) {
+// DeleteNote mocks base method.
+func (m *MockNoteRepo) DeleteNote(ctx context.Context, noteID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeedbackByGiver", ctx, giverID, take, skip)
-	ret0, _ := ret[0].([]entity.Feedback)
+	ret := m.ctrl.Call(m, "DeleteNote", ctx, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNote indicates an expected call of DeleteNote.
+func (mr *MockNoteRepoMockRecorder) DeleteNote(ctx, noteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteNote), ctx, noteID)
+}
+
+// GetMentionsByPerson mocks base method.
+func (m *MockNoteRepo) GetMentionsByPerson(ctx context.Context, mentionedPersonID, take, skip int64) ([]entity.NoteMention, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMentionsByPerson", ctx, mentionedPersonID, take, skip)
+	ret0, _ := ret[0].([]entity.NoteMention)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// GetFeedbackByGiver indicates an expected call of GetFeedbackByGiver.
-func (mr *MockFeedbackRepoMockRecorder) GetFeedbackByGiver(ctx, giverID, take, skip any) *gomock.Call {
+// GetMentionsByPerson indicates an expected call of GetMentionsByPerson.
+func (mr *MockNoteRepoMockRecorder) GetMentionsByPerson(ctx, mentionedPersonID, take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedbackByGiver", reflect.TypeOf((*MockFeedbackRepo)(nil).GetFeedbackByGiver), ctx, giverID, take, skip)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMentionsByPerson", reflect.TypeOf((*MockNoteRepo)(nil).GetMentionsByPerson), ctx, mentionedPersonID, take, skip)
 }
 
-// GetFeedbackByPerson mocks base method.
-func (m *MockFeedbackRepo) GetFeedbackByPerson(ctx context.Context, personID, take, skip int64) ([]entity.Feedback, int64, error) {
+// GetNoteByUUID mocks base method.
+func (m *MockNoteRepo) GetNoteByUUID(ctx context.Context, noteUUID string) (entity.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeedbackByPerson", ctx, personID, take, skip)
-	ret0, _ := ret[0].([]entity.Feedback)
+	ret := m.ctrl.Call(m, "GetNoteByUUID", ctx, noteUUID)
+	ret0, _ := ret[0].(entity.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNoteByUUID indicates an expected call of GetNoteByUUID.
+func (mr *MockNoteRepoMockRecorder) GetNoteByUUID(ctx, noteUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoteByUUID", reflect.TypeOf((*MockNoteRepo)(nil).GetNoteByUUID), ctx, noteUUID)
+}
+
+// GetNotesByPerson mocks base method.
+func (m *MockNoteRepo) GetNotesByPerson(ctx context.Context, personID, take, skip int64) ([]entity.Note, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotesByPerson", ctx, personID, take, skip)
+	ret0, _ := ret[0].([]entity.Note)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// GetFeedbackByPerson indicates an expected call of GetFeedbackByPerson.
-func (mr *MockFeedbackRepoMockRecorder) GetFeedbackByPerson(ctx, personID, take, skip any) *gomock.Call {
+// GetNotesByPerson indicates an expected call of GetNotesByPerson.
+func (mr *MockNoteRepoMockRecorder) GetNotesByPerson(ctx, personID, take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedbackByPerson", reflect.TypeOf((*MockFeedbackRepo)(nil).GetFeedbackByPerson), ctx, personID, take, skip)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotesByPerson", reflect.TypeOf((*MockNoteRepo)(nil).GetNotesByPerson), ctx, personID, take, skip)
 }
 
-// GetFeedbackByUUID mocks base method.
-func (m *MockFeedbackRepo) GetFeedbackByUUID(ctx context.Context, feedbackUUID string) (entity.Feedback, error) {
+// GetPersonTimeline mocks base method.
+func (m *MockNoteRepo) GetPersonTimeline(ctx context.Context, personID, take, skip int64) ([]entity.TimelineEntry, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeedbackByUUID", ctx, feedbackUUID)
-	ret0, _ := ret[0].(entity.Feedback)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "GetPersonTimeline", ctx, personID, take, skip)
+	ret0, _ := ret[0].([]entity.TimelineEntry)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
-// GetFeedbackByUUID indicates an expected call of GetFeedbackByUUID.
-func (mr *MockFeedbackRepoMockRecorder) GetFeedbackByUUID(ctx, feedbackUUID any) *gomock.Call {
+// GetPersonTimeline indicates an expected call of GetPersonTimeline.
+func (mr *MockNoteRepoMockRecorder) GetPersonTimeline(ctx, personID, take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedbackByUUID", reflect.TypeOf((*MockFeedbackRepo)(nil).GetFeedbackByUUID), ctx, feedbackUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonTimeline", reflect.TypeOf((*MockNoteRepo)(nil).GetPersonTimeline), ctx, personID, take, skip)
 }
 
-// GetFeedbackSummary mocks base method.
-func (m *MockFeedbackRepo) GetFeedbackSummary(ctx context.Context, personID int64, period string) (entity.FeedbackSummary, error) {
+// UpdateNote mocks base method.
+func (m *MockNoteRepo) UpdateNote(ctx context.Context, noteID int64, note entity.Note) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeedbackSummary", ctx, personID, period)
-	ret0, _ := ret[0].(entity.FeedbackSummary)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetFeedbackSummary indicates an expected call of GetFeedbackSummary.
-func (mr *MockFeedbackRepoMockRecorder) GetFeedbackSummary(ctx, personID, period any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeedbackSummary", reflect.TypeOf((*MockFeedbackRepo)(nil).GetFeedbackSummary), ctx, personID, period)
-}
-
-// UpdateFeedback mocks base method.
-func (m *MockFeedbackRepo) UpdateFeedback(ctx context.Context, feedbackID int64, feedback entity.Feedback) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateFeedback", ctx, feedbackID, feedback)
+	ret := m.ctrl.Call(m, "UpdateNote", ctx, noteID, note)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateFeedback indicates an expected call of UpdateFeedback.
-func (mr *MockFeedbackRepoMockRecorder) UpdateFeedback(ctx, feedbackID, feedback any) *gomock.Call {
+// UpdateNote indicates an expected call of UpdateNote.
+func (mr *MockNoteRepoMockRecorder) UpdateNote(ctx, noteID, note any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFeedback", reflect.TypeOf((*MockFeedbackRepo)(nil).UpdateFeedback), ctx, feedbackID, feedback)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteRepo)(nil).UpdateNote), ctx, noteID, note)
 }

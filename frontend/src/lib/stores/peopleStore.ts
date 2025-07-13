@@ -145,6 +145,7 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         managerUUID: apiPerson.manager_uuid,
         notes: apiPerson.notes,
         hasKids: apiPerson.has_kids || false,
+        gender: apiPerson.gender,
         interests: apiPerson.interests,
         personality: apiPerson.personality,
         createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),

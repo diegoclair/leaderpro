@@ -11,6 +11,7 @@ import { useAuthStore } from '@/lib/stores/authStore'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
+import { PhoneInput } from '@/components/ui/phone-input'
 
 export default function RegisterPage() {
   const { isLoading: authLoading, shouldRender, needsOnboarding, completeOnboarding } = useAuthRedirect({ requireAuth: false })
@@ -140,13 +141,11 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Telefone (opcional)</Label>
-              <Input
+              <PhoneInput
                 id="phone"
                 name="phone"
-                type="tel"
-                placeholder="(11) 99999-9999"
                 value={formData.phone}
-                onChange={handleChange}
+                onChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
                 disabled={isLoading}
               />
             </div>

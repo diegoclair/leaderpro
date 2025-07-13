@@ -35,12 +35,23 @@ src/
 │   │   └── static-params.ts # Parâmetros estáticos para build
 │   ├── page.tsx         # Landing page (redireciona baseado em auth)
 │   ├── layout.tsx       # Layout raiz da aplicação
-│   ├── globals.css      # Estilos globais
+│   ├── globals.css      # Estilos globais + react-mentions styling
 │   └── middleware.ts    # Middleware Next.js para proteção de rotas
 ├── components/          # Componentes reutilizáveis
 │   ├── auth/            # Componentes de autenticação
 │   │   └── AuthGuard.tsx # Proteção de rotas autenticadas
-│   ├── ui/              # Componentes shadcn/ui (button, card, etc.)
+│   ├── ui/              # Componentes shadcn/ui + compartilhados
+│   │   ├── button.tsx   # shadcn/ui components
+│   │   ├── card.tsx
+│   │   ├── input.tsx
+│   │   ├── loading-spinner.tsx  # ✅ Componente compartilhado (10+ usos)
+│   │   ├── app-logo.tsx         # ✅ Componente compartilhado (4+ usos)
+│   │   ├── error-message.tsx    # ✅ Componente compartilhado
+│   │   ├── password-input.tsx   # ✅ Componente compartilhado
+│   │   ├── phone-input.tsx      # ✅ Componente compartilhado
+│   │   ├── submit-button.tsx    # ✅ Componente compartilhado
+│   │   ├── mentions-input.tsx   # ✅ Sistema de mentions (react-mentions)
+│   │   └── notifications.tsx
 │   ├── company/         # Componentes relacionados a empresa
 │   │   └── CompanySelector.tsx
 │   ├── onboarding/      # Componentes de onboarding
@@ -52,7 +63,6 @@ src/
 │   │   ├── PersonHistoryTab.tsx
 │   │   ├── PersonFeedbackTab.tsx
 │   │   ├── PersonChatTab.tsx
-│   │   ├── MentionSuggestions.tsx
 │   │   └── CreatePersonDialog.tsx
 │   └── layout/          # Layout e navegação
 │       ├── AppHeader.tsx
@@ -62,15 +72,24 @@ src/
 │   ├── stores/          # Zustand stores com persistência
 │   │   ├── authStore.ts # Store de autenticação (integrado com API)
 │   │   ├── companyStore.ts # Store de empresas
-│   │   └── peopleStore.ts  # Store de pessoas e 1:1s
+│   │   ├── peopleStore.ts  # Store de pessoas e 1:1s
+│   │   └── notificationStore.ts # Store de notificações
+│   ├── constants/       # ✅ Constantes centralizadas
+│   │   ├── api.ts       # ✅ API endpoints centralizados
+│   │   ├── company.ts   # ✅ Tamanhos e indústrias de empresa (padrão BR)
+│   │   ├── messages.ts  # ✅ Mensagens de erro/sucesso
+│   │   └── validation.ts # ✅ Regras de validação
 │   ├── types/           # Definições TypeScript
 │   │   └── index.ts     # Types principais da aplicação
 │   ├── utils/           # Funções utilitárias
 │   │   ├── dates.ts     # Formatação de datas
-│   │   └── names.ts     # Utilitários de nomes
-│   └── utils.ts         # Utilitários principais (cn function)
+│   │   ├── names.ts     # Utilitários de nomes
+│   │   ├── cn.ts        # Utility function para classes CSS
+│   │   └── storageManager.ts # ✅ Storage Manager centralizado
+│   └── api/             # ✅ Cliente API centralizado
+│       └── client.ts    # ✅ apiClient com auth automática
 └── hooks/               # Custom React hooks
-    ├── useMentions.ts   # Hook para sistema de @menções
+    ├── useMentions.ts   # Hook para sistema de @menções (react-mentions)
     ├── useCreatePerson.ts # Hook para criação de pessoas
     └── useAuthRedirect.ts # Hook para redirecionamento de auth
 ```
@@ -91,8 +110,12 @@ src/
 - Empresa padrão configurável
 - Portabilidade de dados ao mudar de empresa
 
-### 3. Sistema de Menções (@mentions)
+### 3. Sistema de Menções (@mentions) - react-mentions
 - Durante 1:1s, use `@nome` para referenciar outras pessoas
+- Interface visual: mostra `@Nome` no texto
+- Backend: envia formato `{{person:uuid|name}}` 
+- Biblioteca: react-mentions para UX profissional
+- Autocomplete com pessoas da empresa
 - Cria automaticamente feedback cruzado no perfil da pessoa mencionada
 - Sugere criação de perfil se pessoa não existir
 
@@ -228,25 +251,30 @@ const useAuthStore = create<AuthStore>()(
 )
 ```
 
-#### API Client Centralizado
+#### API Client Centralizado ⭐ IMPORTANTE
 ```typescript
-// Client centralizado com autenticação automática
+// ✅ SEMPRE use o apiClient centralizado - NUNCA use fetch() diretamente
 import { apiClient } from '@/lib/stores/authStore'
 
 // Requisições públicas (sem autenticação)
-apiClient.get('/auth/login')
-apiClient.post('/users', userData)
+const loginData = await apiClient.post('/auth/login', { email, password })
+const userData = await apiClient.post('/users', registrationData)
 
-// Requisições autenticadas (token incluído automaticamente)
-apiClient.authGet('/users/profile')
-apiClient.authPost('/auth/logout')
-apiClient.authPut('/users/profile', updateData)
+// Requisições autenticadas (token automático + renovação)
+const profile = await apiClient.authGet('/users/profile')
+await apiClient.authPost('/auth/logout')
+await apiClient.authPut('/users/profile', updateData)
+await apiClient.authDelete('/companies/123')
+
+// ❌ INCORRETO - Nunca use fetch() diretamente
+// fetch('/api/endpoint') // NÃO FAÇA ISSO
 
 // Funcionalidades automáticas:
-// 1. Adiciona automaticamente user-token header
-// 2. Renovação automática em caso de 401
-// 3. Limpeza de auth se renovação falhar
-// 4. Configuração centralizada de headers
+// 1. Headers de autenticação (user-token) incluídos automaticamente
+// 2. Renovação automática de token em caso de 401
+// 3. Gerenciamento centralizado de erros
+// 4. Configuração única - mudanças de header em 1 lugar só
+// 5. Type safety com TypeScript
 ```
 
 #### Endpoints Implementados
@@ -297,17 +325,52 @@ apiClient.authPut('/users/profile', updateData)
 
 ## Arquitetura e Boas Práticas Implementadas
 
+### 🗄️ Storage Manager Centralizado ⭐ CRÍTICO PARA SEGURANÇA
+```typescript
+// ✅ Storage Manager - Gerencia TODO o localStorage de forma segura
+import { storageManager } from '@/lib/utils/storageManager'
+
+// Uso nos stores
+storageManager.set('leaderpro-active-company', companyId)
+const companyId = storageManager.get<string>('leaderpro-active-company')
+
+// Logout seguro - limpa TODOS os dados de uma vez
+storageManager.clearAll()
+
+// ❌ NUNCA use localStorage diretamente
+// localStorage.setItem() // NÃO FAÇA ISSO
+```
+
+### 🔧 Componentes Compartilhados ⭐ ELIMINA DUPLICAÇÃO
+```typescript
+// ✅ SEMPRE procure por componentes existentes antes de criar novos
+import { LoadingSpinner } from '@/components/ui/loading-spinner'  // 10+ usos
+import { AppLogo } from '@/components/ui/app-logo'                // 4+ usos  
+import { ErrorMessage } from '@/components/ui/error-message'      // Shared
+import { PhoneInput } from '@/components/ui/phone-input'          // Shared
+import { PasswordInput } from '@/components/ui/password-input'    // Shared
+import { SubmitButton } from '@/components/ui/submit-button'      // Shared
+
+// ✅ Constantes centralizadas
+import { API_ENDPOINTS } from '@/lib/constants/api'
+import { COMPANY_SIZES } from '@/lib/constants/company'  // Padrões brasileiros
+import { MESSAGES } from '@/lib/constants/messages'
+import { VALIDATION } from '@/lib/constants/validation'
+```
+
 ### Separação de Responsabilidades
 - **Componentes de UI** - Focados apenas na apresentação
 - **Hooks personalizados** - Lógica de negócio reutilizável
 - **Utils** - Funções puras sem estado
 - **Stores** - Gerenciamento de estado global
+- **Constants** - Valores centralizados e reutilizáveis
 
 ### Padrões Adotados
 - **Composição sobre herança** - Componentes pequenos e compostos
 - **Single Responsibility** - Cada componente tem uma função específica
 - **Custom Hooks** - Abstração de lógica complexa (useMentions, useCreatePerson)
 - **Utils centralizados** - Evita duplicação de código
+- **Constants compartilhadas** - Valores únicos em local centralizado
 - **TypeScript estrito** - Tipagem completa em todos os componentes
 
 ### Performance
@@ -316,11 +379,24 @@ apiClient.authPut('/users/profile', updateData)
 - **Lazy loading** - Componentes carregados sob demanda
 - **Estados locais** - Evita re-renders desnecessários
 
-### Exemplo de Refatoração Realizada
-**Antes:** ProfilePage tinha 676 linhas com tudo misturado
-**Depois:** ProfilePage tem ~150 linhas + 6 componentes especializados
+### Limpeza de Código Realizada (2025-01-13)
+**Problema:** ~200 linhas de código duplicado em múltiplos componentes
+**Solução:** Criação de componentes compartilhados e constantes centralizadas
 
-## Boas Práticas de Desenvolvimento
+**Exemplos de refatoração:**
+- **LoadingSpinner**: Eliminado 10+ duplicações
+- **AppLogo**: Eliminado 4+ duplicações  
+- **PhoneInput**: Componente único para máscara de telefone brasileiro
+- **Company Constants**: Tamanhos de empresa padronizados para o Brasil
+- **Storage Manager**: Segurança total na troca de usuários
+
+## Boas Práticas de Desenvolvimento ⭐ LEIA ANTES DE CODAR
+
+### 🔍 ANTES DE CRIAR QUALQUER COMPONENTE
+1. **Procure primeiro**: Verifique se já existe em `/components/ui/`
+2. **Analise duplicação**: O novo componente pode ser compartilhado?
+3. **Local correto**: Se compartilhado, crie em `/components/ui/`
+4. **Constants**: Use `/lib/constants/` para valores fixos
 
 ### TypeScript
 - Sempre usar tipagem estrita
@@ -329,15 +405,23 @@ apiClient.authPut('/users/profile', updateData)
 - Utilizar type guards para validação
 
 ### Componentes
+- **⚠️ SEMPRE procurar componentes existentes antes de criar novos**
+- **⚠️ Se for reutilizável, criar em `/components/ui/` imediatamente**
 - Usar composição sobre herança
 - Componentes pequenos e focados em uma responsabilidade
 - Props tipadas com interfaces
 - Usar React.memo() para otimização quando necessário
 
-### Estado
+### Estado e Storage
+- **⚠️ NUNCA usar localStorage diretamente - SEMPRE usar storageManager**
 - Zustand para estado global (empresa ativa, usuário)
 - useState para estado local de componentes
 - Evitar prop drilling - usar context ou store quando necessário
+
+### API Communication
+- **⚠️ SEMPRE usar apiClient - NUNCA usar fetch() diretamente**
+- Headers de autenticação incluídos automaticamente
+- Renovação de token transparente
 
 ### Styling
 - TailwindCSS para estilização
@@ -405,13 +489,23 @@ NEXT_PUBLIC_API_URL=http://localhost:5000  # URL do backend (default se não def
 
 ## Status de Implementação
 
-### ✅ Recentemente Implementado
-1. **Sistema de Autenticação**: JWT/PASETO completo com refresh automático
-2. **Gerenciamento de Empresas**: Criação, listagem e seleção de empresas
-3. **Associação Usuário-Empresa**: Modelo simplificado onde cada empresa pertence diretamente a um usuário
-4. **Fluxo de Onboarding**: Wizard inicial para criação da primeira empresa
-5. **Integração Banco de Dados**: Criação real de empresas no backend MySQL
-6. **API Endpoints**: `/companies` (POST/GET), `/users` (POST), `/auth/*` implementados
+### ✅ Recentemente Implementado (2025-01-13)
+1. **🗄️ Storage Manager Centralizado**: Sistema seguro de localStorage que impede vazamento de dados entre usuários
+2. **🔧 Componentes Compartilhados**: Eliminação de ~200 linhas duplicadas com componentes reutilizáveis
+3. **📱 Sistema de Mentions**: react-mentions para UX profissional (@nome → {{person:uuid|name}})
+4. **🇧🇷 Padrões Brasileiros**: Tamanhos de empresa conforme SEBRAE/IBGE (10-49, 50-99, 100-499, 500+)
+5. **🌙 Tema Dark Default**: Interface escura como padrão
+6. **🏢 Auto-seleção de Empresa**: Fix no onboarding para selecionar empresa automaticamente
+7. **📱 Phone Input Centralizado**: Máscara brasileira compartilhada
+8. **⚡ Constantes Centralizadas**: API endpoints, mensagens, validações em arquivos únicos
+
+### ✅ Anteriormente Implementado
+9. **Sistema de Autenticação**: JWT/PASETO completo com refresh automático
+10. **Gerenciamento de Empresas**: Criação, listagem e seleção de empresas
+11. **Associação Usuário-Empresa**: Modelo simplificado onde cada empresa pertence diretamente a um usuário
+12. **Fluxo de Onboarding**: Wizard inicial para criação da primeira empresa
+13. **Integração Banco de Dados**: Criação real de empresas no backend MySQL
+14. **API Endpoints**: `/companies` (POST/GET), `/users` (POST), `/auth/*` implementados
 
 ### ✅ Frontend Completo
 1. **Setup e Base**: Projeto Next.js 15.3.5 + TailwindCSS v4 + shadcn/ui

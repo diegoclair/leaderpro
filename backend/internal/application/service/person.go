@@ -313,3 +313,342 @@ func (s *personService) SearchPeople(ctx context.Context, companyUUID string, se
 
 	return people, nil
 }
+
+// CreateNote creates a new note for a person
+func (s *personService) CreateNote(ctx context.Context, note entity.Note, companyUUID string, personUUID string) (entity.Note, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get and validate company ownership
+	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return note, resterrors.NewNotFoundError("company not found")
+		}
+		s.log.Errorw(ctx, "error getting company by UUID", logger.Err(err))
+		return note, err
+	}
+
+	// Validate user ownership
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return note, err
+	}
+
+	if company.UserOwnerID != userID {
+		return note, resterrors.NewUnauthorizedError("you don't have permission to access this company")
+	}
+
+	// Get and validate person
+	person, err := s.dm.Person().GetPersonByUUID(ctx, personUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return note, resterrors.NewNotFoundError("person not found")
+		}
+		s.log.Errorw(ctx, "error getting person by UUID", logger.Err(err))
+		return note, err
+	}
+
+	// Validate person belongs to this company
+	if person.CompanyID != company.ID {
+		return note, resterrors.NewBadRequestError("person does not belong to this company")
+	}
+
+	// Validate note data
+	if err := s.validator.ValidateStruct(ctx, note); err != nil {
+		return note, err
+	}
+
+	// Set note fields
+	note.UUID = uuid.NewV4().String()
+	note.CompanyID = company.ID
+	note.PersonID = person.ID
+	note.UserID = userID
+	note.CreatedAt = time.Now()
+	note.UpdatedAt = time.Now()
+
+	// Create note
+	noteID, err := s.dm.Note().CreateNote(ctx, note)
+	if err != nil {
+		s.log.Errorw(ctx, "error creating note", logger.Err(err))
+		return note, err
+	}
+
+	note.ID = noteID
+
+	// Process mentions from content
+	mentionedUUIDs := note.ExtractMentionUUIDs()
+	for _, mentionedUUID := range mentionedUUIDs {
+		// Get mentioned person to validate they exist and belong to same company
+		mentionedPerson, err := s.dm.Person().GetPersonByUUID(ctx, mentionedUUID)
+		if err != nil {
+			s.log.Warnw(ctx, "mentioned person not found, skipping mention",
+				logger.String("mentioned_uuid", mentionedUUID),
+				logger.Err(err),
+			)
+			continue
+		}
+
+		// Validate mentioned person belongs to same company
+		if mentionedPerson.CompanyID != company.ID {
+			s.log.Warnw(ctx, "mentioned person not in same company, skipping mention",
+				logger.String("mentioned_uuid", mentionedUUID),
+				logger.Int64("mentioned_person_company", mentionedPerson.CompanyID),
+				logger.Int64("note_company", company.ID),
+			)
+			continue
+		}
+
+		// Create mention
+		mention := entity.NoteMention{
+			UUID:              uuid.NewV4().String(),
+			NoteID:            noteID,
+			MentionedPersonID: mentionedPerson.ID,
+			SourcePersonID:    person.ID,
+			FullContent:       note.Content,
+			CreatedAt:         time.Now(),
+		}
+
+		_, err = s.dm.Note().CreateNoteMention(ctx, mention)
+		if err != nil {
+			s.log.Errorw(ctx, "error creating note mention", 
+				logger.Err(err),
+				logger.String("mentioned_person_uuid", mentionedUUID),
+			)
+			// Continue processing other mentions even if one fails
+		}
+	}
+
+	s.log.Infow(ctx, "note created successfully",
+		logger.String("note_uuid", note.UUID),
+		logger.String("note_type", note.Type),
+		logger.String("person_uuid", personUUID),
+		logger.Int("mentions_count", len(mentionedUUIDs)),
+	)
+
+	return note, nil
+}
+
+// GetPersonTimeline gets the complete timeline (notes + mentions) for a person
+func (s *personService) GetPersonTimeline(ctx context.Context, personUUID string, take, skip int64) ([]entity.TimelineEntry, int64, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get person and validate ownership
+	person, err := s.dm.Person().GetPersonByUUID(ctx, personUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return nil, 0, resterrors.NewNotFoundError("person not found")
+		}
+		s.log.Errorw(ctx, "error getting person by UUID", logger.Err(err))
+		return nil, 0, err
+	}
+
+	// Validate user has access to this person's company
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	_, err = s.validateUserCompanyAccess(ctx, userID, person.CompanyID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get timeline from repository
+	timeline, totalRecords, err := s.dm.Note().GetPersonTimeline(ctx, person.ID, take, skip)
+	if err != nil {
+		s.log.Errorw(ctx, "error getting person timeline", logger.Err(err))
+		return nil, 0, err
+	}
+
+	s.log.Infow(ctx, "timeline retrieved successfully",
+		logger.String("person_uuid", personUUID),
+		logger.Int64("total_records", totalRecords),
+		logger.Int("returned_records", len(timeline)),
+	)
+
+	return timeline, totalRecords, nil
+}
+
+// GetPersonMentions gets notes where this person was mentioned (feedbacks received)
+func (s *personService) GetPersonMentions(ctx context.Context, personUUID string, take, skip int64) ([]entity.MentionEntry, int64, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get person and validate ownership
+	person, err := s.dm.Person().GetPersonByUUID(ctx, personUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return nil, 0, resterrors.NewNotFoundError("person not found")
+		}
+		s.log.Errorw(ctx, "error getting person by UUID", logger.Err(err))
+		return nil, 0, err
+	}
+
+	// Validate user has access to this person's company
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	_, err = s.validateUserCompanyAccess(ctx, userID, person.CompanyID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get mentions from repository
+	mentions, totalRecords, err := s.dm.Note().GetPersonMentions(ctx, person.ID, take, skip)
+	if err != nil {
+		s.log.Errorw(ctx, "error getting person mentions", logger.Err(err))
+		return nil, 0, err
+	}
+
+	s.log.Infow(ctx, "mentions retrieved successfully",
+		logger.String("person_uuid", personUUID),
+		logger.Int64("total_records", totalRecords),
+		logger.Int("returned_records", len(mentions)),
+	)
+
+	return mentions, totalRecords, nil
+}
+
+// UpdateNote updates an existing note
+func (s *personService) UpdateNote(ctx context.Context, noteUUID string, updatedNote entity.Note) error {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get existing note
+	existingNote, err := s.dm.Note().GetNoteByUUID(ctx, noteUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return resterrors.NewNotFoundError("note not found")
+		}
+		s.log.Errorw(ctx, "error getting note by UUID", logger.Err(err))
+		return err
+	}
+
+	// Validate user ownership through company
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.validateUserCompanyAccess(ctx, userID, existingNote.CompanyID)
+	if err != nil {
+		return err
+	}
+
+	// Validate note data
+	if err := s.validator.ValidateStruct(ctx, updatedNote); err != nil {
+		return err
+	}
+
+	// Preserve original fields and update only allowed fields
+	updatedNote.ID = existingNote.ID
+	updatedNote.UUID = existingNote.UUID
+	updatedNote.CompanyID = existingNote.CompanyID
+	updatedNote.PersonID = existingNote.PersonID
+	updatedNote.UserID = existingNote.UserID
+	updatedNote.CreatedAt = existingNote.CreatedAt
+	updatedNote.UpdatedAt = time.Now()
+
+	// Update note
+	err = s.dm.Note().UpdateNote(ctx, existingNote.ID, updatedNote)
+	if err != nil {
+		s.log.Errorw(ctx, "error updating note", logger.Err(err))
+		return err
+	}
+
+	// Handle mention updates: delete old mentions and create new ones
+	err = s.dm.Note().DeleteMentionsByNote(ctx, existingNote.ID)
+	if err != nil {
+		s.log.Errorw(ctx, "error deleting old mentions", logger.Err(err))
+		// Continue with update even if mention deletion fails
+	}
+
+	// Process new mentions
+	mentionedUUIDs := updatedNote.ExtractMentionUUIDs()
+	for _, mentionedUUID := range mentionedUUIDs {
+		mentionedPerson, err := s.dm.Person().GetPersonByUUID(ctx, mentionedUUID)
+		if err != nil {
+			s.log.Warnw(ctx, "mentioned person not found during update, skipping mention",
+				logger.String("mentioned_uuid", mentionedUUID),
+				logger.Err(err),
+			)
+			continue
+		}
+
+		if mentionedPerson.CompanyID != existingNote.CompanyID {
+			s.log.Warnw(ctx, "mentioned person not in same company during update, skipping mention",
+				logger.String("mentioned_uuid", mentionedUUID),
+			)
+			continue
+		}
+
+		mention := entity.NoteMention{
+			UUID:              uuid.NewV4().String(),
+			NoteID:            existingNote.ID,
+			MentionedPersonID: mentionedPerson.ID,
+			SourcePersonID:    existingNote.PersonID,
+			FullContent:       updatedNote.Content,
+			CreatedAt:         time.Now(),
+		}
+
+		_, err = s.dm.Note().CreateNoteMention(ctx, mention)
+		if err != nil {
+			s.log.Errorw(ctx, "error creating mention during update", 
+				logger.Err(err),
+				logger.String("mentioned_person_uuid", mentionedUUID),
+			)
+		}
+	}
+
+	s.log.Infow(ctx, "note updated successfully",
+		logger.String("note_uuid", noteUUID),
+		logger.String("note_type", updatedNote.Type),
+	)
+
+	return nil
+}
+
+// DeleteNote deletes a note and its mentions
+func (s *personService) DeleteNote(ctx context.Context, noteUUID string) error {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get existing note
+	existingNote, err := s.dm.Note().GetNoteByUUID(ctx, noteUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return resterrors.NewNotFoundError("note not found")
+		}
+		s.log.Errorw(ctx, "error getting note by UUID", logger.Err(err))
+		return err
+	}
+
+	// Validate user ownership
+	userID, err := s.authApp.GetLoggedUserID(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.validateUserCompanyAccess(ctx, userID, existingNote.CompanyID)
+	if err != nil {
+		return err
+	}
+
+	// Delete note (this should cascade delete mentions via foreign key)
+	err = s.dm.Note().DeleteNote(ctx, existingNote.ID)
+	if err != nil {
+		s.log.Errorw(ctx, "error deleting note", logger.Err(err))
+		return err
+	}
+
+	s.log.Infow(ctx, "note deleted successfully",
+		logger.String("note_uuid", noteUUID),
+		logger.String("note_type", existingNote.Type),
+	)
+
+	return nil
+}

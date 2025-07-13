@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar } from 'lucide-react'
 import { Person } from '@/lib/types'
+import { PhoneInput } from '@/components/ui/phone-input'
 
 interface PersonModalProps {
   open: boolean
@@ -26,6 +28,7 @@ export interface PersonFormData {
   phone?: string
   start_date?: string
   notes?: string
+  gender?: 'male' | 'female' | 'other'
 }
 
 export default function PersonModal({
@@ -43,7 +46,8 @@ export default function PersonModal({
     department: '',
     phone: '',
     start_date: '',
-    notes: ''
+    notes: '',
+    gender: undefined
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasTypedName, setHasTypedName] = useState(false)
@@ -60,7 +64,8 @@ export default function PersonModal({
           department: person.department || '',
           phone: person.phone || '',
           start_date: person.startDate ? formatDateForDisplay(person.startDate instanceof Date ? person.startDate.toISOString().split('T')[0] : person.startDate) : '',
-          notes: person.notes || ''
+          notes: person.notes || '',
+          gender: person.gender
         })
       } else {
         // Reset form for create mode
@@ -71,7 +76,8 @@ export default function PersonModal({
           department: '',
           phone: '',
           start_date: '',
-          notes: ''
+          notes: '',
+          gender: undefined
         })
       }
       setHasTypedName(false)
@@ -146,36 +152,6 @@ export default function PersonModal({
     }))
   }
 
-  const handlePhoneChange = (value: string) => {
-    // Remove non-digits
-    const digits = value.replace(/\D/g, '')
-    
-    // Limit to 11 digits (Brazilian mobile maximum)
-    const limitedDigits = digits.slice(0, 11)
-    
-    let formattedValue = ''
-    
-    if (limitedDigits.length === 0) {
-      formattedValue = ''
-    } else if (limitedDigits.length <= 2) {
-      // (XX
-      formattedValue = `(${limitedDigits}`
-    } else if (limitedDigits.length <= 6) {
-      // (XX) XXXX
-      formattedValue = `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2)}`
-    } else if (limitedDigits.length <= 10) {
-      // (XX) XXXX-XXXX (landline format)
-      formattedValue = `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2, 6)}-${limitedDigits.slice(6)}`
-    } else {
-      // (XX) XXXXX-XXXX (mobile format with 11 digits)
-      formattedValue = `(${limitedDigits.slice(0, 2)}) ${limitedDigits.slice(2, 7)}-${limitedDigits.slice(7)}`
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      phone: formattedValue
-    }))
-  }
 
   // Handle calendar picker (YYYY-MM-DD format from date input)
   const handleCalendarChange = (value: string) => {
@@ -242,7 +218,8 @@ export default function PersonModal({
             department: '',
             phone: '',
             start_date: '',
-            notes: ''
+            notes: '',
+            gender: undefined
           })
         }
         onClose()
@@ -303,7 +280,7 @@ export default function PersonModal({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
@@ -317,14 +294,32 @@ export default function PersonModal({
             
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
-              <Input
+              <PhoneInput
                 id="phone"
-                type="tel"
                 value={formData.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                placeholder="(11) 99999-9999"
-                maxLength={15}
+                onChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gender" className="text-sm font-medium">Gênero</Label>
+              <Select
+                value={formData.gender || 'not-specified'}
+                onValueChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  gender: value === 'not-specified' ? undefined : value as 'male' | 'female' | 'other'
+                }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not-specified">Não informar</SelectItem>
+                  <SelectItem value="male">Masculino</SelectItem>
+                  <SelectItem value="female">Feminino</SelectItem>
+                  <SelectItem value="other">Outro</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

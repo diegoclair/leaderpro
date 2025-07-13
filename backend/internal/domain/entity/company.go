@@ -9,7 +9,7 @@ type Company struct {
 	UUID        string
 	Name        string
 	Industry    string
-	Size        string // small, medium, large, enterprise
+	Size        string // small (10-49), medium (50-99), large (100-499), enterprise (500+)
 	Role        string
 	IsDefault   bool
 	CreatedAt   time.Time

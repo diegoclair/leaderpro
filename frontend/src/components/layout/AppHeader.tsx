@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Building2, User, Settings, LogOut } from 'lucide-react'
+import { Building2, Settings, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -71,10 +71,6 @@ export function AppHeader({ className }: AppHeaderProps) {
             >
               <Building2 className="h-4 w-4" />
               Dashboard
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <User className="h-4 w-4" />
-              Pessoas
             </Button>
           </nav>
 

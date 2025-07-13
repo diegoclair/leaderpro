@@ -13,8 +13,7 @@ type DataManager interface {
 	User() UserRepo
 	Company() CompanyRepo
 	Person() PersonRepo
-	OneOnOne() OneOnOneRepo
-	Feedback() FeedbackRepo
+	Note() NoteRepo
 	Auth() AuthRepo
 }
 
@@ -51,23 +50,17 @@ type PersonRepo interface {
 	SearchPeople(ctx context.Context, companyID int64, search string) (people []entity.Person, err error)
 }
 
-type OneOnOneRepo interface {
-	CreateOneOnOne(ctx context.Context, oneOnOne entity.OneOnOne) (createdID int64, err error)
-	GetOneOnOneByUUID(ctx context.Context, oneOnOneUUID string) (oneOnOne entity.OneOnOne, err error)
-	GetOneOnOnesByPerson(ctx context.Context, personID int64, take, skip int64) (oneOnOnes []entity.OneOnOne, totalRecords int64, err error)
-	GetOneOnOnesByManager(ctx context.Context, managerID int64, take, skip int64) (oneOnOnes []entity.OneOnOne, totalRecords int64, err error)
-	UpdateOneOnOne(ctx context.Context, oneOnOneID int64, oneOnOne entity.OneOnOne) (err error)
-	DeleteOneOnOne(ctx context.Context, oneOnOneID int64) (err error)
-	GetUpcomingOneOnOnes(ctx context.Context, managerID int64) (oneOnOnes []entity.OneOnOne, err error)
-	GetOverdueOneOnOnes(ctx context.Context, managerID int64) (oneOnOnes []entity.OneOnOne, err error)
-}
-
-type FeedbackRepo interface {
-	CreateFeedback(ctx context.Context, feedback entity.Feedback) (createdID int64, err error)
-	GetFeedbackByUUID(ctx context.Context, feedbackUUID string) (feedback entity.Feedback, err error)
-	GetFeedbackByPerson(ctx context.Context, personID int64, take, skip int64) (feedback []entity.Feedback, totalRecords int64, err error)
-	GetFeedbackByGiver(ctx context.Context, giverID int64, take, skip int64) (feedback []entity.Feedback, totalRecords int64, err error)
-	UpdateFeedback(ctx context.Context, feedbackID int64, feedback entity.Feedback) (err error)
-	DeleteFeedback(ctx context.Context, feedbackID int64) (err error)
-	GetFeedbackSummary(ctx context.Context, personID int64, period string) (summary entity.FeedbackSummary, err error)
+type NoteRepo interface {
+	CreateNote(ctx context.Context, note entity.Note) (createdID int64, err error)
+	GetNoteByUUID(ctx context.Context, noteUUID string) (note entity.Note, err error)
+	GetNotesByPerson(ctx context.Context, personID int64, take, skip int64) (notes []entity.Note, totalRecords int64, err error)
+	UpdateNote(ctx context.Context, noteID int64, note entity.Note) (err error)
+	DeleteNote(ctx context.Context, noteID int64) (err error)
+	
+	// Note mention methods
+	CreateNoteMention(ctx context.Context, mention entity.NoteMention) (createdID int64, err error)
+	GetMentionsByPerson(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.NoteMention, totalRecords int64, err error)
+	GetPersonTimeline(ctx context.Context, personID int64, take, skip int64) (timeline []entity.TimelineEntry, totalRecords int64, err error)
+	GetPersonMentions(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.MentionEntry, totalRecords int64, err error)
+	DeleteMentionsByNote(ctx context.Context, noteID int64) (err error)
 }

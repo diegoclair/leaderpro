@@ -41,24 +41,11 @@ type PersonApp interface {
 	UpdatePerson(ctx context.Context, personUUID string, person entity.Person) (err error)
 	DeletePerson(ctx context.Context, personUUID string) (err error)
 	SearchPeople(ctx context.Context, companyUUID string, search string) (people []entity.Person, err error)
-}
-
-type OneOnOneApp interface {
-	CreateOneOnOne(ctx context.Context, oneOnOne entity.OneOnOne) (err error)
-	GetOneOnOneByUUID(ctx context.Context, oneOnOneUUID string) (oneOnOne entity.OneOnOne, err error)
-	GetPersonOneOnOnes(ctx context.Context, personUUID string, take, skip int64) (oneOnOnes []entity.OneOnOne, totalRecords int64, err error)
-	GetManagerOneOnOnes(ctx context.Context, take, skip int64) (oneOnOnes []entity.OneOnOne, totalRecords int64, err error)
-	UpdateOneOnOne(ctx context.Context, oneOnOneUUID string, oneOnOne entity.OneOnOne) (err error)
-	DeleteOneOnOne(ctx context.Context, oneOnOneUUID string) (err error)
-	GetUpcomingOneOnOnes(ctx context.Context) (oneOnOnes []entity.OneOnOne, err error)
-	GetOverdueOneOnOnes(ctx context.Context) (oneOnOnes []entity.OneOnOne, err error)
-}
-
-type FeedbackApp interface {
-	CreateFeedback(ctx context.Context, feedback entity.Feedback) (err error)
-	GetFeedbackByUUID(ctx context.Context, feedbackUUID string) (feedback entity.Feedback, err error)
-	GetPersonFeedback(ctx context.Context, personUUID string, take, skip int64) (feedback []entity.Feedback, totalRecords int64, err error)
-	UpdateFeedback(ctx context.Context, feedbackUUID string, feedback entity.Feedback) (err error)
-	DeleteFeedback(ctx context.Context, feedbackUUID string) (err error)
-	GetFeedbackSummary(ctx context.Context, personUUID string, period string) (summary entity.FeedbackSummary, err error)
+	
+	// Note management methods
+	CreateNote(ctx context.Context, note entity.Note, companyUUID string, personUUID string) (createdNote entity.Note, err error)
+	GetPersonTimeline(ctx context.Context, personUUID string, take, skip int64) (timeline []entity.TimelineEntry, totalRecords int64, err error)
+	GetPersonMentions(ctx context.Context, personUUID string, take, skip int64) (mentions []entity.MentionEntry, totalRecords int64, err error)
+	UpdateNote(ctx context.Context, noteUUID string, note entity.Note) (err error)
+	DeleteNote(ctx context.Context, noteUUID string) (err error)
 }

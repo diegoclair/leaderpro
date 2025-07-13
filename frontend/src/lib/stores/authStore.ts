@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { apiClient, setAuthStateGetter } from '../api/client'
 import { useNotificationStore } from './notificationStore'
+import { storageManager } from '../utils/storageManager'
 
 export interface User {
   uuid: string
@@ -32,6 +33,7 @@ interface AuthState {
   tokens: AuthTokens | null
   isLoading: boolean
   isAuthenticated: boolean
+  hasHydrated: boolean
 }
 
 interface AuthActions {
@@ -64,6 +66,7 @@ export const useAuthStore = create<AuthStore>()(
       tokens: null,
       isLoading: false,
       isAuthenticated: false,
+      hasHydrated: false,
 
       // Actions
       login: async (email: string, password: string) => {
@@ -132,7 +135,31 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.error('Erro ao fazer logout no servidor:', error)
         } finally {
+          // Limpar TODOS os dados usando storage manager centralizado
+          storageManager.clearAll()
+          
+          // Limpar stores em memória (sem localStorage pois já foi limpo)
           get().clearAuth()
+          
+          // Limpar outros stores em memória
+          const { useCompanyStore } = await import('./companyStore')
+          const { usePeopleStore } = await import('./peopleStore')
+          
+          useCompanyStore.setState({
+            companies: [],
+            activeCompany: null,
+            isLoading: false
+          })
+          
+          usePeopleStore.setState({
+            people: [],
+            oneOnOneSessions: [],
+            feedbacks: [],
+            aiSuggestions: [],
+            isLoading: false
+          })
+          
+          console.log('🚪 Logout completo - todos os dados limpos')
         }
       },
 
@@ -198,7 +225,17 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.hasHydrated = true
+          console.log('🔍 Debug Zustand hydrated - auth state restored:', {
+            isAuthenticated: state.isAuthenticated,
+            hasTokens: !!state.tokens,
+            hasUser: !!state.user
+          })
+        }
+      }
     }
   )
 )

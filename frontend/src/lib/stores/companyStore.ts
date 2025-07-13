@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Company } from '../types'
 import { apiClient } from './authStore'
+import { storageManager } from '../utils/storageManager'
 
 interface CompanyState {
   companies: Company[]
@@ -23,16 +24,30 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
 
   setActiveCompany: (company: Company) => {
     set({ activeCompany: company })
-    // Persist active company to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('leaderpro-active-company', company.id)
-    }
+    // Persist active company using storage manager
+    storageManager.set('leaderpro-active-company', company.id)
   },
 
   addCompany: (company: Company) => {
-    set((state) => ({
-      companies: [...state.companies, company]
-    }))
+    set((state) => {
+      const newCompanies = [...state.companies, company]
+      
+      // Se é a primeira empresa ou é uma empresa default e não há empresa ativa,
+      // defini-la como ativa automaticamente
+      let newActiveCompany = state.activeCompany
+      
+      if (!state.activeCompany || (company.isDefault && state.companies.length === 0)) {
+        newActiveCompany = company
+        
+        // Persist active company using storage manager
+        storageManager.set('leaderpro-active-company', company.id)
+      }
+      
+      return {
+        companies: newCompanies,
+        activeCompany: newActiveCompany
+      }
+    })
   },
 
   updateCompany: (id: string, updates: Partial<Company>) => {
@@ -107,14 +122,15 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
       // Definir empresa ativa
       let activeCompany = companies.find(c => c.isDefault) || companies[0] || null
       
-      // Tentar restaurar empresa previamente selecionada
-      if (typeof window !== 'undefined') {
-        const savedCompanyId = localStorage.getItem('leaderpro-active-company')
-        if (savedCompanyId) {
-          const savedCompany = companies.find(c => c.id === savedCompanyId)
-          if (savedCompany) {
-            activeCompany = savedCompany
-          }
+      // Tentar restaurar empresa previamente selecionada APENAS se pertencer ao usuário atual
+      const savedCompanyId = storageManager.get<string>('leaderpro-active-company')
+      if (savedCompanyId) {
+        const savedCompany = companies.find(c => c.id === savedCompanyId)
+        if (savedCompany) {
+          activeCompany = savedCompany
+        } else {
+          // Se a empresa salva não pertence ao usuário atual, limpar storage
+          storageManager.remove('leaderpro-active-company')
         }
       }
       

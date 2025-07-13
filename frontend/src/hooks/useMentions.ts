@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Person } from '@/lib/types'
 
 interface MentionDetection {
+  uuid: string
   name: string
   person: Person
-  context: string
 }
 
 interface UseMentionsProps {
@@ -17,21 +17,22 @@ export function useMentions({ allPeople, currentPersonCompanyId }: UseMentionsPr
   const [mentionQuery, setMentionQuery] = useState('')
 
   const detectMentions = (text: string): MentionDetection[] => {
-    const mentionRegex = /@(\w+)/g
+    const tokenRegex = /\{\{person:([^\|]+)\|([^}]+)\}\}/g
     const mentions: MentionDetection[] = []
     let match
 
-    while ((match = mentionRegex.exec(text)) !== null) {
-      const mentionedName = match[1]
+    while ((match = tokenRegex.exec(text)) !== null) {
+      const uuid = match[1]
+      const name = match[2]
       const mentionedPerson = allPeople.find(p => 
-        p.name.toLowerCase().includes(mentionedName.toLowerCase()) &&
+        p.id === uuid &&
         p.companyId === currentPersonCompanyId // Only same company
       )
       if (mentionedPerson) {
         mentions.push({
-          name: mentionedName,
-          person: mentionedPerson,
-          context: text
+          uuid,
+          name,
+          person: mentionedPerson
         })
       }
     }
@@ -90,7 +91,14 @@ export function useMentions({ allPeople, currentPersonCompanyId }: UseMentionsPr
     const spaceIndex = afterAt.indexOf(' ')
     const afterMention = spaceIndex === -1 ? '' : afterAt.substring(spaceIndex)
 
-    return `${beforeAt}@${selectedPerson.name}${afterMention}`
+    // Insert token with uuid and name: {{person:uuid|name}}
+    const token = `{{person:${selectedPerson.id}|${selectedPerson.name}}}`
+    return `${beforeAt}${token}${afterMention}`
+  }
+
+  const renderTokensForDisplay = (text: string): string => {
+    // Replace {{person:uuid|name}} tokens with @name for display
+    return text.replace(/\{\{person:[^|]+\|([^}]+)\}\}/g, '@$1')
   }
 
   return {
@@ -100,6 +108,7 @@ export function useMentions({ allPeople, currentPersonCompanyId }: UseMentionsPr
     handleTextChange,
     getFilteredPeople,
     insertMention,
+    renderTokensForDisplay,
     setShowMentionSuggestions
   }
 }

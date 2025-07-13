@@ -34,6 +34,7 @@ const personSelectBase string = `
 		p.manager_id,
 		p.notes,
 		p.has_kids,
+		p.gender,
 		p.interests,
 		p.personality,
 		p.created_at,
@@ -60,6 +61,7 @@ func (r *personRepo) parsePerson(row scanner) (person entity.Person, err error) 
 		&person.ManagerID,
 		&person.Notes,
 		&person.HasKids,
+		&person.Gender,
 		&person.Interests,
 		&person.Personality,
 		&person.CreatedAt,
@@ -91,12 +93,13 @@ func (r *personRepo) CreatePerson(ctx context.Context, person entity.Person) (cr
 			manager_id,
 			notes,
 			has_kids,
+			gender,
 			interests,
 			personality,
 			created_by,
 			active
 		) 
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -119,6 +122,7 @@ func (r *personRepo) CreatePerson(ctx context.Context, person entity.Person) (cr
 		person.ManagerID,
 		person.Notes,
 		person.HasKids,
+		person.Gender,
 		person.Interests,
 		person.Personality,
 		person.CreatedBy,
@@ -200,6 +204,7 @@ func (r *personRepo) UpdatePerson(ctx context.Context, personID int64, person en
 			manager_id = ?,
 			notes = ?,
 			has_kids = ?,
+			gender = ?,
 			interests = ?,
 			personality = ?,
 			updated_at = NOW()
@@ -224,6 +229,7 @@ func (r *personRepo) UpdatePerson(ctx context.Context, personID int64, person en
 		person.ManagerID,
 		person.Notes,
 		person.HasKids,
+		person.Gender,
 		person.Interests,
 		person.Personality,
 		personID,

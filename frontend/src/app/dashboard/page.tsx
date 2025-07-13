@@ -35,10 +35,11 @@ export default function Dashboard() {
 
   // Carregar empresas uma única vez quando o componente monta
   useEffect(() => {
-    if (companies.length === 0) {
+    // Aguardar o shouldRender estar true (significa que auth foi carregado)
+    if (shouldRender && companies.length === 0) {
       loadCompanies()
     }
-  }, []) // Array vazio = executa apenas uma vez
+  }, [shouldRender, companies.length]) // Depende do shouldRender para garantir auth carregado
   
   const allPeople = useAllPeopleFromStore()
   const aiSuggestions = useAllAISuggestions()
@@ -105,8 +106,10 @@ export default function Dashboard() {
   }, [people])
 
   useEffect(() => {
+    console.log('🔍 Dashboard useEffect executou')
     // Carregar pessoas quando estiver pronto (após empresas carregadas)
     if (shouldRender && !needsOnboarding && activeCompany) {
+      console.log('📞 Dashboard chamando loadPeopleFromAPI')
       loadPeopleFromAPI(activeCompany.uuid)
     }
   }, [loadPeopleFromAPI, shouldRender, needsOnboarding, activeCompany])

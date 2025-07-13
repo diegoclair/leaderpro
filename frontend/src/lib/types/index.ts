@@ -27,6 +27,7 @@ export type Person = {
   managerUUID?: string
   notes?: string
   hasKids: boolean
+  gender?: 'male' | 'female' | 'other'
   interests?: string
   personality?: string
   createdAt: Date

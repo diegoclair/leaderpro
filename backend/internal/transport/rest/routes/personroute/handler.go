@@ -144,3 +144,89 @@ func (s *Handler) handleDeletePerson(c echo.Context) error {
 
 	return routeutils.ResponseNoContent(c)
 }
+
+func (s *Handler) handleCreateNote(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	personUUID, err := routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	input := viewmodel.CreateNoteRequest{}
+	err = c.Bind(&input)
+	if err != nil {
+		return routeutils.ResponseInvalidRequestBody(c, err)
+	}
+
+	note := input.ToEntity()
+
+	createdNote, err := s.personService.CreateNote(ctx, note, companyUUID, personUUID)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	response := viewmodel.NoteResponse{}
+	response.FillFromEntity(createdNote)
+
+	return routeutils.ResponseCreated(c, response)
+}
+
+func (s *Handler) handleGetPersonTimeline(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	personUUID, err := routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	take, skip := routeutils.GetPagingParams(c, "", "")
+
+	timeline, totalRecords, err := s.personService.GetPersonTimeline(ctx, personUUID, take, skip)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	response := []viewmodel.TimelineResponse{}
+	for _, entry := range timeline {
+		item := viewmodel.TimelineResponse{}
+		item.FillFromTimelineEntry(entry)
+		response = append(response, item)
+	}
+
+	paginatedResponse := viewmodel.BuildPaginatedResponse(response, skip, take, totalRecords)
+
+	return routeutils.ResponseAPIOk(c, paginatedResponse)
+}
+
+func (s *Handler) handleGetPersonMentions(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	personUUID, err := routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	take, skip := routeutils.GetPagingParams(c, "", "")
+
+	mentions, totalRecords, err := s.personService.GetPersonMentions(ctx, personUUID, take, skip)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	response := []viewmodel.MentionResponse{}
+	for _, mention := range mentions {
+		item := viewmodel.MentionResponse{}
+		item.FillFromMentionEntry(mention)
+		response = append(response, item)
+	}
+
+	paginatedResponse := viewmodel.BuildPaginatedResponse(response, skip, take, totalRecords)
+
+	return routeutils.ResponseAPIOk(c, paginatedResponse)
+}

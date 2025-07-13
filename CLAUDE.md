@@ -155,32 +155,92 @@ frontend/src/
 4. **Prompt Engineering**: Generate suggestions
 5. **Response Caching**: Redis for frequent queries
 
-## Critical Development Patterns
+## 🚨 CRITICAL DEVELOPMENT RULES - READ BEFORE CODING
 
-### ⭐ Frontend API Client - ALWAYS USE
-**NEVER use fetch() directly. Always use the centralized apiClient:**
+### 🔍 COMPONENT CREATION RULES ⚠️ EXTREMAMENTE IMPORTANTE
+**SEMPRE procure por componentes compartilhados antes de criar novos componentes para evitar duplicidade!**
+
+**Checklist obrigatório ANTES de criar qualquer componente:**
+1. **Verificar `/components/ui/`** - Existe componente similar?
+2. **Analisar reutilização** - Este componente será usado em outros lugares?
+3. **Local correto** - Se reutilizável, criar IMEDIATAMENTE em `/components/ui/`
+4. **Constantes** - Verificar `/lib/constants/` antes de criar valores fixos
+
+**Componentes já disponíveis para reutilização:**
+- `LoadingSpinner` - Loading indicators (10+ usos eliminados)
+- `AppLogo` - Logo da aplicação (4+ usos eliminados)
+- `ErrorMessage` - Mensagens de erro compartilhadas
+- `PasswordInput` - Input de senha com toggle visibility
+- `PhoneInput` - Input com máscara brasileira
+- `SubmitButton` - Botões de envio padronizados
+- `MentionsInputComponent` - Sistema de @mentions
+
+### 🗄️ Storage Manager - USAR SEMPRE ⚠️ CRÍTICO PARA SEGURANÇA
+**NUNCA use localStorage diretamente! SEMPRE use o Storage Manager:**
 
 ```typescript
-import { apiClient } from '@/lib/api/client'
+// ✅ CORRETO - Uso obrigatório
+import { storageManager } from '@/lib/utils/storageManager'
+storageManager.set('leaderpro-active-company', companyId)
+const companyId = storageManager.get<string>('leaderpro-active-company')
 
-// ✅ Public requests (no auth)
-await apiClient.post('/auth/login', { email, password })
-await apiClient.post('/users', userData)
-
-// ✅ Authenticated requests (auto token + refresh)
-await apiClient.authGet('/users/profile')
-await apiClient.authPost('/companies', companyData)
-await apiClient.authPut('/users/profile', updates)
-
-// ❌ NEVER do this
-// fetch('/api/endpoint') // DON'T DO THIS
+// ❌ INCORRETO - Causa vazamento de dados entre usuários
+localStorage.setItem('leaderpro-active-company', companyId)  // NÃO FAÇA ISSO
 ```
 
-**Why apiClient is mandatory:**
-- Automatic `user-token` header injection
-- Automatic token refresh on 401 errors  
-- Centralized error handling + notifications
-- TypeScript type safety
+**Por que Storage Manager é obrigatório:**
+- **Segurança**: Previne vazamento de dados entre usuários
+- **Logout seguro**: `storageManager.clearAll()` limpa TUDO de uma vez
+- **Debugável**: `storageManager.debug()` mostra todos os dados
+- **Centralizad**: Todas as chaves gerenciadas em um lugar
+
+### ⭐ Frontend API Client - USAR SEMPRE
+**NUNCA use fetch() diretamente. SEMPRE use o apiClient centralizado:**
+
+```typescript
+// ✅ CORRETO - Uso obrigatório  
+import { apiClient } from '@/lib/stores/authStore'
+
+// Requisições públicas (sem autenticação)
+const loginData = await apiClient.post('/auth/login', { email, password })
+const userData = await apiClient.post('/users', registrationData)
+
+// Requisições autenticadas (token automático + renovação)
+const profile = await apiClient.authGet('/users/profile')
+await apiClient.authPost('/auth/logout')
+await apiClient.authPut('/users/profile', updateData)
+await apiClient.authDelete('/companies/123')
+
+// ❌ INCORRETO - Nunca use fetch() diretamente
+// fetch('/api/endpoint') // NÃO FAÇA ISSO
+```
+
+**Por que apiClient é obrigatório:**
+- Headers de autenticação (`user-token`) incluídos automaticamente
+- Renovação automática de token em caso de 401
+- Gerenciamento centralizado de erros
+- Configuração única - mudanças de header em 1 lugar só
+- Type safety com TypeScript
+
+### ⚡ Constantes Centralizadas - USAR SEMPRE
+**SEMPRE verificar `/lib/constants/` antes de criar valores fixos:**
+
+```typescript
+// ✅ CORRETO - Use constantes centralizadas
+import { API_ENDPOINTS } from '@/lib/constants/api'
+import { COMPANY_SIZES } from '@/lib/constants/company'  // Padrões brasileiros
+import { MESSAGES } from '@/lib/constants/messages'
+import { VALIDATION } from '@/lib/constants/validation'
+import { 
+  NOTE_SOURCE_TYPES, 
+  getNoteSourceTypeLabel, 
+  getFeedbackTypeColor 
+} from '@/lib/constants/notes'  // Types de notas e feedbacks
+
+// ❌ INCORRETO - Valores hardcoded espalhados
+const endpoint = '/companies'  // NÃO FAÇA ISSO
+if (note.type === 'feedback') // NÃO FAÇA ISSO - use NOTE_SOURCE_TYPES.FEEDBACK
+```
 
 ### Backend Authentication
 - **Header**: `user-token` (NOT `Authorization`)
@@ -216,9 +276,11 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 
 ### Frontend Critical Files  
 - `frontend/src/app/` - Next.js App Router pages (auth, dashboard, profile)
-- `frontend/src/lib/api/client.ts` - ⭐ **Centralized API client** (use always!)
+- `frontend/src/lib/stores/authStore.ts` - ⭐ **apiClient centralizado** (use sempre!)
+- `frontend/src/lib/utils/storageManager.ts` - ⭐ **Storage Manager** (use sempre!)
 - `frontend/src/lib/stores/` - Zustand state stores (auth, company, people)
-- `frontend/src/components/` - UI components organized by feature
+- `frontend/src/components/ui/` - ⭐ **Componentes compartilhados** (verifique primeiro!)
+- `frontend/src/lib/constants/` - ⭐ **Constantes centralizadas** (use sempre!)
 - `frontend/src/lib/types/index.ts` - TypeScript type definitions
 
 ## Environment & Configuration

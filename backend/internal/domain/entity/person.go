@@ -21,6 +21,7 @@ type Person struct {
 	
 	// Personal information
 	HasKids     bool
+	Gender      *string // "male", "female", "other"
 	Interests   string
 	Personality string
 	

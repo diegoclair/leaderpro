@@ -13,13 +13,13 @@ export function useAuthRedirect({
   redirectTo 
 }: UseAuthRedirectOptions = {}) {
   const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading } = useAuthStore()
+  const { isAuthenticated, isLoading: authLoading, hasHydrated } = useAuthStore()
   const { companies, isLoading: companyLoading } = useCompanyStore()
   const [hasInitialized, setHasInitialized] = useState(false)
 
   useEffect(() => {
-    // Wait for both auth and company data to be loaded
-    if (authLoading || companyLoading) return
+    // Wait for auth hydration and both stores to be loaded
+    if (authLoading || companyLoading || !hasHydrated) return
     
     // Mark as initialized after first load
     if (!hasInitialized) {
@@ -34,15 +34,15 @@ export function useAuthRedirect({
     }
 
     // Redirect if authenticated but on auth page
-    if (!requireAuth && isAuthenticated && companies.length > 0) {
+    if (!requireAuth && isAuthenticated) {
       router.push('/dashboard')
     }
-  }, [isAuthenticated, authLoading, companyLoading, requireAuth, router, redirectTo, companies.length, hasInitialized])
+  }, [isAuthenticated, authLoading, companyLoading, hasHydrated, requireAuth, router, redirectTo, companies.length, hasInitialized])
 
-  // Estados simples
-  const needsOnboarding = isAuthenticated && companies.length === 0 && hasInitialized
-  const shouldRender = hasInitialized && (requireAuth ? isAuthenticated : !isAuthenticated)
-  const isLoading = authLoading || companyLoading || !hasInitialized
+  // Estados simples - aguardar hidratação completa
+  const needsOnboarding = isAuthenticated && companies.length === 0 && hasInitialized && hasHydrated
+  const shouldRender = hasInitialized && hasHydrated && (requireAuth ? isAuthenticated : !isAuthenticated)
+  const isLoading = authLoading || companyLoading || !hasInitialized || !hasHydrated
 
   return {
     isAuthenticated,

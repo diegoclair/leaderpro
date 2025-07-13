@@ -192,6 +192,44 @@ func handleUpdatePerson() {} //nolint:unused
 //	@Router			/companies/:company_uuid/people/:person_uuid [delete]
 func handleDeletePerson() {} //nolint:unused 
 
+//	@Summary		Create a note for a person
+//	@Description	Create a new note (1:1, feedback, or observation) for a person
+//	@Tags			companies/:company_uuid/people
+//	@Accept			json
+//	@Produce		json
+//	@Param			request			body	viewmodel.CreateNoteRequest	true	"Request"
+//	@Param			company_uuid	path	string						true	"company uuid"
+//	@Param			person_uuid		path	string						true	"person uuid"
+//	@Param			user-token		header	string						true	"User access token"
+//	@Success		201
+//	@Failure		400	{object}	resterrors.restErr
+//	@Failure		404	{object}	resterrors.restErr
+//	@Failure		500	{object}	resterrors.restErr
+//	@Failure		401	{object}	resterrors.restErr
+//	@Failure		422	{object}	resterrors.restErr
+//	@Failure		409	{object}	resterrors.restErr
+//	@Router			/companies/:company_uuid/people/:person_uuid/notes [post]
+func handleCreateNote() {} //nolint:unused 
+
+//	@Summary		Get person timeline
+//	@Description	Get timeline of notes and mentions for a person
+//	@Tags			companies/:company_uuid/people
+//	@Produce		json
+//	@Param			company_uuid	path		string	true	"company uuid"
+//	@Param			person_uuid		path		string	true	"person uuid"
+//	@Param			page			query		number	false	"page number"
+//	@Param			quantity		query		number	false	"items per page"
+//	@Param			user-token		header		string	true	"User access token"
+//	@Success		200				{object}	viewmodel.PaginatedResponse[[]viewmodel.TimelineResponse]
+//	@Failure		400				{object}	resterrors.restErr
+//	@Failure		404				{object}	resterrors.restErr
+//	@Failure		500				{object}	resterrors.restErr
+//	@Failure		401				{object}	resterrors.restErr
+//	@Failure		422				{object}	resterrors.restErr
+//	@Failure		409				{object}	resterrors.restErr
+//	@Router			/companies/:company_uuid/people/:person_uuid/timeline [get]
+func handleGetPersonTimeline() {} //nolint:unused 
+
 //	@Summary		Get User Profile
 //	@Description	Get the current user's profile
 //	@Tags			users
