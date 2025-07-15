@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Person } from '@/lib/types'
-import { formatTimeAgoWithoutSuffix, getMockDaysAgo } from '@/lib/utils/dates'
+import { formatTimeAgoWithoutSuffix, formatLastOneOnOne } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
 
 interface PersonCardProps {
@@ -83,7 +83,7 @@ export function PersonCard({
               Último 1:1:
             </p>
             <p className="text-sm font-medium">
-              {getMockDaysAgo()} dias atrás
+              {formatLastOneOnOne(person.lastOneOnOneDate)}
             </p>
           </div>
         </div>

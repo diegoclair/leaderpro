@@ -36,24 +36,25 @@ func (p PersonRequest) ToEntity() entity.Person {
 }
 
 type PersonResponse struct {
-	UUID        string     `json:"uuid"`
-	Name        string     `json:"name"`
-	Email       string     `json:"email,omitempty"`
-	Position    string     `json:"position,omitempty"`
-	Department  string     `json:"department,omitempty"`
-	Phone       string     `json:"phone,omitempty"`
-	Birthday    *time.Time `json:"birthday,omitempty"`
-	StartDate   *time.Time `json:"start_date,omitempty"`
-	IsManager   bool       `json:"is_manager"`
-	ManagerUUID string     `json:"manager_uuid,omitempty"`
-	Notes       string     `json:"notes,omitempty"`
-	HasKids     bool       `json:"has_kids"`
-	Gender      *string    `json:"gender,omitempty"`
-	Interests   string     `json:"interests,omitempty"`
-	Personality string     `json:"personality,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	Age         *int       `json:"age,omitempty"`
-	Tenure      *int       `json:"tenure,omitempty"`
+	UUID               string     `json:"uuid"`
+	Name               string     `json:"name"`
+	Email              string     `json:"email,omitempty"`
+	Position           string     `json:"position,omitempty"`
+	Department         string     `json:"department,omitempty"`
+	Phone              string     `json:"phone,omitempty"`
+	Birthday           *time.Time `json:"birthday,omitempty"`
+	StartDate          *time.Time `json:"start_date,omitempty"`
+	IsManager          bool       `json:"is_manager"`
+	ManagerUUID        string     `json:"manager_uuid,omitempty"`
+	Notes              string     `json:"notes,omitempty"`
+	HasKids            bool       `json:"has_kids"`
+	Gender             *string    `json:"gender,omitempty"`
+	Interests          string     `json:"interests,omitempty"`
+	Personality        string     `json:"personality,omitempty"`
+	LastOneOnOneDate   *time.Time `json:"last_one_on_one_date,omitempty"`
+	CreatedAt          time.Time  `json:"created_at"`
+	Age                *int       `json:"age,omitempty"`
+	Tenure             *int       `json:"tenure,omitempty"`
 }
 
 func (p *PersonResponse) FillFromEntity(person entity.Person) {
@@ -71,6 +72,7 @@ func (p *PersonResponse) FillFromEntity(person entity.Person) {
 	p.Gender = person.Gender
 	p.Interests = person.Interests
 	p.Personality = person.Personality
+	p.LastOneOnOneDate = person.LastOneOnOneDate
 	p.CreatedAt = person.CreatedAt
 	p.Age = person.GetAge()
 	p.Tenure = person.GetTenure()

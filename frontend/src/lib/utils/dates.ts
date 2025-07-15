@@ -32,3 +32,19 @@ export const getMockAverageDays = (): number => {
   // Mock calculation - in real app this would be based on actual meeting history
   return Math.floor(Math.random() * 14) + 7 // 7-21 days average
 }
+
+export const formatLastOneOnOne = (lastOneOnOneDate?: Date): string => {
+  if (!lastOneOnOneDate) {
+    return 'Nunca'
+  }
+  
+  const daysDifference = Math.floor((Date.now() - lastOneOnOneDate.getTime()) / (1000 * 60 * 60 * 24))
+  
+  if (daysDifference === 0) {
+    return 'hoje'
+  } else if (daysDifference === 1) {
+    return '1 dia atrás'
+  } else {
+    return `${daysDifference} dias atrás`
+  }
+}

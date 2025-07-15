@@ -4,11 +4,11 @@ import { apiClient } from '../api/client'
 
 // Dashboard stats interface matching backend
 interface DashboardStats {
+  totalPeople: number
   oneOnOnesCountThisMonth: number
   feedbacksCountThisMonth: number
   averageDaysBetweenOneOnOnes: number
-  oldestOneOnOneDaysAgo: number
-  oldestOneOnOnePersonName?: string
+  lastMeetingDate?: Date
 }
 
 interface PeopleState {
@@ -160,6 +160,7 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         gender: apiPerson.gender,
         interests: apiPerson.interests,
         personality: apiPerson.personality,
+        lastOneOnOneDate: apiPerson.last_one_on_one_date && apiPerson.last_one_on_one_date !== '' ? new Date(apiPerson.last_one_on_one_date) : undefined,
         createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),
         age: apiPerson.age,
         tenure: apiPerson.tenure,
@@ -221,6 +222,7 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         gender: apiPerson.gender,
         interests: apiPerson.interests,
         personality: apiPerson.personality,
+        lastOneOnOneDate: apiPerson.last_one_on_one_date && apiPerson.last_one_on_one_date !== '' ? new Date(apiPerson.last_one_on_one_date) : undefined,
         createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),
         age: apiPerson.age,
         tenure: apiPerson.tenure,
@@ -236,11 +238,11 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
 
       // Extract stats from response
       const stats: DashboardStats = {
-        oneOnOnesCountThisMonth: response.stats?.one_on_ones_count_this_month || 0,
+        totalPeople: response.stats?.total_people || 0,
+        oneOnOnesCountThisMonth: response.stats?.one_on_ones_this_month || 0,
         feedbacksCountThisMonth: response.stats?.feedbacks_count_this_month || 0,
-        averageDaysBetweenOneOnOnes: response.stats?.average_days_between_one_on_ones || 0,
-        oldestOneOnOneDaysAgo: response.stats?.oldest_one_on_one_days_ago || 0,
-        oldestOneOnOnePersonName: response.stats?.oldest_one_on_one_person_name
+        averageDaysBetweenOneOnOnes: response.stats?.average_frequency_days || 0,
+        lastMeetingDate: response.stats?.last_meeting_date && response.stats.last_meeting_date !== '' ? new Date(response.stats.last_meeting_date) : undefined
       }
 
       set({

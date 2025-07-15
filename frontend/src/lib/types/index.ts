@@ -43,6 +43,7 @@ export type Person = {
   gender?: 'male' | 'female' | 'other'
   interests?: string
   personality?: string
+  lastOneOnOneDate?: Date
   createdAt: Date
   age?: number
   tenure?: number

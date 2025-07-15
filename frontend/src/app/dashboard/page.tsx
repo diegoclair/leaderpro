@@ -11,7 +11,6 @@ import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
 import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
-import { getMockDaysAgo, getMockAverageDays } from '@/lib/utils/dates'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
@@ -87,24 +86,6 @@ export default function Dashboard() {
     return upcomingMeetings.sort((a, b) => a.date.getTime() - b.date.getTime())
   }, [activeCompany, allPeople, aiSuggestions])
 
-  // Calculate additional metrics - moved up to ensure consistent hook ordering
-  const oldestMeeting = React.useMemo(() => {
-    if (people.length === 0) return null
-    
-    const lastMeetings = people.map(person => ({
-      person,
-      daysSince: getMockDaysAgo()
-    }))
-    
-    return lastMeetings.reduce((oldest, current) => 
-      current.daysSince > oldest.daysSince ? current : oldest
-    )
-  }, [people])
-
-  const averageDaysBetweenMeetings = React.useMemo(() => {
-    if (people.length === 0) return 0
-    return getMockAverageDays()
-  }, [people])
 
   useEffect(() => {
     console.log('🔍 Dashboard useEffect executou')
@@ -229,7 +210,7 @@ export default function Dashboard() {
                   Total de Pessoas
                 </p>
                 <p className="text-2xl font-bold">
-                  {people.length}
+                  {dashboardStats?.totalPeople || people.length}
                 </p>
               </div>
               <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -273,7 +254,7 @@ export default function Dashboard() {
                 </p>
                 <div className="flex items-baseline gap-2">
                   <p className="text-2xl font-bold">
-                    {dashboardStats?.averageDaysBetweenOneOnOnes || 0}
+                    {Math.round(dashboardStats?.averageDaysBetweenOneOnOnes || 0)}
                   </p>
                   <span className="text-sm text-muted-foreground">dias</span>
                 </div>
@@ -288,8 +269,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Alert metric - Oldest meeting */}
-        <Card className={`md:col-span-1 ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'ring-2 ring-red-500/20 bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+        {/* Alert metric - Last meeting */}
+        <Card className="md:col-span-1">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -297,24 +278,22 @@ export default function Dashboard() {
                   Última reunião
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <p className={`text-2xl font-bold ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'text-red-600' : ''}`}>
-                    {dashboardStats?.oldestOneOnOneDaysAgo || 0}
+                  <p className="text-2xl font-bold">
+                    {dashboardStats?.lastMeetingDate 
+                      ? Math.floor((Date.now() - dashboardStats.lastMeetingDate.getTime()) / (1000 * 60 * 60 * 24))
+                      : '-'
+                    }
                   </p>
-                  <span className="text-sm text-muted-foreground">dias</span>
+                  {dashboardStats?.lastMeetingDate && (
+                    <span className="text-sm text-muted-foreground">dias atrás</span>
+                  )}
                 </div>
-                {dashboardStats?.oldestOneOnOnePersonName && (
-                  <p className="text-xs text-muted-foreground truncate">
-                    {dashboardStats.oldestOneOnOnePersonName}
-                    {dashboardStats.oldestOneOnOneDaysAgo > 14 && (
-                      <Badge variant="destructive" className="ml-2 text-xs">
-                        Negligenciado
-                      </Badge>
-                    )}
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground">
+                  {dashboardStats?.lastMeetingDate ? 'Registrada no sistema' : 'Nenhuma registrada'}
+                </p>
               </div>
-              <div className={`p-2 rounded-lg ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
-                <TrendingUp className={`h-6 w-6 ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'text-red-600' : 'text-blue-600'}`} />
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>

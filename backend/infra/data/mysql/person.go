@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/diegoclair/go_utils/mysqlutils"
+	"github.com/diegoclair/leaderpro/internal/domain"
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
 	"github.com/diegoclair/leaderpro/internal/domain/entity"
 )
@@ -18,7 +19,8 @@ func newPersonRepo(db dbConn) contract.PersonRepo {
 	}
 }
 
-const personSelectBase string = `
+func getPersonSelectBase() string {
+	return `
 	SELECT 
 		p.person_id,
 		p.person_uuid,
@@ -37,7 +39,13 @@ const personSelectBase string = `
 		p.gender,
 		p.interests,
 		p.personality,
-		NULL as last_one_on_one_date,
+		(
+			SELECT MAX(n.created_at) 
+			FROM tab_note n 
+			WHERE n.person_id = p.person_id 
+			AND n.type = '` + domain.NoteTypeOneOnOne + `' 
+			AND n.deleted_at IS NULL
+		) as last_one_on_one_date,
 		p.created_at,
 		p.updated_at,
 		p.created_by,
@@ -45,6 +53,7 @@ const personSelectBase string = `
 	
 	FROM tab_person p
 `
+}
 
 func (r *personRepo) parsePerson(row scanner) (person entity.Person, err error) {
 	err = row.Scan(
@@ -143,7 +152,7 @@ func (r *personRepo) CreatePerson(ctx context.Context, person entity.Person) (cr
 }
 
 func (r *personRepo) GetPersonByUUID(ctx context.Context, personUUID string) (person entity.Person, err error) {
-	query := personSelectBase + `
+	query := getPersonSelectBase() + `
 		WHERE p.person_uuid = ? AND p.active = 1
 	`
 
@@ -163,7 +172,7 @@ func (r *personRepo) GetPersonByUUID(ctx context.Context, personUUID string) (pe
 }
 
 func (r *personRepo) GetPersonsByCompany(ctx context.Context, companyID int64) (people []entity.Person, err error) {
-	query := personSelectBase + `
+	query := getPersonSelectBase() + `
 		WHERE p.company_id = ? AND p.active = 1
 		ORDER BY p.name ASC
 	`
@@ -267,7 +276,7 @@ func (r *personRepo) DeletePerson(ctx context.Context, personID int64) (err erro
 }
 
 func (r *personRepo) SearchPeople(ctx context.Context, companyID int64, search string) (people []entity.Person, err error) {
-	query := personSelectBase + `
+	query := getPersonSelectBase() + `
 		WHERE p.company_id = ? AND p.active = 1
 		AND (
 			p.name LIKE ? OR 
