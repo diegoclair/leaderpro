@@ -42,6 +42,17 @@ func GetRequiredStringPathParam(c echo.Context, paramName string, errorMessage s
 	return paramValue, nil
 }
 
+// GetRequiredStringQueryParam gets the query param value and validates it, returning a validation error in case it's empty
+func GetRequiredStringQueryParam(c echo.Context, paramName string, errorMessage string) (paramValue string, err error) {
+	paramValue = c.QueryParam(paramName)
+
+	if strings.TrimSpace(paramValue) == "" {
+		return paramValue, resterrors.NewUnprocessableEntity(errorMessage)
+	}
+
+	return paramValue, nil
+}
+
 // GetPagingParams gets the standard paging params from the URL, returning how much data to take and skip
 func GetPagingParams(c echo.Context, pageParameter, quantityParameter string) (take int64, skip int64) {
 	if pageParameter == "" {

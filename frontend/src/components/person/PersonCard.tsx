@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, MapPin, User } from 'lucide-react'
+import { Calendar, Building2, User, MapPin } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -43,14 +43,26 @@ export function PersonCard({
                 {person.position || person.role || 'Cargo não informado'}
               </p>
               
-              {person.department && (
-                <div className="flex items-center gap-1 mt-1">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {person.department}
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-col gap-1 mt-1">
+                {person.department && (
+                  <div className="flex items-center gap-1">
+                    <Building2 className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      {person.department}
+                    </span>
+                  </div>
+                )}
+                {person.primaryAddress && (person.primaryAddress.city || person.primaryAddress.state) && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      {person.primaryAddress.city && person.primaryAddress.state
+                        ? `${person.primaryAddress.city}, ${person.primaryAddress.state}`
+                        : person.primaryAddress.city || person.primaryAddress.state}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

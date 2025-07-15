@@ -39,8 +39,7 @@ type NoteResponse struct {
 
 type TimelineResponse struct {
 	UUID             string    `json:"uuid"`
-	Type             string    `json:"type"`        // "note" or "mention"
-	SourceType       string    `json:"source_type"` // "one_on_one", "feedback", "observation"
+	Type             string    `json:"type"`        // "one_on_one", "feedback", "observation"
 	Content          string    `json:"content"`
 	AuthorName       string    `json:"author_name"`
 	CreatedAt        time.Time `json:"created_at"`
@@ -98,7 +97,6 @@ func (r *NoteResponse) FillFromEntity(note entity.Note) {
 func (r *TimelineResponse) FillFromTimelineEntry(entry entity.TimelineEntry) {
 	r.UUID = entry.UUID
 	r.Type = entry.Type
-	r.SourceType = entry.SourceType
 	r.Content = entry.Content
 	r.AuthorName = entry.AuthorName
 	r.CreatedAt = entry.CreatedAt

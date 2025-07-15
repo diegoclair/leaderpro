@@ -3,8 +3,10 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/diegoclair/go_utils/mysqlutils"
+	"github.com/diegoclair/leaderpro/internal/domain"
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
 	"github.com/diegoclair/leaderpro/internal/domain/entity"
 )
@@ -317,8 +319,7 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, take, 
 	query := `
 		SELECT 
 			n.note_uuid as uuid,
-			'note' as type,
-			n.type as source_type,
+			n.type,
 			n.content,
 			u.name as author_name,
 			n.created_at,
@@ -347,7 +348,7 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, take, 
 	for rows.Next() {
 		var entry entity.TimelineEntry
 		err = rows.Scan(
-			&entry.UUID, &entry.Type, &entry.SourceType, &entry.Content,
+			&entry.UUID, &entry.Type, &entry.Content,
 			&entry.AuthorName, &entry.CreatedAt, &entry.FeedbackType,
 			&entry.FeedbackCategory, &entry.SourcePersonName,
 		)
@@ -465,4 +466,96 @@ func (r *noteRepo) DeleteMentionsByNote(ctx context.Context, noteID int64) (err 
 	}
 
 	return nil
+}
+
+func (r *noteRepo) GetOneOnOnesCountThisMonth(ctx context.Context, companyID int64) (count int64, err error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM tab_note n
+		INNER JOIN tab_person p ON n.person_id = p.person_id
+		WHERE p.company_id = ? 
+		AND p.active = 1
+		AND n.type = ?
+		AND n.deleted_at IS NULL
+		AND YEAR(n.created_at) = YEAR(NOW()) 
+		AND MONTH(n.created_at) = MONTH(NOW())
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return count, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, companyID, domain.NoteTypeOneOnOne)
+	err = row.Scan(&count)
+	if err != nil {
+		return count, mysqlutils.HandleMySQLError(err)
+	}
+
+	return count, nil
+}
+
+func (r *noteRepo) GetAverageFrequencyDays(ctx context.Context, companyID int64) (avgDays float64, err error) {
+	query := `
+		SELECT COALESCE(AVG(day_diff), 0) as avg_frequency
+		FROM (
+			SELECT DATEDIFF(
+				LEAD(n.created_at) OVER (PARTITION BY n.person_id ORDER BY n.created_at),
+				n.created_at
+			) as day_diff
+			FROM tab_note n
+			INNER JOIN tab_person p ON n.person_id = p.person_id
+			WHERE p.company_id = ? 
+			AND p.active = 1
+			AND n.type = ?
+			AND n.deleted_at IS NULL
+		) as frequency_data
+		WHERE day_diff IS NOT NULL
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return avgDays, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, companyID, domain.NoteTypeOneOnOne)
+	err = row.Scan(&avgDays)
+	if err != nil {
+		return avgDays, mysqlutils.HandleMySQLError(err)
+	}
+
+	return avgDays, nil
+}
+
+func (r *noteRepo) GetLastMeetingDate(ctx context.Context, companyID int64) (lastDate *time.Time, err error) {
+	query := `
+		SELECT MAX(n.created_at) as last_meeting_date
+		FROM tab_note n
+		INNER JOIN tab_person p ON n.person_id = p.person_id
+		WHERE p.company_id = ? 
+		AND p.active = 1
+		AND n.type = ?
+		AND n.deleted_at IS NULL
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return lastDate, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	var nullableDate sql.NullTime
+	row := stmt.QueryRowContext(ctx, companyID, domain.NoteTypeOneOnOne)
+	err = row.Scan(&nullableDate)
+	if err != nil {
+		return lastDate, mysqlutils.HandleMySQLError(err)
+	}
+
+	if nullableDate.Valid {
+		lastDate = &nullableDate.Time
+	}
+
+	return lastDate, nil
 }

@@ -104,6 +104,22 @@ func handleUpdateCompany() {} //nolint:unused
 //	@Router			/companies/:company_uuid [delete]
 func handleDeleteCompany() {} //nolint:unused 
 
+//	@Summary		Get dashboard data
+//	@Description	Get dashboard data with people and statistics for a specific company
+//	@Tags			dashboard
+//	@Produce		json
+//	@Param			company_uuid	query		string	true	"Company UUID to get dashboard data"
+//	@Param			user-token		header		string	true	"User access token"
+//	@Success		200				{object}	viewmodel.DashboardResponse
+//	@Failure		400				{object}	resterrors.restErr
+//	@Failure		404				{object}	resterrors.restErr
+//	@Failure		500				{object}	resterrors.restErr
+//	@Failure		401				{object}	resterrors.restErr
+//	@Failure		422				{object}	resterrors.restErr
+//	@Failure		409				{object}	resterrors.restErr
+//	@Router			/dashboard [get]
+func handleGetDashboard() {} //nolint:unused 
+
 //	@Summary		Create a new person
 //	@Description	Create a new person in the company
 //	@Tags			companies/:company_uuid/people
@@ -212,7 +228,7 @@ func handleDeletePerson() {} //nolint:unused
 func handleCreateNote() {} //nolint:unused 
 
 //	@Summary		Get person timeline
-//	@Description	Get timeline of notes and mentions for a person
+//	@Description	Get timeline of direct notes for a person (1:1s and observations, excluding feedbacks/mentions)
 //	@Tags			companies/:company_uuid/people
 //	@Produce		json
 //	@Param			company_uuid	path		string	true	"company uuid"
@@ -229,6 +245,25 @@ func handleCreateNote() {} //nolint:unused
 //	@Failure		409				{object}	resterrors.restErr
 //	@Router			/companies/:company_uuid/people/:person_uuid/timeline [get]
 func handleGetPersonTimeline() {} //nolint:unused 
+
+//	@Summary		Get person mentions
+//	@Description	Get notes where this person was mentioned (feedbacks received)
+//	@Tags			companies/:company_uuid/people
+//	@Produce		json
+//	@Param			company_uuid	path		string	true	"company uuid"
+//	@Param			person_uuid		path		string	true	"person uuid"
+//	@Param			page			query		number	false	"page number"
+//	@Param			quantity		query		number	false	"items per page"
+//	@Param			user-token		header		string	true	"User access token"
+//	@Success		200				{object}	viewmodel.PaginatedResponse[[]viewmodel.MentionResponse]
+//	@Failure		400				{object}	resterrors.restErr
+//	@Failure		404				{object}	resterrors.restErr
+//	@Failure		500				{object}	resterrors.restErr
+//	@Failure		401				{object}	resterrors.restErr
+//	@Failure		422				{object}	resterrors.restErr
+//	@Failure		409				{object}	resterrors.restErr
+//	@Router			/companies/:company_uuid/people/:person_uuid/mentions [get]
+func handleGetPersonMentions() {} //nolint:unused 
 
 //	@Summary		Get User Profile
 //	@Description	Get the current user's profile

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
-import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadPeopleFromAPI } from '@/lib/stores/peopleStore'
+import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
 import { getMockDaysAgo, getMockAverageDays } from '@/lib/utils/dates'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -26,7 +26,8 @@ export default function Dashboard() {
   const companies = useCompanyStore(state => state.companies)
   const loadCompanies = useLoadCompanies()
   const loadPeopleData = useLoadPeopleData()
-  const loadPeopleFromAPI = useLoadPeopleFromAPI()
+  const loadDashboardData = useLoadDashboardData()
+  const dashboardStats = useDashboardStats()
   const { showSuccess, showError } = useNotificationStore()
   
   // Modal state
@@ -107,12 +108,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     console.log('🔍 Dashboard useEffect executou')
-    // Carregar pessoas quando estiver pronto (após empresas carregadas)
+    // Carregar dashboard quando estiver pronto (após empresas carregadas)
     if (shouldRender && !needsOnboarding && activeCompany) {
-      console.log('📞 Dashboard chamando loadPeopleFromAPI')
-      loadPeopleFromAPI(activeCompany.uuid)
+      console.log('📞 Dashboard chamando loadDashboardData')
+      loadDashboardData(activeCompany.uuid)
     }
-  }, [loadPeopleFromAPI, shouldRender, needsOnboarding, activeCompany])
+  }, [loadDashboardData, shouldRender, needsOnboarding, activeCompany])
 
   // Function to create person
   const handleCreatePerson = async (personData: PersonFormData): Promise<boolean> => {
@@ -145,8 +146,8 @@ export default function Dashboard() {
       
       showSuccess('Sucesso', `${personData.name} foi adicionado(a) ao seu time!`)
       
-      // Reload people data to show the new person
-      await loadPeopleFromAPI(activeCompany.uuid)
+      // Reload dashboard data to show the new person
+      await loadDashboardData(activeCompany.uuid)
       
       return true
     } catch (error) {
@@ -248,7 +249,7 @@ export default function Dashboard() {
                 </p>
                 <div className="flex items-baseline gap-2">
                   <p className="text-2xl font-bold text-green-600">
-                    {Math.floor(Math.random() * 15) + 3}
+                    {dashboardStats?.oneOnOnesCountThisMonth || 0}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -272,7 +273,7 @@ export default function Dashboard() {
                 </p>
                 <div className="flex items-baseline gap-2">
                   <p className="text-2xl font-bold">
-                    {averageDaysBetweenMeetings}
+                    {dashboardStats?.averageDaysBetweenOneOnOnes || 0}
                   </p>
                   <span className="text-sm text-muted-foreground">dias</span>
                 </div>
@@ -288,7 +289,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Alert metric - Oldest meeting */}
-        <Card className={`md:col-span-1 ${oldestMeeting && oldestMeeting.daysSince > 14 ? 'ring-2 ring-red-500/20 bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+        <Card className={`md:col-span-1 ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'ring-2 ring-red-500/20 bg-red-50/50 dark:bg-red-950/10' : ''}`}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -296,15 +297,15 @@ export default function Dashboard() {
                   Última reunião
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <p className={`text-2xl font-bold ${oldestMeeting && oldestMeeting.daysSince > 14 ? 'text-red-600' : ''}`}>
-                    {oldestMeeting ? oldestMeeting.daysSince : 0}
+                  <p className={`text-2xl font-bold ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'text-red-600' : ''}`}>
+                    {dashboardStats?.oldestOneOnOneDaysAgo || 0}
                   </p>
                   <span className="text-sm text-muted-foreground">dias</span>
                 </div>
-                {oldestMeeting && (
+                {dashboardStats?.oldestOneOnOnePersonName && (
                   <p className="text-xs text-muted-foreground truncate">
-                    {oldestMeeting.person.name}
-                    {oldestMeeting.daysSince > 14 && (
+                    {dashboardStats.oldestOneOnOnePersonName}
+                    {dashboardStats.oldestOneOnOneDaysAgo > 14 && (
                       <Badge variant="destructive" className="ml-2 text-xs">
                         Negligenciado
                       </Badge>
@@ -312,8 +313,8 @@ export default function Dashboard() {
                   </p>
                 )}
               </div>
-              <div className={`p-2 rounded-lg ${oldestMeeting && oldestMeeting.daysSince > 14 ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
-                <TrendingUp className={`h-6 w-6 ${oldestMeeting && oldestMeeting.daysSince > 14 ? 'text-red-600' : 'text-blue-600'}`} />
+              <div className={`p-2 rounded-lg ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
+                <TrendingUp className={`h-6 w-6 ${dashboardStats?.oldestOneOnOneDaysAgo && dashboardStats.oldestOneOnOneDaysAgo > 14 ? 'text-red-600' : 'text-blue-600'}`} />
               </div>
             </div>
           </CardContent>
@@ -382,34 +383,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Quick Stats Summary */}
-        {people.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Resumo de Atividade</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{people.length}</p>
-                  <p className="text-sm text-muted-foreground">Pessoas no time</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">
-                    {Math.floor(Math.random() * 20) + 5}
-                  </p>
-                  <p className="text-sm text-muted-foreground">1:1s este mês</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600">
-                    {oldestMeeting ? oldestMeeting.daysSince : 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Dias desde última reunião</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
       </main>
 

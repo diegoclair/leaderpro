@@ -49,3 +49,7 @@ type PersonApp interface {
 	UpdateNote(ctx context.Context, noteUUID string, note entity.Note) (err error)
 	DeleteNote(ctx context.Context, noteUUID string) (err error)
 }
+
+type DashboardApp interface {
+	GetDashboardData(ctx context.Context, companyUUID string) (dashboard entity.Dashboard, err error)
+}

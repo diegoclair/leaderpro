@@ -26,8 +26,7 @@ type NoteMentionWithDetails struct {
 // TimelineEntry represents a unified entry for a person's timeline
 type TimelineEntry struct {
 	UUID        string    `json:"uuid"`
-	Type        string    `json:"type"`        // "note" or "mention"
-	SourceType  string    `json:"source_type"` // "one_on_one", "feedback", "observation"
+	Type        string    `json:"type"`        // "one_on_one", "feedback", "observation"
 	Content     string    `json:"content"`
 	AuthorName  string    `json:"author_name"`
 	CreatedAt   time.Time `json:"created_at"`

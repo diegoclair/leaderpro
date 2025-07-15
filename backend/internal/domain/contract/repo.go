@@ -2,6 +2,7 @@ package contract
 
 import (
 	"context"
+	"time"
 
 	"github.com/diegoclair/leaderpro/internal/application/dto"
 	"github.com/diegoclair/leaderpro/internal/domain/entity"
@@ -45,6 +46,7 @@ type PersonRepo interface {
 	CreatePerson(ctx context.Context, person entity.Person) (createdID int64, err error)
 	GetPersonByUUID(ctx context.Context, personUUID string) (person entity.Person, err error)
 	GetPersonsByCompany(ctx context.Context, companyID int64) (people []entity.Person, err error)
+	GetPeopleCountByCompany(ctx context.Context, companyID int64) (count int64, err error)
 	UpdatePerson(ctx context.Context, personID int64, person entity.Person) (err error)
 	DeletePerson(ctx context.Context, personID int64) (err error)
 	SearchPeople(ctx context.Context, companyID int64, search string) (people []entity.Person, err error)
@@ -56,11 +58,16 @@ type NoteRepo interface {
 	GetNotesByPerson(ctx context.Context, personID int64, take, skip int64) (notes []entity.Note, totalRecords int64, err error)
 	UpdateNote(ctx context.Context, noteID int64, note entity.Note) (err error)
 	DeleteNote(ctx context.Context, noteID int64) (err error)
-	
+
 	// Note mention methods
 	CreateNoteMention(ctx context.Context, mention entity.NoteMention) (createdID int64, err error)
 	GetMentionsByPerson(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.NoteMention, totalRecords int64, err error)
 	GetPersonTimeline(ctx context.Context, personID int64, take, skip int64) (timeline []entity.TimelineEntry, totalRecords int64, err error)
 	GetPersonMentions(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.MentionEntry, totalRecords int64, err error)
 	DeleteMentionsByNote(ctx context.Context, noteID int64) (err error)
+
+	// Dashboard stats methods (based on one-on-one notes)
+	GetOneOnOnesCountThisMonth(ctx context.Context, companyID int64) (count int64, err error)
+	GetAverageFrequencyDays(ctx context.Context, companyID int64) (avgDays float64, err error)
+	GetLastMeetingDate(ctx context.Context, companyID int64) (lastDate *time.Time, err error)
 }

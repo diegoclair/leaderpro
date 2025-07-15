@@ -12,6 +12,19 @@ export type Company = {
   updatedAt: Date
 }
 
+export type Address = {
+  id: string
+  uuid: string
+  personId: string
+  city?: string
+  state?: string
+  country?: string
+  isPrimary: boolean
+  createdAt: Date
+  updatedAt: Date
+  active: boolean
+}
+
 export type Person = {
   id: string
   uuid: string
@@ -33,12 +46,13 @@ export type Person = {
   createdAt: Date
   age?: number
   tenure?: number
+  // Address information
+  primaryAddress?: Address
   // Legacy fields for compatibility
   role?: string
   personalInfo?: {
     hasChildren?: boolean
     hasPets?: boolean
-    location?: string
     interests?: string[]
     hobbies?: string[]
     pets?: string[]

@@ -99,6 +99,27 @@ definitions:
     - name
     - password
     type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.DashboardResponse:
+    properties:
+      people:
+        items:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PersonResponse'
+        type: array
+      stats:
+        $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.DashboardStatsResponse'
+    type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.DashboardStatsResponse:
+    properties:
+      average_frequency_days:
+        description: in days
+        type: number
+      last_meeting_date:
+        type: string
+      one_on_ones_this_month:
+        type: integer
+      total_people:
+        type: integer
+    type: object
   github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.Login:
     properties:
       email:
@@ -121,6 +142,43 @@ definitions:
       refresh_token_expires_at:
         type: string
     type: object
+  github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.MentionResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      feedback_category:
+        type: string
+      feedback_type:
+        type: string
+      mentions:
+        items:
+          properties:
+            end_index:
+              type: integer
+            id:
+              type: string
+            person_id:
+              type: string
+            person_name:
+              type: string
+            start_index:
+              type: integer
+          type: object
+        type: array
+      person_id:
+        description: UUID da pessoa sobre quem a nota foi feita
+        type: string
+      person_name:
+        description: Nome da pessoa sobre quem a nota foi feita
+        type: string
+      type:
+        description: '"one_on_one", "feedback", "observation"'
+        type: string
+      uuid:
+        type: string
+    type: object
   github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.MentionedPerson:
     properties:
       name:
@@ -130,6 +188,15 @@ definitions:
     required:
     - name
     - uuid
+    type: object
+  ? github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_MentionResponse
+  : properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.MentionResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.ReturnPagination'
     type: object
   ? github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_TimelineResponse
   : properties:
@@ -145,6 +212,12 @@ definitions:
       department:
         type: string
       email:
+        type: string
+      gender:
+        enum:
+        - male
+        - female
+        - other
         type: string
       name:
         maxLength: 450
@@ -172,6 +245,8 @@ definitions:
       department:
         type: string
       email:
+        type: string
+      gender:
         type: string
       has_kids:
         type: boolean
@@ -238,11 +313,8 @@ definitions:
       source_person_name:
         description: 'Para mentions: pessoa sobre quem falou'
         type: string
-      source_type:
-        description: '"one_on_one", "feedback", "observation"'
-        type: string
       type:
-        description: '"note" or "mention"'
+        description: '"one_on_one", "feedback", "observation"'
         type: string
       uuid:
         type: string
@@ -947,6 +1019,67 @@ paths:
       summary: Update person
       tags:
       - companies/:company_uuid/people
+  /companies/:company_uuid/people/:person_uuid/mentions:
+    get:
+      description: Get notes where this person was mentioned (feedbacks received)
+      parameters:
+      - description: company uuid
+        in: path
+        name: company_uuid
+        required: true
+        type: string
+      - description: person uuid
+        in: path
+        name: person_uuid
+        required: true
+        type: string
+      - description: page number
+        in: query
+        name: page
+        type: number
+      - description: items per page
+        in: query
+        name: quantity
+        type: number
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.PaginatedResponse-array_github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel_MentionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Get person mentions
+      tags:
+      - companies/:company_uuid/people
   /companies/:company_uuid/people/:person_uuid/notes:
     post:
       consumes:
@@ -1008,7 +1141,8 @@ paths:
       - companies/:company_uuid/people
   /companies/:company_uuid/people/:person_uuid/timeline:
     get:
-      description: Get timeline of notes and mentions for a person
+      description: Get timeline of direct notes for a person (1:1s and observations,
+        excluding feedbacks/mentions)
       parameters:
       - description: company uuid
         in: path
@@ -1067,6 +1201,54 @@ paths:
       summary: Get person timeline
       tags:
       - companies/:company_uuid/people
+  /dashboard:
+    get:
+      description: Get dashboard data with people and statistics for a specific company
+      parameters:
+      - description: Company UUID to get dashboard data
+        in: query
+        name: company_uuid
+        required: true
+        type: string
+      - description: User access token
+        in: header
+        name: user-token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_diegoclair_leaderpro_internal_transport_rest_viewmodel.DashboardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resterrors.restErr'
+      summary: Get dashboard data
+      tags:
+      - dashboard
   /ping/:
     get:
       description: Ping the server to check if it is alive

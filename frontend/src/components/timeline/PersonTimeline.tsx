@@ -20,8 +20,7 @@ import {
 
 interface TimelineNote {
   uuid: string
-  type: 'note' | 'mention'  // Backend format: "note" or "mention"
-  source_type: 'one_on_one' | 'feedback' | 'observation'  // Real note type
+  type: 'one_on_one' | 'feedback' | 'observation'  // Direct note type from backend
   content: string
   author_name: string
   feedback_type?: 'positive' | 'constructive' | 'neutral'
@@ -51,7 +50,6 @@ const getNoteIcon = (sourceType: string) => {
 // Function to render content with clickable mention links
 const renderContentWithMentions = (
   content: string, 
-  mentions: TimelineNote['mentions'], 
   allPeople: Person[]
 ) => {
   // Extract mentions from content using regex pattern {{person:uuid|name}}
@@ -199,23 +197,23 @@ export function PersonTimeline({ person, companyId, allPeople, className }: Pers
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-muted/50 rounded-lg">
-                    {getNoteIcon(note.source_type)}
+                    {getNoteIcon(note.type)}
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="outline" className="text-xs">
-                        {getNoteSourceTypeLabel(note.source_type)}
+                        {getNoteSourceTypeLabel(note.type)}
                       </Badge>
                       
                       {/* Feedback type badge */}
-                      {note.source_type === NOTE_SOURCE_TYPES.FEEDBACK && note.feedback_type && (
+                      {note.type === NOTE_SOURCE_TYPES.FEEDBACK && note.feedback_type && (
                         <Badge className={`text-xs ${getFeedbackTypeColor(note.feedback_type)}`}>
                           {getFeedbackTypeLabel(note.feedback_type)}
                         </Badge>
                       )}
                       
                       {/* Feedback category badge */}
-                      {note.source_type === NOTE_SOURCE_TYPES.FEEDBACK && note.feedback_category && (
+                      {note.type === NOTE_SOURCE_TYPES.FEEDBACK && note.feedback_category && (
                         <Badge variant="secondary" className="text-xs">
                           {getFeedbackCategoryLabel(note.feedback_category)}
                         </Badge>
@@ -232,7 +230,7 @@ export function PersonTimeline({ person, companyId, allPeople, className }: Pers
 
               {/* Note Content */}
               <div className="ml-11">
-                {renderContentWithMentions(note.content, note.mentions, allPeople)}
+                {renderContentWithMentions(note.content, allPeople)}
               </div>
               
               {/* Timeline connector */}

@@ -37,6 +37,7 @@ const personSelectBase string = `
 		p.gender,
 		p.interests,
 		p.personality,
+		NULL as last_one_on_one_date,
 		p.created_at,
 		p.updated_at,
 		p.created_by,
@@ -64,6 +65,7 @@ func (r *personRepo) parsePerson(row scanner) (person entity.Person, err error) 
 		&person.Gender,
 		&person.Interests,
 		&person.Personality,
+		&person.LastOneOnOneDate,
 		&person.CreatedAt,
 		&person.UpdatedAt,
 		&person.CreatedBy,
@@ -299,4 +301,26 @@ func (r *personRepo) SearchPeople(ctx context.Context, companyID int64, search s
 	}
 
 	return people, nil
+}
+
+func (r *personRepo) GetPeopleCountByCompany(ctx context.Context, companyID int64) (count int64, err error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM tab_person p
+		WHERE p.company_id = ? AND p.active = 1
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return count, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, companyID)
+	err = row.Scan(&count)
+	if err != nil {
+		return count, mysqlutils.HandleMySQLError(err)
+	}
+
+	return count, nil
 }

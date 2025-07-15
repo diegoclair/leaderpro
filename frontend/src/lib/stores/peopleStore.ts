@@ -2,11 +2,21 @@ import { create } from 'zustand'
 import { Person, OneOnOneSession, Feedback, AISuggestion } from '../types'
 import { apiClient } from '../api/client'
 
+// Dashboard stats interface matching backend
+interface DashboardStats {
+  oneOnOnesCountThisMonth: number
+  feedbacksCountThisMonth: number
+  averageDaysBetweenOneOnOnes: number
+  oldestOneOnOneDaysAgo: number
+  oldestOneOnOnePersonName?: string
+}
+
 interface PeopleState {
   people: Person[]
   oneOnOneSessions: OneOnOneSession[]
   feedbacks: Feedback[]
   aiSuggestions: AISuggestion[]
+  dashboardStats: DashboardStats | null
   isLoading: boolean
 
   // Actions
@@ -25,6 +35,7 @@ interface PeopleState {
   
   loadPeopleData: () => void
   loadPeopleFromAPI: (companyUuid: string) => Promise<void>
+  loadDashboardData: (companyUuid: string) => Promise<void>
 
   // Selectors
   getPeopleByCompany: (companyId: string) => Person[]
@@ -40,6 +51,7 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
   oneOnOneSessions: [],
   feedbacks: [],
   aiSuggestions: [],
+  dashboardStats: null,
   isLoading: false,
 
   addPerson: (person: Person) => {
@@ -182,6 +194,78 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
     }
   },
 
+  loadDashboardData: async (companyUuid: string) => {
+    set({ isLoading: true })
+    
+    try {
+      // Fetch dashboard data (people + stats) from unified API
+      const response = await apiClient.authGet(`/dashboard?company_uuid=${companyUuid}`)
+      
+      // Convert people API response to frontend format
+      const apiPeople = Array.isArray(response.people) ? response.people : []
+      const people: Person[] = apiPeople.map((apiPerson: any) => ({
+        id: apiPerson.uuid || '',
+        uuid: apiPerson.uuid || '',
+        companyId: companyUuid,
+        name: apiPerson.name || '',
+        email: apiPerson.email,
+        position: apiPerson.position,
+        department: apiPerson.department,
+        phone: apiPerson.phone,
+        birthday: apiPerson.birthday && apiPerson.birthday !== '' ? new Date(apiPerson.birthday) : undefined,
+        startDate: apiPerson.start_date && apiPerson.start_date !== '' ? new Date(apiPerson.start_date) : undefined,
+        isManager: apiPerson.is_manager || false,
+        managerUUID: apiPerson.manager_uuid,
+        notes: apiPerson.notes,
+        hasKids: apiPerson.has_kids || false,
+        gender: apiPerson.gender,
+        interests: apiPerson.interests,
+        personality: apiPerson.personality,
+        createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),
+        age: apiPerson.age,
+        tenure: apiPerson.tenure,
+        // Legacy compatibility
+        role: apiPerson.position,
+        personalInfo: {
+          hasChildren: apiPerson.has_kids,
+          interests: apiPerson.interests ? [apiPerson.interests] : [],
+          personalNotes: apiPerson.notes,
+          location: apiPerson.department
+        }
+      }))
+
+      // Extract stats from response
+      const stats: DashboardStats = {
+        oneOnOnesCountThisMonth: response.stats?.one_on_ones_count_this_month || 0,
+        feedbacksCountThisMonth: response.stats?.feedbacks_count_this_month || 0,
+        averageDaysBetweenOneOnOnes: response.stats?.average_days_between_one_on_ones || 0,
+        oldestOneOnOneDaysAgo: response.stats?.oldest_one_on_one_days_ago || 0,
+        oldestOneOnOnePersonName: response.stats?.oldest_one_on_one_person_name
+      }
+
+      set({
+        people,
+        dashboardStats: stats,
+        // TODO: Implement API endpoints for these features
+        oneOnOneSessions: [],
+        feedbacks: [],
+        aiSuggestions: [],
+        isLoading: false
+      })
+    } catch (error) {
+      console.error('Error loading dashboard data from API:', error)
+      // Fallback to empty data on error
+      set({
+        people: [],
+        dashboardStats: null,
+        oneOnOneSessions: [],
+        feedbacks: [],
+        aiSuggestions: [],
+        isLoading: false
+      })
+    }
+  },
+
   // Selectors
   getPeopleByCompany: (companyId: string) => {
     return get().people.filter(person => person.companyId === companyId)
@@ -251,3 +335,5 @@ export const useAddAISuggestion = () => usePeopleStore(state => state.addAISugge
 export const useMarkSuggestionAsUsed = () => usePeopleStore(state => state.markSuggestionAsUsed)
 export const useLoadPeopleData = () => usePeopleStore(state => state.loadPeopleData)
 export const useLoadPeopleFromAPI = () => usePeopleStore(state => state.loadPeopleFromAPI)
+export const useLoadDashboardData = () => usePeopleStore(state => state.loadDashboardData)
+export const useDashboardStats = () => usePeopleStore(state => state.dashboardStats)

@@ -25,6 +25,12 @@ type Person struct {
 	Interests   string
 	Personality string
 	
+	// One-on-One information
+	LastOneOnOneDate *time.Time `json:"last_one_on_one_date"`
+	
+	// Address information (loaded separately)
+	PrimaryAddress *Address `json:"primary_address,omitempty"`
+	
 	// Metadata
 	CreatedAt   time.Time
 	UpdatedAt   time.Time

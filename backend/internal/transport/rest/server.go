@@ -14,6 +14,7 @@ import (
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/authroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/companyroute"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/dashboardroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/personroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/pingroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/shared"
@@ -66,12 +67,14 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, in
 	pingHandler := pingroute.NewHandler()
 	authHandler := authroute.NewHandler(services.Auth, authToken, authHelper, infra.Logger())
 	companyHandler := companyroute.NewHandler(services.Company)
+	dashboardHandler := dashboardroute.NewHandler(services.Dashboard)
 	personHandler := personroute.NewHandler(services.Person)
 	userHandler := userroute.NewHandler(services.User, authHelper)
 
 	pingRoute := pingroute.NewRouter(pingHandler)
 	authRoute := authroute.NewRouter(authHandler)
 	companyRoute := companyroute.NewRouter(companyHandler)
+	dashboardRoute := dashboardroute.NewRouter(dashboardHandler)
 	personRoute := personroute.NewRouter(personHandler)
 	userRoute := userroute.NewRouter(userHandler)
 
@@ -80,6 +83,7 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, in
 	server := &Server{Router: router, cache: infra.CacheManager()}
 	server.addRouters(authRoute)
 	server.addRouters(companyRoute)
+	server.addRouters(dashboardRoute)
 	server.addRouters(personRoute)
 	server.addRouters(pingRoute)
 	server.addRouters(swaggerRoute)
