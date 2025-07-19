@@ -12,6 +12,7 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	dto "github.com/diegoclair/leaderpro/internal/application/dto"
 	contract "github.com/diegoclair/leaderpro/internal/domain/contract"
@@ -472,6 +473,21 @@ func (mr *MockPersonRepoMockRecorder) DeletePerson(ctx, personID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePerson", reflect.TypeOf((*MockPersonRepo)(nil).DeletePerson), ctx, personID)
 }
 
+// GetPeopleCountByCompany mocks base method.
+func (m *MockPersonRepo) GetPeopleCountByCompany(ctx context.Context, companyID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPeopleCountByCompany", ctx, companyID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPeopleCountByCompany indicates an expected call of GetPeopleCountByCompany.
+func (mr *MockPersonRepoMockRecorder) GetPeopleCountByCompany(ctx, companyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeopleCountByCompany", reflect.TypeOf((*MockPersonRepo)(nil).GetPeopleCountByCompany), ctx, companyID)
+}
+
 // GetPersonByUUID mocks base method.
 func (m *MockPersonRepo) GetPersonByUUID(ctx context.Context, personUUID string) (entity.Person, error) {
 	m.ctrl.T.Helper()
@@ -613,6 +629,36 @@ func (mr *MockNoteRepoMockRecorder) DeleteNote(ctx, noteID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteNote), ctx, noteID)
 }
 
+// GetAverageFrequencyDays mocks base method.
+func (m *MockNoteRepo) GetAverageFrequencyDays(ctx context.Context, companyID int64) (float64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAverageFrequencyDays", ctx, companyID)
+	ret0, _ := ret[0].(float64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAverageFrequencyDays indicates an expected call of GetAverageFrequencyDays.
+func (mr *MockNoteRepoMockRecorder) GetAverageFrequencyDays(ctx, companyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAverageFrequencyDays", reflect.TypeOf((*MockNoteRepo)(nil).GetAverageFrequencyDays), ctx, companyID)
+}
+
+// GetLastMeetingDate mocks base method.
+func (m *MockNoteRepo) GetLastMeetingDate(ctx context.Context, companyID int64) (*time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLastMeetingDate", ctx, companyID)
+	ret0, _ := ret[0].(*time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLastMeetingDate indicates an expected call of GetLastMeetingDate.
+func (mr *MockNoteRepoMockRecorder) GetLastMeetingDate(ctx, companyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastMeetingDate", reflect.TypeOf((*MockNoteRepo)(nil).GetLastMeetingDate), ctx, companyID)
+}
+
 // GetMentionsByPerson mocks base method.
 func (m *MockNoteRepo) GetMentionsByPerson(ctx context.Context, mentionedPersonID, take, skip int64) ([]entity.NoteMention, int64, error) {
 	m.ctrl.T.Helper()
@@ -660,20 +706,51 @@ func (mr *MockNoteRepoMockRecorder) GetNotesByPerson(ctx, personID, take, skip a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotesByPerson", reflect.TypeOf((*MockNoteRepo)(nil).GetNotesByPerson), ctx, personID, take, skip)
 }
 
-// GetPersonTimeline mocks base method.
-func (m *MockNoteRepo) GetPersonTimeline(ctx context.Context, personID, take, skip int64) ([]entity.TimelineEntry, int64, error) {
+// GetOneOnOnesCountThisMonth mocks base method.
+func (m *MockNoteRepo) GetOneOnOnesCountThisMonth(ctx context.Context, companyID int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPersonTimeline", ctx, personID, take, skip)
-	ret0, _ := ret[0].([]entity.TimelineEntry)
+	ret := m.ctrl.Call(m, "GetOneOnOnesCountThisMonth", ctx, companyID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOneOnOnesCountThisMonth indicates an expected call of GetOneOnOnesCountThisMonth.
+func (mr *MockNoteRepoMockRecorder) GetOneOnOnesCountThisMonth(ctx, companyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneOnOnesCountThisMonth", reflect.TypeOf((*MockNoteRepo)(nil).GetOneOnOnesCountThisMonth), ctx, companyID)
+}
+
+// GetPersonMentions mocks base method.
+func (m *MockNoteRepo) GetPersonMentions(ctx context.Context, mentionedPersonID, take, skip int64) ([]entity.MentionEntry, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonMentions", ctx, mentionedPersonID, take, skip)
+	ret0, _ := ret[0].([]entity.MentionEntry)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPersonMentions indicates an expected call of GetPersonMentions.
+func (mr *MockNoteRepoMockRecorder) GetPersonMentions(ctx, mentionedPersonID, take, skip any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonMentions", reflect.TypeOf((*MockNoteRepo)(nil).GetPersonMentions), ctx, mentionedPersonID, take, skip)
+}
+
+// GetPersonTimeline mocks base method.
+func (m *MockNoteRepo) GetPersonTimeline(ctx context.Context, personID int64, filters entity.TimelineFilters, take, skip int64) ([]entity.UnifiedTimelineEntry, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonTimeline", ctx, personID, filters, take, skip)
+	ret0, _ := ret[0].([]entity.UnifiedTimelineEntry)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
 // GetPersonTimeline indicates an expected call of GetPersonTimeline.
-func (mr *MockNoteRepoMockRecorder) GetPersonTimeline(ctx, personID, take, skip any) *gomock.Call {
+func (mr *MockNoteRepoMockRecorder) GetPersonTimeline(ctx, personID, filters, take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonTimeline", reflect.TypeOf((*MockNoteRepo)(nil).GetPersonTimeline), ctx, personID, take, skip)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonTimeline", reflect.TypeOf((*MockNoteRepo)(nil).GetPersonTimeline), ctx, personID, filters, take, skip)
 }
 
 // UpdateNote mocks base method.

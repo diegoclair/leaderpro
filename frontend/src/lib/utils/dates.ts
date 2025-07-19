@@ -33,18 +33,59 @@ export const getMockAverageDays = (): number => {
   return Math.floor(Math.random() * 14) + 7 // 7-21 days average
 }
 
-export const formatLastOneOnOne = (lastOneOnOneDate?: Date): string => {
-  if (!lastOneOnOneDate) {
-    return 'Nunca'
+// Smart relative date formatting (dias/meses/anos atrás)
+export const formatDateRelative = (date: Date | string | null | undefined, options?: { 
+  showNeverText?: boolean 
+}): string => {
+  const { showNeverText = false } = options || {}
+  
+  if (!date) {
+    return showNeverText ? 'Nunca' : 'Data não informada'
   }
   
-  const daysDifference = Math.floor((Date.now() - lastOneOnOneDate.getTime()) / (1000 * 60 * 60 * 24))
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const now = new Date()
   
-  if (daysDifference === 0) {
+  // Check if both dates are on the same calendar day
+  const isToday = dateObj.toDateString() === now.toDateString()
+  
+  if (isToday) {
     return 'hoje'
-  } else if (daysDifference === 1) {
-    return '1 dia atrás'
-  } else {
-    return `${daysDifference} dias atrás`
   }
+  
+  // Calculate difference in calendar days (not 24-hour periods)
+  const dateStart = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
+  const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const diffInMs = nowStart.getTime() - dateStart.getTime()
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+  
+  if (diffInDays === 1) {
+    return '1 dia atrás'
+  } else if (diffInDays < 30) {
+    return `${diffInDays} dias atrás`
+  } else if (diffInDays < 365) {
+    const months = Math.floor(diffInDays / 30)
+    return months === 1 ? '1 mês atrás' : `${months} meses atrás`
+  } else {
+    const years = Math.floor(diffInDays / 365)
+    return years === 1 ? '1 ano atrás' : `${years} anos atrás`
+  }
+}
+
+// Get exact date string for tooltips
+export const formatDateExact = (date: Date | string | null | undefined): string => {
+  if (!date) return 'Data não informada'
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+// Specific function for last one-on-one (keeps backward compatibility)
+export const formatLastOneOnOne = (lastOneOnOneDate?: Date): string => {
+  return formatDateRelative(lastOneOnOneDate, { showNeverText: true })
 }

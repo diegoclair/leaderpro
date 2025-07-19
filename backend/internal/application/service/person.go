@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/diegoclair/go_utils/logger"
@@ -430,7 +431,7 @@ func (s *personService) CreateNote(ctx context.Context, note entity.Note, compan
 }
 
 // GetPersonTimeline gets the complete timeline (notes + mentions) for a person
-func (s *personService) GetPersonTimeline(ctx context.Context, personUUID string, take, skip int64) ([]entity.TimelineEntry, int64, error) {
+func (s *personService) GetPersonTimeline(ctx context.Context, personUUID string, filters entity.TimelineFilters, take, skip int64) ([]entity.UnifiedTimelineEntry, int64, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -455,17 +456,20 @@ func (s *personService) GetPersonTimeline(ctx context.Context, personUUID string
 		return nil, 0, err
 	}
 
-	// Get timeline from repository
-	timeline, totalRecords, err := s.dm.Note().GetPersonTimeline(ctx, person.ID, take, skip)
+	// Get unified timeline from repository
+	timeline, totalRecords, err := s.dm.Note().GetPersonTimeline(ctx, person.ID, filters, take, skip)
 	if err != nil {
 		s.log.Errorw(ctx, "error getting person timeline", logger.Err(err))
 		return nil, 0, err
 	}
 
-	s.log.Infow(ctx, "timeline retrieved successfully",
+	s.log.Infow(ctx, "unified timeline retrieved successfully",
 		logger.String("person_uuid", personUUID),
 		logger.Int64("total_records", totalRecords),
 		logger.Int("returned_records", len(timeline)),
+		logger.String("search_query", filters.SearchQuery),
+		logger.String("types", fmt.Sprintf("%v", filters.Types)),
+		logger.String("period", filters.Period),
 	)
 
 	return timeline, totalRecords, nil

@@ -9,12 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { 
   ArrowLeft, 
-  MapPin, 
   Calendar, 
   User, 
-  Dog,
   Clock,
-  Edit3
+  Edit3,
+  Building2
 } from 'lucide-react'
 import { useAllPeopleFromStore, useLoadPeopleFromAPI, useUpdatePerson } from '@/lib/stores/peopleStore'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
@@ -22,13 +21,12 @@ import { apiClient } from '@/lib/stores/authStore'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { Person } from '@/lib/types'
 import { PersonInfoTab } from '@/components/profile/PersonInfoTab'
-import { PersonHistoryTab } from '@/components/profile/PersonHistoryTab'
-import { PersonFeedbackTab } from '@/components/profile/PersonFeedbackTab'
+import { PersonTimelineTab } from '@/components/profile/PersonTimelineTab'
 import { PersonChatTab } from '@/components/profile/PersonChatTab'
 import { useCreatePerson } from '@/hooks/useCreatePerson'
 import CreatePersonDialog from '@/components/profile/CreatePersonDialog'
 import PersonModal, { PersonFormData } from '@/components/person/PersonModal'
-import { formatTimeAgoWithoutSuffix, getMockDaysAgo } from '@/lib/utils/dates'
+import { formatTimeAgoWithoutSuffix, formatLastOneOnOne } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
 
 export default function ProfilePage() {
@@ -41,8 +39,8 @@ export default function ProfilePage() {
   const activeCompany = useActiveCompany()
   const loadCompanies = useLoadCompanies()
   
-  // Get tab from URL or default to 'info' (using window for static export compatibility)
-  const [activeTab, setActiveTab] = useState('info')
+  // Get tab from URL or default to 'timeline' to showcase the new feature
+  const [activeTab, setActiveTab] = useState('timeline')
   const [isLoading, setIsLoading] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   
@@ -178,6 +176,22 @@ export default function ProfilePage() {
     )
   }
 
+  // Ensure person exists before rendering main content
+  if (!person) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <main className="container mx-auto px-6 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-lg font-semibold mb-2">Carregando...</h2>
+            <p className="text-muted-foreground">Buscando informações da pessoa</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
@@ -219,7 +233,7 @@ export default function ProfilePage() {
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 {person.department && (
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
+                    <Building2 className="h-4 w-4" />
                     {person.department}
                   </div>
                 )}
@@ -229,7 +243,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  Último 1:1: {getMockDaysAgo()} dias atrás
+                  Último 1:1: {formatLastOneOnOne(person.lastOneOnOneDate)}
                 </div>
               </div>
               
@@ -257,10 +271,9 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="info">Informações</TabsTrigger>
-            <TabsTrigger value="history">Histórico</TabsTrigger>
-            <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline Completa</TabsTrigger>
             <TabsTrigger value="chat">Chat IA</TabsTrigger>
           </TabsList>
           
@@ -269,18 +282,13 @@ export default function ProfilePage() {
             <PersonInfoTab person={person} allPeople={allPeople} />
           </TabsContent>
           
-          {/* Histórico Tab */}
-          <TabsContent value="history" className="space-y-6">
-            <PersonHistoryTab 
+          {/* Timeline Completa Tab */}
+          <TabsContent value="timeline" className="space-y-6">
+            <PersonTimelineTab 
               person={person} 
               allPeople={allPeople} 
               onCreatePerson={openCreateDialog}
             />
-          </TabsContent>
-          
-          {/* Feedbacks Tab */}
-          <TabsContent value="feedbacks" className="space-y-6">
-            <PersonFeedbackTab person={person} allPeople={allPeople} />
           </TabsContent>
           
           {/* Chat IA Tab */}

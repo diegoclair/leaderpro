@@ -185,17 +185,31 @@ func (s *Handler) handleGetPersonTimeline(c echo.Context) error {
 		return routeutils.HandleError(c, err)
 	}
 
+	// Parse filters from query parameters using routeutils helpers
+	types := routeutils.GetStringArrayQueryParam(c, "types", ",")
+	feedbackTypes := routeutils.GetStringArrayQueryParam(c, "feedback_types", ",")
+	
+	filtersReq := viewmodel.TimelineFiltersRequest{
+		SearchQuery:    c.QueryParam("search_query"),
+		Types:         types,
+		FeedbackTypes: feedbackTypes,
+		Direction:     c.QueryParam("direction"),
+		Period:        c.QueryParam("period"),
+	}
+	
+	
+	filters := filtersReq.ToEntity()
 	take, skip := routeutils.GetPagingParams(c, "", "")
 
-	timeline, totalRecords, err := s.personService.GetPersonTimeline(ctx, personUUID, take, skip)
+	timeline, totalRecords, err := s.personService.GetPersonTimeline(ctx, personUUID, filters, take, skip)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
 
-	response := []viewmodel.TimelineResponse{}
+	response := []viewmodel.UnifiedTimelineResponse{}
 	for _, entry := range timeline {
-		item := viewmodel.TimelineResponse{}
-		item.FillFromTimelineEntry(entry)
+		item := viewmodel.UnifiedTimelineResponse{}
+		item.FillFromUnifiedTimelineEntry(entry)
 		response = append(response, item)
 	}
 

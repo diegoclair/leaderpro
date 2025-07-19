@@ -62,7 +62,7 @@ type NoteRepo interface {
 	// Note mention methods
 	CreateNoteMention(ctx context.Context, mention entity.NoteMention) (createdID int64, err error)
 	GetMentionsByPerson(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.NoteMention, totalRecords int64, err error)
-	GetPersonTimeline(ctx context.Context, personID int64, take, skip int64) (timeline []entity.TimelineEntry, totalRecords int64, err error)
+	GetPersonTimeline(ctx context.Context, personID int64, filters entity.TimelineFilters, take, skip int64) (timeline []entity.UnifiedTimelineEntry, totalRecords int64, err error)
 	GetPersonMentions(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.MentionEntry, totalRecords int64, err error)
 	DeleteMentionsByNote(ctx context.Context, noteID int64) (err error)
 

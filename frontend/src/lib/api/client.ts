@@ -93,7 +93,7 @@ class ApiClient {
       return response.json()
     } else {
       // Para respostas 204 No Content ou outras sem JSON, retornar objeto vazio
-      return {}
+      return {} as T
     }
   }
 
@@ -168,7 +168,7 @@ class ApiClient {
       return response.json()
     } else {
       // Para respostas 204 No Content ou outras sem JSON, retornar objeto vazio
-      return {}
+      return {} as T
     }
   }
 

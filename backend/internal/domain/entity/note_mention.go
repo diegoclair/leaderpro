@@ -57,3 +57,32 @@ type MentionEntry struct {
 		EndIndex    int    `json:"end_index"`
 	} `json:"mentions,omitempty"`
 }
+
+// UnifiedTimelineEntry represents a unified timeline entry combining both direct notes and mentions
+type UnifiedTimelineEntry struct {
+	UUID        string    `json:"uuid"`
+	Type        string    `json:"type"`        // "one_on_one", "feedback", "observation", "mention"
+	Content     string    `json:"content"`
+	AuthorName  string    `json:"author_name"`
+	CreatedAt   time.Time `json:"created_at"`
+	
+	// For feedback notes
+	FeedbackType     *string `json:"feedback_type,omitempty"`
+	FeedbackCategory *string `json:"feedback_category,omitempty"`
+	
+	// For direction identification
+	PersonName       *string `json:"person_name,omitempty"`       // Nome da pessoa sobre quem a nota foi feita (mentions)
+	SourcePersonName *string `json:"source_person_name,omitempty"` // Para mentions: pessoa sobre quem falou
+	
+	// Additional metadata for filtering
+	EntrySource string `json:"entry_source"` // "direct" for timeline, "mention" for mentions
+}
+
+// TimelineFilters represents filters for the unified timeline endpoint
+type TimelineFilters struct {
+	SearchQuery     string   `json:"search_query,omitempty"`
+	Types          []string `json:"types,omitempty"`          // ["feedback", "one_on_one", "observation", "mention"]
+	FeedbackTypes  []string `json:"feedback_types,omitempty"` // ["positive", "constructive", "neutral"]
+	Direction      string   `json:"direction,omitempty"`      // "all", "about-person", "from-person", "bilateral"
+	Period         string   `json:"period,omitempty"`         // "7d", "30d", "3m", "6m", "1y", "all"
+}

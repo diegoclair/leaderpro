@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
-import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
+import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadPeopleFromAPI, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
@@ -25,6 +25,7 @@ export default function Dashboard() {
   const companies = useCompanyStore(state => state.companies)
   const loadCompanies = useLoadCompanies()
   const loadPeopleData = useLoadPeopleData()
+  const loadPeopleFromAPI = useLoadPeopleFromAPI()
   const loadDashboardData = useLoadDashboardData()
   const dashboardStats = useDashboardStats()
   const { showSuccess, showError } = useNotificationStore()
@@ -127,7 +128,7 @@ export default function Dashboard() {
       
       showSuccess('Sucesso', `${personData.name} foi adicionado(a) ao seu time!`)
       
-      // Reload dashboard data to show the new person
+      // Reload dashboard data to show the new person and updated stats
       await loadDashboardData(activeCompany.uuid)
       
       return true
@@ -280,7 +281,25 @@ export default function Dashboard() {
                 <div className="flex items-baseline gap-2">
                   <p className="text-2xl font-bold">
                     {dashboardStats?.lastMeetingDate 
-                      ? Math.floor((Date.now() - dashboardStats.lastMeetingDate.getTime()) / (1000 * 60 * 60 * 24))
+                      ? (() => {
+                          const now = new Date()
+                          const daysDifference = Math.floor((now.getTime() - dashboardStats.lastMeetingDate.getTime()) / (1000 * 60 * 60 * 24))
+                          
+                          // Debug logging for dashboard stats
+                          console.log('🔍 Dashboard stats debug:', {
+                            input: dashboardStats.lastMeetingDate,
+                            inputISO: dashboardStats.lastMeetingDate.toISOString(),
+                            inputTime: dashboardStats.lastMeetingDate.getTime(),
+                            now: now,
+                            nowISO: now.toISOString(),
+                            nowTime: now.getTime(),
+                            timeDiffMs: now.getTime() - dashboardStats.lastMeetingDate.getTime(),
+                            daysDifference,
+                            context: 'dashboard-stats'
+                          })
+                          
+                          return daysDifference
+                        })()
                       : '-'
                     }
                   </p>

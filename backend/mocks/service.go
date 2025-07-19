@@ -484,19 +484,19 @@ func (mr *MockPersonAppMockRecorder) GetPersonMentions(ctx, personUUID, take, sk
 }
 
 // GetPersonTimeline mocks base method.
-func (m *MockPersonApp) GetPersonTimeline(ctx context.Context, personUUID string, take, skip int64) ([]entity.TimelineEntry, int64, error) {
+func (m *MockPersonApp) GetPersonTimeline(ctx context.Context, personUUID string, filters entity.TimelineFilters, take, skip int64) ([]entity.UnifiedTimelineEntry, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPersonTimeline", ctx, personUUID, take, skip)
-	ret0, _ := ret[0].([]entity.TimelineEntry)
+	ret := m.ctrl.Call(m, "GetPersonTimeline", ctx, personUUID, filters, take, skip)
+	ret0, _ := ret[0].([]entity.UnifiedTimelineEntry)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
 // GetPersonTimeline indicates an expected call of GetPersonTimeline.
-func (mr *MockPersonAppMockRecorder) GetPersonTimeline(ctx, personUUID, take, skip any) *gomock.Call {
+func (mr *MockPersonAppMockRecorder) GetPersonTimeline(ctx, personUUID, filters, take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonTimeline", reflect.TypeOf((*MockPersonApp)(nil).GetPersonTimeline), ctx, personUUID, take, skip)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonTimeline", reflect.TypeOf((*MockPersonApp)(nil).GetPersonTimeline), ctx, personUUID, filters, take, skip)
 }
 
 // SearchPeople mocks base method.
@@ -540,4 +540,43 @@ func (m *MockPersonApp) UpdatePerson(ctx context.Context, personUUID string, per
 func (mr *MockPersonAppMockRecorder) UpdatePerson(ctx, personUUID, person any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePerson", reflect.TypeOf((*MockPersonApp)(nil).UpdatePerson), ctx, personUUID, person)
+}
+
+// MockDashboardApp is a mock of DashboardApp interface.
+type MockDashboardApp struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardAppMockRecorder
+	isgomock struct{}
+}
+
+// MockDashboardAppMockRecorder is the mock recorder for MockDashboardApp.
+type MockDashboardAppMockRecorder struct {
+	mock *MockDashboardApp
+}
+
+// NewMockDashboardApp creates a new mock instance.
+func NewMockDashboardApp(ctrl *gomock.Controller) *MockDashboardApp {
+	mock := &MockDashboardApp{ctrl: ctrl}
+	mock.recorder = &MockDashboardAppMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardApp) EXPECT() *MockDashboardAppMockRecorder {
+	return m.recorder
+}
+
+// GetDashboardData mocks base method.
+func (m *MockDashboardApp) GetDashboardData(ctx context.Context, companyUUID string) (entity.Dashboard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDashboardData", ctx, companyUUID)
+	ret0, _ := ret[0].(entity.Dashboard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDashboardData indicates an expected call of GetDashboardData.
+func (mr *MockDashboardAppMockRecorder) GetDashboardData(ctx, companyUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDashboardData", reflect.TypeOf((*MockDashboardApp)(nil).GetDashboardData), ctx, companyUUID)
 }

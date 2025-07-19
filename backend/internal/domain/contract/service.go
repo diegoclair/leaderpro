@@ -44,7 +44,7 @@ type PersonApp interface {
 	
 	// Note management methods
 	CreateNote(ctx context.Context, note entity.Note, companyUUID string, personUUID string) (createdNote entity.Note, err error)
-	GetPersonTimeline(ctx context.Context, personUUID string, take, skip int64) (timeline []entity.TimelineEntry, totalRecords int64, err error)
+	GetPersonTimeline(ctx context.Context, personUUID string, filters entity.TimelineFilters, take, skip int64) (timeline []entity.UnifiedTimelineEntry, totalRecords int64, err error)
 	GetPersonMentions(ctx context.Context, personUUID string, take, skip int64) (mentions []entity.MentionEntry, totalRecords int64, err error)
 	UpdateNote(ctx context.Context, noteUUID string, note entity.Note) (err error)
 	DeleteNote(ctx context.Context, noteUUID string) (err error)

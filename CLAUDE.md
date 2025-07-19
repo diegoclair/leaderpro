@@ -105,7 +105,8 @@ frontend/src/
 - Multi-company management with persistence
 - Person profile management with @mention system  
 - 1:1 meeting system with notes and AI suggestions (mocked)
-- Feedback tracking (direct + mentioned across people)
+- **Unified Timeline System** - Complete timeline with server-side filtering, search, and pagination
+- Smart date formatting (days/months/years ago) with exact date tooltips
 - Dark/light theme toggle + responsive design
 
 **Backend (Go)**: Authentication + company + person management implemented
@@ -113,6 +114,8 @@ frontend/src/
 - User registration/login with automatic token refresh
 - Company CRUD operations with user ownership model
 - **Person Management API** - Complete CRUD endpoints for people
+- **Unified Timeline API** - Server-side filtering, search, and pagination for all person activities
+- **Generic Parameter Utilities** - Type-safe parameter parsing with Go generics
 - MySQL integration with Clean Architecture
 - Onboarding flow (frontend wizard → backend company creation)
 
@@ -120,7 +123,6 @@ frontend/src/
 1. **1:1 Meetings API** - Backend endpoints for meeting notes
 2. **AI Integration** - OpenAI/Claude API for contextual suggestions
 3. **Member Get Member System** - Referral tracking with discounts
-4. **Advanced Person Features** - Manager relationships, search, filtering
 
 ## Member Get Member Strategy
 
@@ -154,6 +156,20 @@ frontend/src/
 3. **Context Building**: Combine temporal + geographic + personal
 4. **Prompt Engineering**: Generate suggestions
 5. **Response Caching**: Redis for frequent queries
+
+## Testing Strategy
+
+### Backend Testing
+- **Unit Tests**: `go test -v -cover ./...` for all packages
+- **Specific Tests**: `go test -v -cover ./internal/domain/...` for targeted testing
+- **Integration Tests**: Testcontainers for MySQL/Redis integration testing
+- **Mock Generation**: `make mocks` generates mocks using uber/mock
+- **Test Coverage**: Full coverage expected with `-cover` flag
+
+### Frontend Testing  
+- **Linting**: `npm run lint` (ESLint + Next.js rules)
+- **Type Checking**: `npx tsc --noEmit` (strict TypeScript)
+- **Development**: `npm run dev` with Turbopack hot reload
 
 ## 🚨 CRITICAL DEVELOPMENT RULES - READ BEFORE CODING
 
@@ -265,6 +281,73 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 }
 ```
 
+## Unified Timeline API
+
+### Endpoint
+**Route**: `GET /companies/:company_uuid/people/:person_uuid/timeline`
+**Description**: Unified timeline combining direct notes and mentions with server-side filtering
+
+### Query Parameters (All Optional)
+- `page` - Page number for pagination (default: 1)
+- `quantity` - Items per page (default: 25, max: 50)
+- `search_query` - Text search across content, author, category, type
+- `types[]` - Filter by activity types: `["feedback", "one_on_one", "observation", "mention"]`
+- `feedback_types[]` - Filter by feedback type: `["positive", "constructive", "neutral"]`
+- `direction` - Filter by direction: `"all"`, `"about-person"`, `"from-person"`, `"bilateral"`
+- `period` - Filter by time period: `"7d"`, `"30d"`, `"3m"`, `"6m"`, `"1y"`, `"all"`
+
+### Response Format
+```json
+{
+  "data": [
+    {
+      "uuid": "note-uuid-123",
+      "type": "feedback",
+      "content": "Great performance on {{person:uuid|John}} project",
+      "author_name": "Manager Name",
+      "created_at": "2024-01-15T10:30:00Z",
+      "feedback_type": "positive",
+      "feedback_category": "performance",
+      "person_name": "John Doe",
+      "source_person_name": null,
+      "entry_source": "direct"
+    },
+    {
+      "uuid": "mention-uuid-456", 
+      "type": "mention",
+      "content": "{{person:target-uuid|Target}} was mentioned in this feedback",
+      "author_name": "Another Manager",
+      "created_at": "2024-01-14T15:20:00Z",
+      "feedback_type": "constructive",
+      "person_name": "Source Person",
+      "source_person_name": "Target Person",
+      "entry_source": "mention"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "quantity": 25,
+    "total_records": 150,
+    "total_pages": 6
+  }
+}
+```
+
+### Key Benefits
+- **Single Request**: Eliminates need for separate `/timeline` and `/mentions` calls
+- **Server-Side Filtering**: Proper filtering across all data, not just current page
+- **Better Performance**: Reduced network requests and client-side processing
+- **Unified Sorting**: Chronological order across all activity types
+- **Traditional Pagination**: User-controlled page size (10, 25, 50) with page navigation
+- **Scalable**: Handles large datasets with efficient database queries
+
+### Pagination Features
+- **Page Size Selection**: 10, 25, or 50 items per page
+- **Smart Navigation**: Previous/Next + numbered pages with ellipsis
+- **Search Debounce**: 800ms delay for search queries to avoid excessive requests
+- **State Management**: Page resets to 1 when filters change
+- **User Feedback**: "Showing X to Y of Z records" information
+
 ## Key Entry Points & Files
 
 ### Backend Critical Files
@@ -272,14 +355,17 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - `backend/internal/domain/entity/` - Business entities (User, Company, Person, OneOnOne)
 - `backend/internal/application/service/` - Business logic services
 - `backend/internal/transport/rest/routes/` - HTTP route handlers
+- `backend/internal/transport/rest/routeutils/request.go` - ⭐ **Generic parameter utilities** (use sempre!)
 - `backend/migrator/mysql/sql/` - Database migrations
 
 ### Frontend Critical Files  
 - `frontend/src/app/` - Next.js App Router pages (auth, dashboard, profile)
 - `frontend/src/lib/stores/authStore.ts` - ⭐ **apiClient centralizado** (use sempre!)
 - `frontend/src/lib/utils/storageManager.ts` - ⭐ **Storage Manager** (use sempre!)
+- `frontend/src/lib/utils/dates.ts` - ⭐ **Smart date formatting** (use sempre!)
 - `frontend/src/lib/stores/` - Zustand state stores (auth, company, people)
 - `frontend/src/components/ui/` - ⭐ **Componentes compartilhados** (verifique primeiro!)
+- `frontend/src/components/timeline/` - ⭐ **Timeline components** (UnifiedTimeline, FilterBar, etc.)
 - `frontend/src/lib/constants/` - ⭐ **Constantes centralizadas** (use sempre!)
 - `frontend/src/lib/types/index.ts` - TypeScript type definitions
 
@@ -294,3 +380,19 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - **Backend Config**: `backend/deployment/config-local.toml`  
 - **Frontend ENV**: `NEXT_PUBLIC_API_URL` (defaults to http://localhost:5000)
 - **Default Ports**: Frontend (3000), Backend (5000), MySQL (3306), Redis (6379)
+- **Docker Services**: `backend/docker-compose.yml` orchestrates MySQL, Redis, Prometheus, Grafana, Jaeger
+
+## Database Migrations
+
+### Migration Files Location
+- **Path**: `backend/migrator/mysql/sql/`
+- **Naming**: Sequential numbering (000001_, 000002_, etc.)
+
+### Current Migrations
+- `000001_initial_setup.sql` - Users, sessions, companies, persons
+- `000002_create_note_tables.sql` - Notes and mentions system  
+- `000003_add_gender_to_person.sql` - Gender field for contextual text
+- `000004_create_address_table.sql` - Address management
+
+### Running Migrations
+Migrations run automatically on backend startup. Check `backend/cmd/main.go` for migration logic.

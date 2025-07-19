@@ -54,13 +54,14 @@ Não apenas lembramos que "João tem filhos" - nossa IA combina:
 
 O protótipo atual demonstra:
 - ✅ Interface completa com design moderno
-- ✅ Sistema de multi-empresas 
-- ✅ Gestão de perfis de pessoas
+- ✅ Sistema de multi-empresas com backend completo
+- ✅ Gestão de perfis de pessoas (CRUD completo)
 - ✅ Sistema de @menções com feedback cruzado
-- ✅ Histórico de 1:1s e anotações
-- ✅ Dados mockados para demonstração
+- ✅ **Timeline unificada** com filtragem avançada e paginação
+- ✅ Formatação inteligente de datas (dias/meses/anos atrás)
+- ✅ Backend Go + MySQL + Redis funcionando
 
-> **Nota**: Este é um protótipo frontend-only com dados simulados. A integração com IA e backend está no roadmap.
+> **Nota**: Backend completo implementado. Integração com IA está no roadmap.
 
 ## 🚀 Visão de Produto
 
@@ -77,16 +78,18 @@ Coach de 1:1s com IA contextual
 ## 🏗️ Arquitetura Técnica
 
 ### Backend
-- **Go (Golang)** - Performance e simplicidade
-- **PostgreSQL** - Dados relacionais complexos
-- **Redis** - Cache e sessões
+- **Go 1.24.5** - Performance e simplicidade
+- **MySQL 8.0.32** - Dados relacionais complexos
+- **Redis 7.4.2** - Cache e sessões
 - **GORM** - ORM para produtividade
+- **PASETO tokens** - Autenticação segura (15min/24h)
 
 ### Frontend
-- **Next.js 14** - React com App Router
-- **TailwindCSS** - Design system rápido
+- **Next.js 15.3.5** - React 19 com App Router
+- **TailwindCSS v4** - Design system rápido
 - **shadcn/ui** - Componentes modernos
 - **Zustand** - Estado global simples
+- **TypeScript** - Type safety completo
 
 ### IA
 - **OpenAI GPT-4** ou **Claude API** - LLM principal
@@ -131,6 +134,50 @@ Coach de 1:1s com IA contextual
 - **✅ `/validation.ts`** - Regras de validação compartilhadas
 
 **Helper functions:** `getNoteSourceTypeLabel()`, `getFeedbackTypeColor()`, etc.
+
+### ✅ Timeline Unificada e Filtragem Avançada
+**Sistema de timeline completo com server-side processing:**
+
+**Backend (Go):**
+- **Endpoint unificado** `/companies/{id}/people/{id}/timeline` - Combina timeline e mentions
+- **Server-side filtering** - search, types, sentiment, period, direction
+- **Paginação robusta** - página, quantidade, total_records  
+- **Parâmetros genéricos** com Go generics para type-safety
+- **Utilities reutilizáveis** em `routeutils/request.go`
+
+**Frontend (Next.js/TypeScript):**
+- **UnifiedTimeline** - Componente principal com filtragem avançada
+- **FilterBar** - Quick views + filtros avançados (tipos, sentimentos)
+- **Server-side filtering** - Reduz payload e melhora performance
+- **Paginação inteligente** - Controles completos com items per page
+- **Smart date formatting** - "hoje", "X dias atrás", "X meses atrás", "X anos atrás"
+- **Tooltips informativos** - Data exata no hover
+
+**Resultado:** Timeline única eliminando fragmentação UX entre "Histórico" e "Feedbacks"
+
+### ✅ Generic Parameter Utilities (Go)
+**Sistema type-safe para parsing de parâmetros:**
+
+```go
+// Exemplo de uso das novas utilities
+func GetPeopleWithFilters(c echo.Context) error {
+    // Arrays com conversores genéricos
+    noteTypes, _ := routeutils.GetArrayParam(c.QueryParam("types"), ",", routeutils.StringConverter)
+    feedbackTypes, _ := routeutils.GetArrayParam(c.QueryParam("feedback_types"), ",", routeutils.StringConverter)
+    
+    // Parâmetros obrigatórios com validação de zero value  
+    companyID, _ := routeutils.GetRequiredParam(c.Param("company_id"), routeutils.StringConverter, "company_id é obrigatório")
+    
+    // Boolean com fallback seguro
+    includeArchived := routeutils.GetBoolQueryParam(c, "include_archived")
+}
+```
+
+**Benefícios:**
+- **Type safety** com Go generics `[T comparable]` e `[T any]`  
+- **DRY principle** - Elimina duplicação de string splitting
+- **Zero value validation** - Detecta automaticamente valores vazios
+- **Reutilização** - Mesmos converters para arrays e singles
 
 ### ✅ Componentes Compartilhados (`/components/ui/`)
 **Reutilização e consistência visual:**

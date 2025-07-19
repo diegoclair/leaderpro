@@ -132,3 +132,49 @@ func (r *MentionResponse) FillFromMentionEntry(entry entity.MentionEntry) {
 		r.Mentions[i].EndIndex = mention.EndIndex
 	}
 }
+
+// UnifiedTimelineResponse represents the unified timeline response combining timeline and mentions
+type UnifiedTimelineResponse struct {
+	UUID             string    `json:"uuid"`
+	Type             string    `json:"type"`        // "one_on_one", "feedback", "observation", "mention"
+	Content          string    `json:"content"`
+	AuthorName       string    `json:"author_name"`
+	CreatedAt        time.Time `json:"created_at"`
+	FeedbackType     *string   `json:"feedback_type,omitempty"`
+	FeedbackCategory *string   `json:"feedback_category,omitempty"`
+	PersonName       *string   `json:"person_name,omitempty"`       // Nome da pessoa sobre quem a nota foi feita (mentions)
+	SourcePersonName *string   `json:"source_person_name,omitempty"` // Para mentions: pessoa sobre quem falou
+	EntrySource      string    `json:"entry_source"`                // "direct" for timeline, "mention" for mentions
+}
+
+// TimelineFiltersRequest represents the request filters for timeline endpoint
+type TimelineFiltersRequest struct {
+	SearchQuery    string   `json:"search_query,omitempty" form:"search_query"`
+	Types         []string `json:"types,omitempty" form:"types"`
+	FeedbackTypes []string `json:"feedback_types,omitempty" form:"feedback_types"`
+	Direction     string   `json:"direction,omitempty" form:"direction"`
+	Period        string   `json:"period,omitempty" form:"period"`
+}
+
+func (r *UnifiedTimelineResponse) FillFromUnifiedTimelineEntry(entry entity.UnifiedTimelineEntry) {
+	r.UUID = entry.UUID
+	r.Type = entry.Type
+	r.Content = entry.Content
+	r.AuthorName = entry.AuthorName
+	r.CreatedAt = entry.CreatedAt
+	r.FeedbackType = entry.FeedbackType
+	r.FeedbackCategory = entry.FeedbackCategory
+	r.PersonName = entry.PersonName
+	r.SourcePersonName = entry.SourcePersonName
+	r.EntrySource = entry.EntrySource
+}
+
+func (r *TimelineFiltersRequest) ToEntity() entity.TimelineFilters {
+	return entity.TimelineFilters{
+		SearchQuery:    r.SearchQuery,
+		Types:         r.Types,
+		FeedbackTypes: r.FeedbackTypes,
+		Direction:     r.Direction,
+		Period:        r.Period,
+	}
+}
