@@ -33,6 +33,8 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
           await getProfile()
         } catch (error) {
           console.error('Erro ao buscar perfil:', error)
+          // Redirecionar silenciosamente para login
+          // A mensagem de sessão expirada já foi mostrada pelo apiClient
           router.push('/auth/login')
         }
       }

@@ -8,8 +8,10 @@ import { Pagination } from '@/components/ui/pagination'
 import { RefreshCw, InboxIcon } from 'lucide-react'
 import { SimpleActivityCard, TimelineActivity } from './SimpleActivityCard'
 import { FilterBar, FilterOptions } from './FilterBar'
+import { EditNoteModal } from './EditNoteModal'
 import { Person } from '@/lib/types'
 import { apiClient } from '@/lib/stores/authStore'
+import { useNotificationStore } from '@/lib/stores/notificationStore'
 
 interface UnifiedTimelineProps {
   person: Person
@@ -28,7 +30,12 @@ export function UnifiedTimeline({
   const [mentions, setMentions] = useState<TimelineActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { showSuccess, showError } = useNotificationStore()
   const [currentPage, setCurrentPage] = useState(1)
+  
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingActivity, setEditingActivity] = useState<TimelineActivity | null>(null)
   const [totalRecords, setTotalRecords] = useState(0)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [totalPages, setTotalPages] = useState(0)
@@ -111,6 +118,63 @@ export function UnifiedTimeline({
       setIsLoading(false)
     }
   }
+
+  // Handle edit note
+  const handleEditNote = (activity: TimelineActivity) => {
+    setEditingActivity(activity)
+    setIsEditModalOpen(true)
+  }
+
+  // Handle save edited note
+  const handleSaveEditedNote = async (updatedActivity: TimelineActivity) => {
+    try {
+      const payload = {
+        type: updatedActivity.type,
+        content: updatedActivity.content,
+        feedback_type: updatedActivity.feedback_type || undefined,
+        feedback_category: updatedActivity.feedback_category === 'none' ? undefined : updatedActivity.feedback_category || undefined,
+        // TODO: Handle mentioned_people if needed
+        mentioned_people: []
+      }
+
+      await apiClient.authPut(
+        `/companies/${companyId}/people/${person.uuid}/notes/${updatedActivity.uuid}`,
+        payload
+      )
+      
+      showSuccess('Sucesso', 'Anotação atualizada com sucesso')
+      
+      // Refresh timeline data
+      await fetchTimelineData(currentPage)
+      
+    } catch (error) {
+      console.error('Error updating note:', error)
+      showError('Erro', 'Não foi possível atualizar a anotação. Tente novamente.')
+      throw error // Re-throw to let modal handle loading state
+    }
+  }
+
+  // Handle delete note
+  const handleDeleteNote = async (activity: TimelineActivity) => {
+    if (!confirm('Tem certeza que deseja excluir esta anotação?')) {
+      return
+    }
+
+    try {
+      await apiClient.authDelete(
+        `/companies/${companyId}/people/${person.uuid}/notes/${activity.uuid}`
+      )
+      
+      showSuccess('Sucesso', 'Anotação excluída com sucesso')
+      
+      // Refresh timeline data
+      await fetchTimelineData(currentPage)
+      
+    } catch (error) {
+      console.error('Error deleting note:', error)
+      showError('Erro', 'Não foi possível excluir a anotação. Tente novamente.')
+    }
+  }
   
   // Pagination handlers
   const handlePageChange = (page: number) => {
@@ -179,7 +243,7 @@ export function UnifiedTimeline({
         <ErrorMessage 
           message={error}
           actionButton={
-            <Button onClick={fetchTimelineData} variant="outline" size="sm">
+            <Button onClick={() => fetchTimelineData()} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Tentar Novamente
             </Button>
@@ -195,7 +259,7 @@ export function UnifiedTimeline({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">
-            Anotações sobre {person.name}
+            Timeline de Atividades
           </h2>
           <p className="text-sm text-muted-foreground">
             Histórico de feedbacks, 1:1s e observações
@@ -244,6 +308,8 @@ export function UnifiedTimeline({
               <SimpleActivityCard
                 key={`${activity.uuid}-${index}`}
                 activity={activity}
+                onEdit={handleEditNote}
+                onDelete={handleDeleteNote}
               />
             ))}
             
@@ -260,6 +326,18 @@ export function UnifiedTimeline({
           </>
         )}
       </div>
+
+      {/* Edit Note Modal */}
+      <EditNoteModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingActivity(null)
+        }}
+        activity={editingActivity}
+        allPeople={allPeople}
+        onSave={handleSaveEditedNote}
+      />
     </div>
   )
 }

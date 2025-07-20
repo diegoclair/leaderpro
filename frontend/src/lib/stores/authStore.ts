@@ -159,7 +159,6 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false
           })
           
-          console.log('🚪 Logout completo - todos os dados limpos')
         }
       },
 
@@ -229,11 +228,6 @@ export const useAuthStore = create<AuthStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.hasHydrated = true
-          console.log('🔍 Debug Zustand hydrated - auth state restored:', {
-            isAuthenticated: state.isAuthenticated,
-            hasTokens: !!state.tokens,
-            hasUser: !!state.user
-          })
         }
       }
     }

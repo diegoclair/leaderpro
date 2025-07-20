@@ -16,6 +16,7 @@ const (
 	RootRoute            = ""
 	PersonByUUIDRoute    = "/:person_uuid"
 	PersonNotesRoute     = "/:person_uuid/notes"
+	PersonNoteByUUIDRoute = "/:person_uuid/notes/:note_uuid"
 	PersonTimelineRoute  = "/:person_uuid/timeline"
 	PersonMentionsRoute  = "/:person_uuid/mentions"
 )
@@ -121,5 +122,24 @@ func (r *PersonRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 		PathParam("person_uuid", "person uuid", goswag.StringType, true).
 		QueryParam("page", "page number", goswag.NumberType, false).
 		QueryParam("quantity", "items per page", goswag.NumberType, false).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	router.PUT(PersonNoteByUUIDRoute, r.ctrl.handleUpdateNote).
+		Summary("Update a note").
+		Description("Update an existing note (1:1, feedback, or observation) by UUID").
+		Read(viewmodel.UpdateNoteRequest{}).
+		Returns([]models.ReturnType{{StatusCode: http.StatusNoContent}}).
+		PathParam("company_uuid", "company uuid", goswag.StringType, true).
+		PathParam("person_uuid", "person uuid", goswag.StringType, true).
+		PathParam("note_uuid", "note uuid", goswag.StringType, true).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	router.DELETE(PersonNoteByUUIDRoute, r.ctrl.handleDeleteNote).
+		Summary("Delete a note").
+		Description("Delete an existing note (1:1, feedback, or observation) by UUID").
+		Returns([]models.ReturnType{{StatusCode: http.StatusNoContent}}).
+		PathParam("company_uuid", "company uuid", goswag.StringType, true).
+		PathParam("person_uuid", "person uuid", goswag.StringType, true).
+		PathParam("note_uuid", "note uuid", goswag.StringType, true).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
 }

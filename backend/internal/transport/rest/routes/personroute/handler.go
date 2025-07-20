@@ -244,3 +244,64 @@ func (s *Handler) handleGetPersonMentions(c echo.Context) error {
 
 	return routeutils.ResponseAPIOk(c, paginatedResponse)
 }
+
+func (s *Handler) handleUpdateNote(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	_, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	_, err = routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	noteUUID, err := routeutils.GetRequiredStringPathParam(c, "note_uuid", "Invalid note_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	input := viewmodel.UpdateNoteRequest{}
+	err = c.Bind(&input)
+	if err != nil {
+		return routeutils.ResponseInvalidRequestBody(c, err)
+	}
+
+	note := input.ToEntity()
+	note.UUID = noteUUID
+
+	err = s.personService.UpdateNote(ctx, noteUUID, note)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	return routeutils.ResponseNoContent(c)
+}
+
+func (s *Handler) handleDeleteNote(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	_, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	_, err = routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	noteUUID, err := routeutils.GetRequiredStringPathParam(c, "note_uuid", "Invalid note_uuid")
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	err = s.personService.DeleteNote(ctx, noteUUID)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	return routeutils.ResponseNoContent(c)
+}

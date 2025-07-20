@@ -22,7 +22,6 @@ import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { Person } from '@/lib/types'
 import { PersonInfoTab } from '@/components/profile/PersonInfoTab'
 import { PersonTimelineTab } from '@/components/profile/PersonTimelineTab'
-import { PersonChatTab } from '@/components/profile/PersonChatTab'
 import { useCreatePerson } from '@/hooks/useCreatePerson'
 import CreatePersonDialog from '@/components/profile/CreatePersonDialog'
 import PersonModal, { PersonFormData } from '@/components/person/PersonModal'
@@ -39,8 +38,8 @@ export default function ProfilePage() {
   const activeCompany = useActiveCompany()
   const loadCompanies = useLoadCompanies()
   
-  // Get tab from URL or default to 'timeline' to showcase the new feature
-  const [activeTab, setActiveTab] = useState('timeline')
+  // Get tab from URL or default to 'info' (first tab)
+  const [activeTab, setActiveTab] = useState('info')
   const [isLoading, setIsLoading] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   
@@ -271,10 +270,9 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="info">Informações</TabsTrigger>
             <TabsTrigger value="timeline">Timeline Completa</TabsTrigger>
-            <TabsTrigger value="chat">Chat IA</TabsTrigger>
           </TabsList>
           
           {/* Informações Tab */}
@@ -291,10 +289,6 @@ export default function ProfilePage() {
             />
           </TabsContent>
           
-          {/* Chat IA Tab */}
-          <TabsContent value="chat" className="space-y-6">
-            <PersonChatTab person={person} />
-          </TabsContent>
         </Tabs>
       </main>
 

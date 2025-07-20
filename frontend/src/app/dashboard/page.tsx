@@ -89,10 +89,8 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    console.log('🔍 Dashboard useEffect executou')
     // Carregar dashboard quando estiver pronto (após empresas carregadas)
     if (shouldRender && !needsOnboarding && activeCompany) {
-      console.log('📞 Dashboard chamando loadDashboardData')
       loadDashboardData(activeCompany.uuid)
     }
   }, [loadDashboardData, shouldRender, needsOnboarding, activeCompany])
@@ -284,20 +282,6 @@ export default function Dashboard() {
                       ? (() => {
                           const now = new Date()
                           const daysDifference = Math.floor((now.getTime() - dashboardStats.lastMeetingDate.getTime()) / (1000 * 60 * 60 * 24))
-                          
-                          // Debug logging for dashboard stats
-                          console.log('🔍 Dashboard stats debug:', {
-                            input: dashboardStats.lastMeetingDate,
-                            inputISO: dashboardStats.lastMeetingDate.toISOString(),
-                            inputTime: dashboardStats.lastMeetingDate.getTime(),
-                            now: now,
-                            nowISO: now.toISOString(),
-                            nowTime: now.getTime(),
-                            timeDiffMs: now.getTime() - dashboardStats.lastMeetingDate.getTime(),
-                            daysDifference,
-                            context: 'dashboard-stats'
-                          })
-                          
                           return daysDifference
                         })()
                       : '-'

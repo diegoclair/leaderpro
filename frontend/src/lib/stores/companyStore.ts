@@ -134,7 +134,6 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
         }
       }
       
-      console.log('🏢 Empresas carregadas:', companies.length)
       
       set({
         companies,

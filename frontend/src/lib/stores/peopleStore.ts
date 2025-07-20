@@ -160,16 +160,8 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         gender: apiPerson.gender,
         interests: apiPerson.interests,
         personality: apiPerson.personality,
-        lastOneOnOneDate: apiPerson.last_one_on_one_date && apiPerson.last_one_on_one_date !== '' ? (() => {
-          const parsedDate = new Date(apiPerson.last_one_on_one_date)
-          console.log('🔍 Parsing lastOneOnOneDate:', {
-            raw: apiPerson.last_one_on_one_date,
-            parsed: parsedDate,
-            parsedISO: parsedDate.toISOString(),
-            context: 'loadPeopleFromAPI'
-          })
-          return parsedDate
-        })() : undefined,
+        lastOneOnOneDate: apiPerson.last_one_on_one_date && apiPerson.last_one_on_one_date !== '' ? 
+          new Date(apiPerson.last_one_on_one_date) : undefined,
         createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),
         age: apiPerson.age,
         tenure: apiPerson.tenure,
@@ -231,16 +223,8 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         gender: apiPerson.gender,
         interests: apiPerson.interests,
         personality: apiPerson.personality,
-        lastOneOnOneDate: apiPerson.last_one_on_one_date && apiPerson.last_one_on_one_date !== '' ? (() => {
-          const parsedDate = new Date(apiPerson.last_one_on_one_date)
-          console.log('🔍 Parsing lastOneOnOneDate:', {
-            raw: apiPerson.last_one_on_one_date,
-            parsed: parsedDate,
-            parsedISO: parsedDate.toISOString(),
-            context: 'loadPeopleFromAPI'
-          })
-          return parsedDate
-        })() : undefined,
+        lastOneOnOneDate: apiPerson.last_one_on_one_date && apiPerson.last_one_on_one_date !== '' ? 
+          new Date(apiPerson.last_one_on_one_date) : undefined,
         createdAt: apiPerson.created_at ? new Date(apiPerson.created_at) : new Date(),
         age: apiPerson.age,
         tenure: apiPerson.tenure,
@@ -260,16 +244,8 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
         oneOnOnesCountThisMonth: response.stats?.one_on_ones_this_month || 0,
         feedbacksCountThisMonth: response.stats?.feedbacks_count_this_month || 0,
         averageDaysBetweenOneOnOnes: response.stats?.average_frequency_days || 0,
-        lastMeetingDate: response.stats?.last_meeting_date && response.stats.last_meeting_date !== '' ? (() => {
-          const parsedDate = new Date(response.stats.last_meeting_date)
-          console.log('🔍 Parsing lastMeetingDate from dashboard stats:', {
-            raw: response.stats.last_meeting_date,
-            parsed: parsedDate,
-            parsedISO: parsedDate.toISOString(),
-            context: 'loadDashboardData'
-          })
-          return parsedDate
-        })() : undefined
+        lastMeetingDate: response.stats?.last_meeting_date && response.stats.last_meeting_date !== '' ? 
+          new Date(response.stats.last_meeting_date) : undefined
       }
 
       set({

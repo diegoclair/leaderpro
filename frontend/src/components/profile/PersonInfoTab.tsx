@@ -15,7 +15,8 @@ import { getInitials } from '@/lib/utils/names'
 import CreatePersonDialog from './CreatePersonDialog'
 import { useCompanyStore } from '@/lib/stores/companyStore'
 import { apiClient } from '@/lib/stores/authStore'
-import { MentionsInputComponent } from '@/components/ui/mentions-input'
+import { MentionsTextarea } from '@/components/ui/mentions-textarea'
+import { AIAssistantSidebar } from './AIAssistantSidebar'
 
 interface PersonInfoTabProps {
   person: Person
@@ -67,8 +68,6 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
           feedback_category: recordType === 'feedback' ? feedbackCategory : undefined
         }
 
-        console.log('📝 Creating note with mentions:', noteData)
-
         // Send to backend
         await apiClient.authPost(`/companies/${activeCompany.id}/people/${person.id}/notes`, noteData)
 
@@ -77,8 +76,6 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
         setRecordType('note')
         setFeedbackType('positive')
         setFeedbackCategory('performance')
-
-        console.log('✅ Note created successfully')
         
       } catch (error) {
         console.error('❌ Error creating note:', error)
@@ -95,71 +92,76 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
 
   return (
     <>
-      <div className="grid md:grid-cols-2 gap-6">
-      {/* Informações Pessoais */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Informações Pessoais
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">Data de Início</Label>
-            <p className="text-sm">{person.startDate ? new Date(person.startDate).toLocaleDateString('pt-BR') : 'Não informado'}</p>
-          </div>
-          
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">Departamento/Squad</Label>
-            <p className="text-sm">{person.department || 'Não informado'}</p>
-          </div>
-          
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">Contato</Label>
-            <div className="space-y-1">
-              {person.email && (
-                <p className="text-sm">📧 {person.email}</p>
+      {/* Main Content - 3 Columns */}
+      <div className="grid lg:grid-cols-12 gap-6">
+        {/* Informações Pessoais */}
+        <Card className="lg:col-span-3">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4" />
+              Informações Pessoais
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+              {person.startDate && (
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Data de Início</Label>
+                  <p className="text-sm">{new Date(person.startDate).toLocaleDateString('pt-BR')}</p>
+                </div>
               )}
-              {person.phone && (
-                <p className="text-sm">📞 {person.phone}</p>
+              
+              {person.department && (
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Departamento</Label>
+                  <p className="text-sm">{person.department}</p>
+                </div>
               )}
-              {!person.email && !person.phone && (
-                <p className="text-sm text-muted-foreground">Não informado</p>
+              
+              {(person.email || person.phone) && (
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Contato</Label>
+                  <div className="space-y-1">
+                    {person.email && (
+                      <p className="text-sm">📧 {person.email}</p>
+                    )}
+                    {person.phone && (
+                      <p className="text-sm">📞 {person.phone}</p>
+                    )}
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
-          
-          {person.interests && (
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Interesses</Label>
-              <p className="text-sm">{person.interests}</p>
-            </div>
-          )}
-          
-          {person.personality && (
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Personalidade</Label>
-              <p className="text-sm">{person.personality}</p>
-            </div>
-          )}
-          
-          {person.notes && (
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">Notas</Label>
-              <p className="text-sm text-muted-foreground">{person.notes}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      {/* Formulário de Registro */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Registrar Informação
-          </CardTitle>
-        </CardHeader>
+              
+              {person.interests && (
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Interesses</Label>
+                  <p className="text-sm">{person.interests}</p>
+                </div>
+              )}
+              
+              {person.personality && (
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Personalidade</Label>
+                  <p className="text-sm">{person.personality}</p>
+                </div>
+              )}
+              
+              {person.notes && (
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Notas</Label>
+                  <p className="text-sm text-muted-foreground">{person.notes}</p>
+                </div>
+              )}
+          </CardContent>
+        </Card>
+        
+        {/* Formulário de Registro */}
+        <Card className="lg:col-span-5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageSquare className="h-5 w-5" />
+              Registrar Nova Informação
+            </CardTitle>
+          </CardHeader>
         <CardContent className="space-y-4">
           {/* Tipo de Registro */}
           <div className="space-y-2">
@@ -260,7 +262,7 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
             </div>
           )}
 
-          {/* Campo de Texto com Mentions - com border garantida */}
+          {/* Campo de Texto com Mentions */}
           <div className="space-y-2">
             <Label htmlFor="note">
               {recordType === 'oneOnOne' ? 'Resumo da reunião 1:1' :
@@ -268,23 +270,21 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
                'Anotação sobre a pessoa'}
             </Label>
             
-            {/* Wrapper com border para garantir visibilidade */}
-            <div className="min-h-[100px] border border-input rounded-md bg-background">
-              <MentionsInputComponent
-                value={newNote}
-                onChange={handleNoteChange}
-                people={filteredPeople}
-                placeholder={
-                  recordType === 'oneOnOne' 
-                    ? "Registre os pontos principais da reunião 1:1. Use @nome para mencionar outras pessoas da equipe..." 
-                    : recordType === 'feedback'
-                    ? "Registre um feedback positivo ou construtivo. Use @nome para mencionar outras pessoas da equipe..."
-                    : "Registre uma observação ou anotação geral. Use @nome para mencionar outras pessoas da equipe..."
-                }
-                disabled={isSubmitting}
-                minHeight={100}
-              />
-            </div>
+            <MentionsTextarea
+              value={newNote}
+              onChange={handleNoteChange}
+              people={filteredPeople}
+              placeholder={
+                recordType === 'oneOnOne' 
+                  ? "Registre os pontos principais da reunião 1:1. Use @nome para mencionar outras pessoas da equipe..." 
+                  : recordType === 'feedback'
+                  ? "Registre um feedback positivo ou construtivo. Use @nome para mencionar outras pessoas da equipe..."
+                  : "Registre uma observação ou anotação geral. Use @nome para mencionar outras pessoas da equipe..."
+              }
+              disabled={isSubmitting}
+              minHeight={100}
+            />
+            
             <p className="text-xs text-muted-foreground">
               💡 Digite @ para mencionar outras pessoas da equipe
             </p>
@@ -301,9 +301,15 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
              recordType === 'feedback' ? 'Registrar Feedback' :
              'Registrar Anotação'}
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+        
+        {/* AI Assistant Sidebar */}
+        <AIAssistantSidebar 
+          person={person} 
+          className="lg:col-span-4"
+        />
+      </div>
 
       <CreatePersonDialog
         open={showCreatePersonDialog}

@@ -143,7 +143,19 @@ class ApiClient {
         
       } catch (error) {
         clearAuth()
-        throw new Error('Sessão expirada, faça login novamente')
+        
+        // Mostrar mensagem amigável ao invés de erro técnico
+        setNotificationStore()
+        if (getNotificationStore) {
+          getNotificationStore().showInfo(
+            'Sessão encerrada',
+            'Por segurança, faça login novamente para continuar',
+            6000 // Duração um pouco maior para dar tempo de ler
+          )
+        }
+        
+        // Lançar erro especial para identificar sessão expirada
+        throw new Error('SESSION_EXPIRED')
       }
     }
 

@@ -208,7 +208,7 @@ localStorage.setItem('leaderpro-active-company', companyId)  // NÃO FAÇA ISSO
 - **Segurança**: Previne vazamento de dados entre usuários
 - **Logout seguro**: `storageManager.clearAll()` limpa TUDO de uma vez
 - **Debugável**: `storageManager.debug()` mostra todos os dados
-- **Centralizad**: Todas as chaves gerenciadas em um lugar
+- **Centralizado**: Todas as chaves gerenciadas em um lugar
 
 ### ⭐ Frontend API Client - USAR SEMPRE
 **NUNCA use fetch() diretamente. SEMPRE use o apiClient centralizado:**
@@ -396,3 +396,34 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 
 ### Running Migrations
 Migrations run automatically on backend startup. Check `backend/cmd/main.go` for migration logic.
+
+## Recent Technical Improvements
+
+### ✅ System of Gender Complete
+Full-stack implementation for contextual text in Portuguese:
+- Backend: ENUM field with validation
+- Frontend: Gender select with Portuguese labels
+- Utils: `gender.ts` for contextual formatting ("mencionada" vs "mencionado")
+
+### ✅ Unified Timeline System
+- Single API endpoint combining timeline + mentions
+- Server-side filtering and search
+- Traditional pagination with page controls
+- Smart date formatting with tooltips
+
+### ✅ Generic Parameter Utilities (Go)
+Type-safe parameter parsing with Go generics:
+```go
+// Example usage
+noteTypes, _ := routeutils.GetArrayParam(c.QueryParam("types"), ",", routeutils.StringConverter)
+companyID, _ := routeutils.GetRequiredParam(c.Param("company_id"), routeutils.StringConverter, "company_id required")
+includeArchived := routeutils.GetBoolQueryParam(c, "include_archived")
+```
+
+## Documentation References
+
+### Main Documentation Files
+- `/README.md` - Project overview and business context
+- `/plan/000001-projeto-leaderpro.md` - Complete business plan
+- `/frontend/README.md` - Frontend architecture details
+- `/backend/README.md` - Backend API documentation
