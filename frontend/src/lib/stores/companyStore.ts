@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { Company } from '../types'
 import { apiClient } from './authStore'
 import { storageManager } from '../utils/storageManager'
+import type { ApiCompany } from '../types/api'
 
 interface CompanyState {
   companies: Company[]
@@ -97,10 +98,10 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
     
     try {
       // Buscar empresas da API
-      const companiesFromAPI = await apiClient.authGet('/companies')
+      const companiesFromAPI = await apiClient.authGet<ApiCompany[]>('/companies')
       
       // Converter para o formato esperado pelo frontend
-      const companies: Company[] = companiesFromAPI.map((company: any) => ({
+      const companies: Company[] = companiesFromAPI.map((company) => ({
         id: company.uuid,
         uuid: company.uuid,
         name: company.name,

@@ -3,13 +3,11 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PersonCard } from '@/components/person/PersonCard'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Calendar, Clock, TrendingUp, Users } from 'lucide-react'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
-import { useAllPeopleFromStore, useAllAISuggestions, useLoadPeopleData, useLoadPeopleFromAPI, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
+import { useAllPeopleFromStore, useAllAISuggestions, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
@@ -24,8 +22,6 @@ export default function Dashboard() {
   const activeCompany = useActiveCompany()
   const companies = useCompanyStore(state => state.companies)
   const loadCompanies = useLoadCompanies()
-  const loadPeopleData = useLoadPeopleData()
-  const loadPeopleFromAPI = useLoadPeopleFromAPI()
   const loadDashboardData = useLoadDashboardData()
   const dashboardStats = useDashboardStats()
   const { showSuccess, showError } = useNotificationStore()
@@ -40,7 +36,7 @@ export default function Dashboard() {
     if (shouldRender && companies.length === 0) {
       loadCompanies()
     }
-  }, [shouldRender, companies.length]) // Depende do shouldRender para garantir auth carregado
+  }, [shouldRender, companies.length, loadCompanies]) // Depende do shouldRender para garantir auth carregado
   
   const allPeople = useAllPeopleFromStore()
   const aiSuggestions = useAllAISuggestions()
@@ -52,7 +48,8 @@ export default function Dashboard() {
   }, [allPeople, activeCompany])
   
   // Calculate upcoming 1:1s locally
-  const upcomingOneOnOnes = React.useMemo(() => {
+  // TODO: Implementar 1:1s próximos quando a API estiver pronta
+  const _upcomingOneOnOnes = React.useMemo(() => {
     if (!activeCompany) return []
     
     const companyPeople = allPeople.filter(person => person.companyId === activeCompany.uuid)
@@ -62,7 +59,7 @@ export default function Dashboard() {
       date: Date
       notes: string
       aiSuggestions: string[]
-      mentions: any[]
+      mentions: unknown[]
       status: 'scheduled'
       person: Person
     }> = []
@@ -173,16 +170,17 @@ export default function Dashboard() {
     )
   }
 
-  const todayMeetings = upcomingOneOnOnes.filter(meeting => {
-    const today = new Date()
-    return meeting.date.toDateString() === today.toDateString()
-  })
+  // TODO: Implementar seções de reuniões para hoje e amanhã
+  // const todayMeetings = upcomingOneOnOnes.filter(meeting => {
+  //   const today = new Date()
+  //   return meeting.date.toDateString() === today.toDateString()
+  // })
 
-  const tomorrowMeetings = upcomingOneOnOnes.filter(meeting => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    return meeting.date.toDateString() === tomorrow.toDateString()
-  })
+  // const tomorrowMeetings = upcomingOneOnOnes.filter(meeting => {
+  //   const tomorrow = new Date()
+  //   tomorrow.setDate(tomorrow.getDate() + 1)
+  //   return meeting.date.toDateString() === tomorrow.toDateString()
+  // })
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

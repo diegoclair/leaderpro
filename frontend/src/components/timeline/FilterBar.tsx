@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { FilterToggleButton } from '@/components/ui/FilterToggleButton'
 import { 
@@ -24,13 +23,7 @@ import {
   Star,
   MessageSquare,
   Eye,
-  Users,
-  Trophy,
-  Target,
   Clock,
-  TrendingUp,
-  AlertCircle,
-  Lightbulb,
   X
 } from 'lucide-react'
 
@@ -148,16 +141,6 @@ export function FilterBar({
     })
   }
   
-  const clearQuickView = () => {
-    onFiltersChange({
-      searchQuery: '',
-      quickView: null,
-      types: [],
-      period: 'all',
-      direction: 'all',
-      sentiment: []
-    })
-  }
   
   const toggleTempType = (type: string) => {
     const newTypes = tempFilters.types.includes(type)
@@ -226,7 +209,6 @@ export function FilterBar({
   // Count advanced filters (sentiment filters are exclusive to advanced panel)
   const advancedFilterCount = filters.sentiment.length
   
-  const activeQuickView = quickViews.find(qv => qv.id === filters.quickView)
 
   return (
     <div className={`space-y-4 ${className}`}>

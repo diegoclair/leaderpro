@@ -32,7 +32,7 @@ export default function LoginPage() {
     try {
       await login(formData.email, formData.password)
       router.push('/')
-    } catch (err) {
+    } catch {
       // Erro será mostrado via notificação pelo authStore
       // setError não é mais necessário
     }

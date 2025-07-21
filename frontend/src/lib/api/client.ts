@@ -4,24 +4,25 @@ const AUTH_CONSTANTS = {
   API_BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
 } as const
 
-// Import notification store (lazy para evitar ciclo de dependência)
-let getNotificationStore: () => any
+// Type for notification store to avoid circular dependency
+type NotificationStoreState = {
+  showError: (title: string, message?: string, duration?: number) => string
+  showInfo: (title: string, message?: string, duration?: number) => string
+}
 
-const setNotificationStore = () => {
+// Import notification store (lazy para evitar ciclo de dependência)
+let getNotificationStore: (() => Promise<NotificationStoreState>) | undefined
+
+const setNotificationStore = async () => {
   if (!getNotificationStore) {
-    getNotificationStore = () => {
+    getNotificationStore = async () => {
       // Import dinâmico para evitar problemas de circular dependency
-      const { useNotificationStore } = require('../stores/notificationStore')
+      const { useNotificationStore } = await import('../stores/notificationStore')
       return useNotificationStore.getState()
     }
   }
 }
 
-interface ApiResponse<T = any> {
-  data?: T
-  error?: string
-  message?: string
-}
 
 interface AuthTokens {
   accessToken: string
@@ -55,21 +56,27 @@ class ApiClient {
   private async baseRequest(url: string, options: RequestInit = {}): Promise<Response> {
     const fullUrl = url.startsWith('http') ? url : `${this.baseURL}${url}`
     
+    
     const defaultHeaders = {
       'Content-Type': 'application/json',
     }
 
-    return fetch(fullUrl, {
-      ...options,
-      headers: {
-        ...defaultHeaders,
-        ...options.headers,
-      },
-    })
+    try {
+      return await fetch(fullUrl, {
+        ...options,
+        headers: {
+          ...defaultHeaders,
+          ...options.headers,
+        },
+      })
+    } catch (networkError) {
+      console.error('❌ Erro de rede:', { fullUrl, error: networkError })
+      throw new Error(`Erro de conexão: ${networkError instanceof Error ? networkError.message : 'Verifique se o backend está rodando'}`)
+    }
   }
 
   // Método público para requisições sem autenticação
-  async request<T = any>(url: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(url: string, options: RequestInit = {}): Promise<T> {
     const response = await this.baseRequest(url, options)
     
     if (!response.ok) {
@@ -77,9 +84,14 @@ class ApiClient {
       const errorMessage = errorData.message || `Erro ${response.status}`
       
       // Mostrar notificação de erro (exceto para login/register que já tratam)
-      setNotificationStore()
+      await setNotificationStore()
       if (getNotificationStore && !url.includes('/auth/login') && !url.includes('/users')) {
-        getNotificationStore().showError('Erro na API', errorMessage)
+        try {
+          const store = await getNotificationStore()
+          store.showError('Erro na API', errorMessage)
+        } catch {
+          // Se falhar ao mostrar notificação, continuar mesmo assim
+        }
       }
       
       throw new Error(errorMessage)
@@ -98,12 +110,12 @@ class ApiClient {
   }
 
   // Método para requisições autenticadas com renovação automática
-  async authenticatedRequest<T = any>(url: string, options: RequestInit = {}): Promise<T> {
+  async authenticatedRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
     if (!getAuthState) {
       throw new Error('AuthState getter não foi configurado')
     }
 
-    const { tokens, refreshToken: refreshAuthToken, clearAuth } = getAuthState()
+    const { tokens, clearAuth } = getAuthState()
     
     if (!tokens?.accessToken) {
       throw new Error('Usuário não autenticado')
@@ -125,7 +137,8 @@ class ApiClient {
     // Se token expirou (401), tentar renovar
     if (response.status === 401) {
       try {
-        await refreshAuthToken()
+        const { refreshToken, clearAuth: clearAuthFromState } = getAuthState()
+        await refreshToken()
         const newTokens = getAuthState().tokens
         
         if (!newTokens?.accessToken) {
@@ -141,13 +154,15 @@ class ApiClient {
           },
         })
         
-      } catch (error) {
-        clearAuth()
+      } catch {
+        const { clearAuth: clearAuthFromState } = getAuthState()
+        clearAuthFromState()
         
         // Mostrar mensagem amigável ao invés de erro técnico
-        setNotificationStore()
+        await setNotificationStore()
         if (getNotificationStore) {
-          getNotificationStore().showInfo(
+          const store = await getNotificationStore()
+          store.showInfo(
             'Sessão encerrada',
             'Por segurança, faça login novamente para continuar',
             6000 // Duração um pouco maior para dar tempo de ler
@@ -164,9 +179,14 @@ class ApiClient {
       const errorMessage = errorData.message || `Erro ${response.status}`
       
       // Mostrar notificação de erro para requisições autenticadas
-      setNotificationStore()
+      await setNotificationStore()
       if (getNotificationStore && !url.includes('/auth/logout')) {
-        getNotificationStore().showError('Erro na requisição', errorMessage)
+        try {
+          const store = await getNotificationStore()
+          store.showError('Erro na requisição', errorMessage)
+        } catch {
+          // Se falhar ao mostrar notificação, continuar mesmo assim
+        }
       }
       
       throw new Error(errorMessage)
@@ -185,11 +205,11 @@ class ApiClient {
   }
 
   // Métodos de conveniência para diferentes tipos de requisição
-  async get<T = any>(url: string, options?: RequestInit): Promise<T> {
+  async get<T>(url: string, options?: RequestInit): Promise<T> {
     return this.request<T>(url, { ...options, method: 'GET' })
   }
 
-  async post<T = any>(url: string, data?: any, options?: RequestInit): Promise<T> {
+  async post<T>(url: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(url, {
       ...options,
       method: 'POST',
@@ -197,7 +217,7 @@ class ApiClient {
     })
   }
 
-  async put<T = any>(url: string, data?: any, options?: RequestInit): Promise<T> {
+  async put<T>(url: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(url, {
       ...options,
       method: 'PUT',
@@ -205,16 +225,16 @@ class ApiClient {
     })
   }
 
-  async delete<T = any>(url: string, options?: RequestInit): Promise<T> {
+  async delete<T>(url: string, options?: RequestInit): Promise<T> {
     return this.request<T>(url, { ...options, method: 'DELETE' })
   }
 
   // Métodos autenticados
-  async authGet<T = any>(url: string, options?: RequestInit): Promise<T> {
+  async authGet<T>(url: string, options?: RequestInit): Promise<T> {
     return this.authenticatedRequest<T>(url, { ...options, method: 'GET' })
   }
 
-  async authPost<T = any>(url: string, data?: any, options?: RequestInit): Promise<T> {
+  async authPost<T>(url: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.authenticatedRequest<T>(url, {
       ...options,
       method: 'POST',
@@ -222,7 +242,7 @@ class ApiClient {
     })
   }
 
-  async authPut<T = any>(url: string, data?: any, options?: RequestInit): Promise<T> {
+  async authPut<T>(url: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.authenticatedRequest<T>(url, {
       ...options,
       method: 'PUT',
@@ -230,7 +250,7 @@ class ApiClient {
     })
   }
 
-  async authDelete<T = any>(url: string, options?: RequestInit): Promise<T> {
+  async authDelete<T>(url: string, options?: RequestInit): Promise<T> {
     return this.authenticatedRequest<T>(url, { ...options, method: 'DELETE' })
   }
 }

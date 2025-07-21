@@ -11,7 +11,7 @@ interface PersonTimelineTabProps {
   onCreatePerson?: (mentionName: string) => void
 }
 
-export function PersonTimelineTab({ person, allPeople, onCreatePerson }: PersonTimelineTabProps) {
+export function PersonTimelineTab({ person, allPeople }: PersonTimelineTabProps) {
   const activeCompany = useActiveCompany()
 
   if (!activeCompany) {

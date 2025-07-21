@@ -2,16 +2,12 @@
 
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { User, MessageSquare, Calendar, MessageCircle } from 'lucide-react'
 import { Person } from '@/lib/types'
 import { useCreatePerson } from '@/hooks/useCreatePerson'
-import { getInitials } from '@/lib/utils/names'
 import CreatePersonDialog from './CreatePersonDialog'
 import { useCompanyStore } from '@/lib/stores/companyStore'
 import { apiClient } from '@/lib/stores/authStore'
@@ -45,7 +41,6 @@ export function PersonInfoTab({ person, allPeople }: PersonInfoTabProps) {
     newPersonRole,
     setNewPersonName,
     setNewPersonRole,
-    openCreateDialog,
     closeCreateDialog,
     handleCreatePerson
   } = useCreatePerson()

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { apiClient, setAuthStateGetter } from '../api/client'
 import { useNotificationStore } from './notificationStore'
 import { storageManager } from '../utils/storageManager'
+import type { LoginResponse, RegisterResponse, RefreshTokenResponse } from '../types/api'
 
 export interface User {
   uuid: string
@@ -73,7 +74,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true })
         
         try {
-          const authResponse = await apiClient.post('/auth/login', { email, password })
+          const authResponse = await apiClient.post<LoginResponse>('/auth/login', { email, password })
           
           set({ 
             user: authResponse.user,
@@ -103,7 +104,7 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           // Backend já faz login automático e retorna user + tokens
-          const authResponse = await apiClient.post('/users', data)
+          const authResponse = await apiClient.post<RegisterResponse>('/users', data)
           
           set({ 
             user: authResponse.user,
@@ -171,15 +172,19 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         try {
-          const newTokens = await apiClient.post('/auth/refresh-token', { 
+          const response = await apiClient.post<RefreshTokenResponse>('/auth/refresh-token', { 
             refresh_token: tokens.refreshToken 
           })
+          
+          if (!response?.access_token) {
+            throw new Error('Resposta inválida do servidor')
+          }
           
           set({ 
             tokens: {
               ...tokens,
-              accessToken: newTokens.access_token,
-              accessTokenExpiresAt: newTokens.access_token_expires_at
+              accessToken: response.access_token,
+              accessTokenExpiresAt: response.access_token_expires_at
             }
           })
           

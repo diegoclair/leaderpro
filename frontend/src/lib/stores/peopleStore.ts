@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Person, OneOnOneSession, Feedback, AISuggestion } from '../types'
 import { apiClient } from '../api/client'
+import type { DashboardResponse, ApiPerson } from '../types/api'
 
 // Dashboard stats interface matching backend
 interface DashboardStats {
@@ -138,11 +139,11 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
     
     try {
       // Fetch people from API
-      const response = await apiClient.authGet(`/companies/${companyUuid}/people`)
+      const response = await apiClient.authGet<ApiPerson[]>(`/companies/${companyUuid}/people`)
       
       // Convert API response to frontend format
       const apiPeople = Array.isArray(response) ? response : []
-      const people: Person[] = apiPeople.map((apiPerson: any) => ({
+      const people: Person[] = apiPeople.map((apiPerson) => ({
         id: apiPerson.uuid || '',
         uuid: apiPerson.uuid || '',
         companyId: companyUuid, // Use the company UUID as companyId
@@ -201,11 +202,11 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
     
     try {
       // Fetch dashboard data (people + stats) from unified API
-      const response = await apiClient.authGet(`/dashboard?company_uuid=${companyUuid}`)
+      const response = await apiClient.authGet<DashboardResponse>(`/dashboard?company_uuid=${companyUuid}`)
       
       // Convert people API response to frontend format
       const apiPeople = Array.isArray(response.people) ? response.people : []
-      const people: Person[] = apiPeople.map((apiPerson: any) => ({
+      const people: Person[] = apiPeople.map((apiPerson) => ({
         id: apiPerson.uuid || '',
         uuid: apiPerson.uuid || '',
         companyId: companyUuid,

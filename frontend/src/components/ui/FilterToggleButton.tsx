@@ -15,7 +15,6 @@ interface FilterToggleButtonProps {
 }
 
 export function FilterToggleButton({
-  id,
   name,
   icon: Icon,
   isActive,

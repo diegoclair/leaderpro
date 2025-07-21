@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Rotas que NÃO precisam de autenticação
-const publicRoutes = ['/auth/login', '/auth/register']
+// const publicRoutes = ['/auth/login', '/auth/register']
 
 // Rotas que SÃO de autenticação (para redirecionar se já logado)
-const authRoutes = ['/auth/login', '/auth/register']
+// const authRoutes = ['/auth/login', '/auth/register']
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+export function middleware(_request: NextRequest) {
+  // const { pathname } = request.nextUrl
   
   // Verificar se tem token (do localStorage não é acessível no middleware)
   // Então vamos apenas redirecionar com base na URL atual

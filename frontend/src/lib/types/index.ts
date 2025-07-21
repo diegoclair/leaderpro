@@ -103,3 +103,6 @@ export type AISuggestion = {
   createdAt: Date
   isUsed: boolean
 }
+
+// Re-export API types for convenience
+export * from './api'

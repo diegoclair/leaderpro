@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -18,7 +18,7 @@ import {
 import { formatTimeAgo } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
 import { 
-  NOTE_SOURCE_TYPES, 
+  
   getNoteSourceTypeLabel, 
   getFeedbackTypeColor 
 } from '@/lib/constants/notes'
@@ -112,7 +112,7 @@ const getDirectionLabel = (activity: TimelineActivity, targetPerson: Person) => 
 export function ActivityCard({ 
   activity, 
   targetPerson, 
-  allPeople, 
+  
   className = '' 
 }: ActivityCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)

@@ -59,6 +59,13 @@ go test -v -cover ./internal/domain/...  # Run specific test
 - **Swagger Docs**: http://localhost:5000/swagger/
 - **Live Demo**: https://diegoclair.github.io/leaderpro/
 
+### Service Ports
+- **MySQL**: 3306
+- **Redis**: 6379  
+- **Prometheus**: 9090 (http://localhost:9090)
+- **Grafana**: 3001 (http://localhost:3001)
+- **Jaeger**: 16686 (http://localhost:16686)
+
 ## Architecture Overview
 
 ### Backend - Clean Architecture Flow
@@ -162,7 +169,8 @@ frontend/src/
 ### Backend Testing
 - **Unit Tests**: `go test -v -cover ./...` for all packages
 - **Specific Tests**: `go test -v -cover ./internal/domain/...` for targeted testing
-- **Integration Tests**: Testcontainers for MySQL/Redis integration testing
+- **Single Test**: `go test -v -run TestName ./path/to/package`
+- **Integration Tests**: Testcontainers automatically spins up MySQL/Redis in Docker
 - **Mock Generation**: `make mocks` generates mocks using uber/mock
 - **Test Coverage**: Full coverage expected with `-cover` flag
 
@@ -382,6 +390,11 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - **Default Ports**: Frontend (3000), Backend (5000), MySQL (3306), Redis (6379)
 - **Docker Services**: `backend/docker-compose.yml` orchestrates MySQL, Redis, Prometheus, Grafana, Jaeger
 
+### Deployment
+- **Frontend**: Auto-deploys to GitHub Pages on push to main branch via GitHub Actions
+- **Build Output**: `frontend/out` directory (Next.js static export)
+- **CI/CD**: Uses Node.js 18 in GitHub Actions pipeline
+
 ## Database Migrations
 
 ### Migration Files Location
@@ -427,3 +440,15 @@ includeArchived := routeutils.GetBoolQueryParam(c, "include_archived")
 - `/plan/000001-projeto-leaderpro.md` - Complete business plan
 - `/frontend/README.md` - Frontend architecture details
 - `/backend/README.md` - Backend API documentation
+
+## Business Context
+
+### Product Vision
+**LeaderPro** helps tech leads become better managers by maintaining perfect memory of team interactions and providing AI-powered contextual suggestions. Target market: 4.4M new tech leads promoted annually without management training.
+
+### Pricing Model
+- **Basic**: R$ 29.90/month (50 people)
+- **Standard**: R$ 49.90/month (200 people) - Main offering
+- **Unlimited**: R$ 79.90/month (unlimited people)
+- **Trial**: 30 days free
+- **Early Adopter**: 6 months for R$ 9.90

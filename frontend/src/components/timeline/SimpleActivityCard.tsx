@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,7 +20,6 @@ import {
   Edit3,
   Trash2
 } from 'lucide-react'
-import { Person } from '@/lib/types'
 import { formatDateRelative, formatDateExact } from '@/lib/utils/dates'
 
 // Função para traduzir categorias de feedback
@@ -48,11 +48,13 @@ export interface TimelineActivity {
 interface SimpleActivityCardProps {
   activity: TimelineActivity
   className?: string
+  currentPersonUuid?: string
   onEdit?: (activity: TimelineActivity) => void
   onDelete?: (activity: TimelineActivity) => void
 }
 
-export function SimpleActivityCard({ activity, className = '', onEdit, onDelete }: SimpleActivityCardProps) {
+export function SimpleActivityCard({ activity, className = '', currentPersonUuid, onEdit, onDelete }: SimpleActivityCardProps) {
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = useState(false)
   const [shouldShowExpand, setShouldShowExpand] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -72,7 +74,7 @@ export function SimpleActivityCard({ activity, className = '', onEdit, onDelete 
       
       // Get the actual height of the rendered content
       const contentHeight = contentRef.current.scrollHeight
-      const containerHeight = contentRef.current.clientHeight
+      // const containerHeight = contentRef.current.clientHeight
       
       // Define max height based on screen size
       const screenWidth = window.innerWidth
@@ -99,11 +101,42 @@ export function SimpleActivityCard({ activity, className = '', onEdit, onDelete 
   // Simple content processing without pre-truncation
   const displayContent = activity.content
 
-  // Process @mentions in content
+  // Process @mentions in content with clickable links
   const processedContent = displayContent.replace(
     /\{\{person:([^|]+)\|([^}]+)\}\}/g,
-    '<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 rounded-full">@$2</span>'
+    (match, uuid, name) => {
+      // Se é a própria pessoa, não torna clicável
+      if (uuid === currentPersonUuid) {
+        return `<span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300 rounded-full">@${name}</span>`
+      }
+      // Para outras pessoas, mantém clicável
+      return `<span data-person-uuid="${uuid}" class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 rounded-full cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">@${name}</span>`
+    }
   )
+
+  // Handle mention clicks
+  useEffect(() => {
+    if (!isClient || !contentRef.current) return
+
+    const currentRef = contentRef.current
+
+    const handleMentionClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const mention = target.closest('[data-person-uuid]')
+      if (mention) {
+        const personUuid = mention.getAttribute('data-person-uuid')
+        // Só navega se não for a mesma pessoa
+        if (personUuid && personUuid !== currentPersonUuid) {
+          router.push(`/profile/${personUuid}`)
+        }
+      }
+    }
+
+    currentRef.addEventListener('click', handleMentionClick)
+    return () => {
+      currentRef.removeEventListener('click', handleMentionClick)
+    }
+  }, [isClient, router, processedContent, currentPersonUuid])
 
   // Get icon and color based on type
   const getTypeConfig = () => {

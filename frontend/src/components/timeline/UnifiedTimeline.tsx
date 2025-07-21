@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { EditNoteModal } from './EditNoteModal'
 import { Person } from '@/lib/types'
 import { apiClient } from '@/lib/stores/authStore'
 import { useNotificationStore } from '@/lib/stores/notificationStore'
+import type { TimelineResponse, VoidResponse } from '@/lib/types/api'
 
 interface UnifiedTimelineProps {
   person: Person
@@ -49,8 +50,11 @@ export function UnifiedTimeline({
     sentiment: []
   })
 
+  // Debounced search query
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(filters.searchQuery)
+
   // Fetch timeline data with server-side filtering
-  const fetchTimelineData = async (page: number = 1) => {
+  const fetchTimelineData = useCallback(async (page: number = 1) => {
     setIsLoading(true)
     setError(null)
     
@@ -82,12 +86,12 @@ export function UnifiedTimeline({
       }
       
       // Fetch unified timeline with filters
-      const response = await apiClient.authGet(
+      const response = await apiClient.authGet<TimelineResponse>(
         `/companies/${companyId}/people/${person.uuid}/timeline?${params.toString()}`
       )
       
       // Handle unified timeline response
-      let timelineData = []
+      let timelineData: TimelineActivity[] = []
       let paginationData = { total_records: 0 }
       
       if (response?.data && Array.isArray(response.data)) {
@@ -117,7 +121,7 @@ export function UnifiedTimeline({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [companyId, person?.uuid, itemsPerPage, debouncedSearchQuery, filters.types, filters.sentiment, filters.direction, filters.period])
 
   // Handle edit note
   const handleEditNote = (activity: TimelineActivity) => {
@@ -137,7 +141,7 @@ export function UnifiedTimeline({
         mentioned_people: []
       }
 
-      await apiClient.authPut(
+      await apiClient.authPut<VoidResponse>(
         `/companies/${companyId}/people/${person.uuid}/notes/${updatedActivity.uuid}`,
         payload
       )
@@ -161,7 +165,7 @@ export function UnifiedTimeline({
     }
 
     try {
-      await apiClient.authDelete(
+      await apiClient.authDelete<VoidResponse>(
         `/companies/${companyId}/people/${person.uuid}/notes/${activity.uuid}`
       )
       
@@ -189,9 +193,6 @@ export function UnifiedTimeline({
     // Will trigger fetchTimelineData via useEffect
   }
 
-  // Debounced search query
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(filters.searchQuery)
-  
   // Debounce search query changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -206,14 +207,14 @@ export function UnifiedTimeline({
     if (person && companyId) {
       fetchTimelineData()
     }
-  }, [person, companyId, debouncedSearchQuery])
+  }, [person, companyId, debouncedSearchQuery, fetchTimelineData])
   
   // Fetch data immediately when non-search filters change
   useEffect(() => {
     if (person && companyId) {
       fetchTimelineData(1) // Reset to page 1 when filters change
     }
-  }, [person, companyId, filters.types, filters.sentiment, filters.direction, filters.period, filters.quickView, itemsPerPage])
+  }, [person, companyId, filters.types, filters.sentiment, filters.direction, filters.period, filters.quickView, itemsPerPage, fetchTimelineData])
 
   // Simply combine activities since filtering is now done server-side
   const filteredActivities = useMemo(() => {
@@ -308,6 +309,7 @@ export function UnifiedTimeline({
               <SimpleActivityCard
                 key={`${activity.uuid}-${index}`}
                 activity={activity}
+                currentPersonUuid={person.uuid}
                 onEdit={handleEditNote}
                 onDelete={handleDeleteNote}
               />

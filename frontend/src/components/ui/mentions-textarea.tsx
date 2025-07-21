@@ -39,7 +39,7 @@ export function MentionsTextarea({
   const [selectedIndex, setSelectedIndex] = useState(0)
   const editorRef = useRef<HTMLDivElement>(null)
   const [isTyping, setIsTyping] = useState(false)
-  const [lastInputType, setLastInputType] = useState<string | null>(null)
+  // const [lastInputType, setLastInputType] = useState<string | null>(null)
   const [lastExternalValue, setLastExternalValue] = useState('')
 
   // Convert backend format to display HTML
@@ -136,7 +136,7 @@ export function MentionsTextarea({
     // Captura o tipo de input (insertText, insertCompositionText, etc)
     const nativeEvent = e.nativeEvent as InputEvent
     const inputType = nativeEvent?.inputType
-    setLastInputType(inputType || null)
+    // setLastInputType(inputType || null)
     
     const selection = window.getSelection()
     if (!selection || selection.rangeCount === 0) return

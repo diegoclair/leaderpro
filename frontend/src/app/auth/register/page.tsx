@@ -53,7 +53,7 @@ export default function RegisterPage() {
         phone: formData.phone || undefined
       })
       router.push('/')
-    } catch (err) {
+    } catch {
       // Erro será mostrado via notificação pelo authStore
       // setError não é mais necessário
     }

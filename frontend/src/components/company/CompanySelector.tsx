@@ -17,6 +17,7 @@ import { useActiveCompany, useCompanies, useSetActiveCompany, useAddCompany, use
 import CompanyModal, { CompanyFormData } from './CompanyModal'
 import { apiClient } from '@/lib/stores/authStore'
 import { useNotificationStore } from '@/lib/stores/notificationStore'
+import type { CompanyCreateResponse, ApiCompany } from '@/lib/types/api'
 
 export function CompanySelector() {
   const activeCompany = useActiveCompany()
@@ -41,19 +42,19 @@ export function CompanySelector() {
     
     try {
       // Call backend API to create company
-      const response = await apiClient.authPost('/companies', companyData)
+      const response = await apiClient.authPost<CompanyCreateResponse>('/companies', companyData)
       
       // Convert response to frontend format
       const newCompany = {
-        id: response.uuid,
-        uuid: response.uuid,
-        name: response.name,
-        industry: response.industry || '',
-        size: response.size || '',
-        role: response.role || '',
-        isDefault: response.is_default || false,
-        createdAt: new Date(response.created_at),
-        updatedAt: new Date(response.created_at)
+        id: response.company.uuid,
+        uuid: response.company.uuid,
+        name: response.company.name,
+        industry: response.company.industry || '',
+        size: response.company.size || '',
+        role: response.company.role || '',
+        isDefault: response.company.is_default || false,
+        createdAt: new Date(response.company.created_at),
+        updatedAt: new Date(response.company.updated_at)
       }
 
       // Update store

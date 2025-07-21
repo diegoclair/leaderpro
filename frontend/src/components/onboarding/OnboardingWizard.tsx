@@ -6,14 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building2, Users, CheckCircle } from 'lucide-react'
 import { useAddCompany, useSetActiveCompany } from '@/lib/stores/companyStore'
 import { apiClient } from '@/lib/stores/authStore'
 import { IndustrySelect } from '@/components/forms/industry-select'
 import { CompanySizeSelect } from '@/components/forms/company-size-select'
-import { AppLogo } from '@/components/ui/app-logo'
-import { LoadingPage } from '@/components/ui/loading-spinner'
+import type { CompanyCreateResponse } from '@/lib/types/api'
 import { ErrorMessage } from '@/components/ui/error-message'
 
 interface OnboardingWizardProps {
@@ -60,20 +58,20 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       console.log('🚀 Criando empresa:', companyData)
       
       // Chamar API para criar empresa
-      const response = await apiClient.authPost('/companies', companyData)
+      const response = await apiClient.authPost<CompanyCreateResponse>('/companies', companyData)
       console.log('✅ Empresa criada com sucesso:', response)
       
       // Criar objeto da empresa
       const newCompany = {
-        id: response.uuid,
-        uuid: response.uuid,
-        name: response.name,
-        industry: response.industry || '',
-        size: response.size || '',
-        role: response.role || formData.userRole,
-        isDefault: response.is_default || true,
-        createdAt: new Date(response.created_at),
-        updatedAt: new Date(response.created_at)
+        id: response.company.uuid,
+        uuid: response.company.uuid,
+        name: response.company.name,
+        industry: response.company.industry || '',
+        size: response.company.size || '',
+        role: response.company.role || formData.userRole,
+        isDefault: response.company.is_default || true,
+        createdAt: new Date(response.company.created_at),
+        updatedAt: new Date(response.company.updated_at)
       }
 
       // Adicionar empresa ao store
