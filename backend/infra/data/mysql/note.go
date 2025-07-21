@@ -154,8 +154,18 @@ func (r *noteRepo) UpdateNote(ctx context.Context, noteID int64, note entity.Not
 	}
 	defer stmt.Close()
 
+	// Se não for feedback, força feedback_type e feedback_category como NULL
+	var feedbackType, feedbackCategory interface{}
+	if note.Type == "feedback" {
+		feedbackType = note.FeedbackType
+		feedbackCategory = note.FeedbackCategory
+	} else {
+		feedbackType = nil
+		feedbackCategory = nil
+	}
+
 	result, err := stmt.ExecContext(ctx,
-		note.Type, note.Content, note.FeedbackType, note.FeedbackCategory,
+		note.Type, note.Content, feedbackType, feedbackCategory,
 		note.UpdatedAt, noteID,
 	)
 	if err != nil {
@@ -169,6 +179,12 @@ func (r *noteRepo) UpdateNote(ctx context.Context, noteID int64, note entity.Not
 
 	if rowsAffected == 0 {
 		return sql.ErrNoRows
+	}
+
+	// Atualiza as mentions relacionadas a esta nota para manter sincronização
+	err = r.updateMentionsContent(ctx, noteID, note.Content)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
 	}
 
 	return nil
@@ -296,112 +312,88 @@ func (r *noteRepo) GetMentionsByPerson(ctx context.Context, mentionedPersonID in
 }
 
 func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filters entity.TimelineFilters, take, skip int64) (timeline []entity.UnifiedTimelineEntry, totalRecords int64, err error) {
-	// Build base queries for timeline (direct notes) and mentions
-	timelineBaseQuery := `
+	// Single query with LEFT JOIN - much simpler!
+	query := `
 		SELECT 
 			n.note_uuid as uuid,
-			n.type,
+			CASE 
+				WHEN nm.mention_id IS NOT NULL THEN 'mention'
+				ELSE n.type
+			END as type,
 			n.content,
 			u.name as author_name,
 			n.created_at,
 			n.feedback_type,
 			n.feedback_category,
-			NULL as person_name,
-			NULL as source_person_name,
-			'direct' as entry_source
+			CASE 
+				WHEN nm.mention_id IS NOT NULL THEN mp.person_uuid
+				ELSE NULL
+			END as mentioned_by_person_uuid,
+			CASE 
+				WHEN nm.mention_id IS NOT NULL THEN mp.name
+				ELSE NULL
+			END as mentioned_by_person_name
 		FROM tab_note n
 		INNER JOIN tab_user u ON n.user_id = u.user_id
-		WHERE n.person_id = ? AND n.deleted_at IS NULL`
+		LEFT JOIN tab_note_mention nm ON n.note_id = nm.note_id AND nm.mentioned_person_id = ?
+		LEFT JOIN tab_person mp ON n.person_id = mp.person_id
+		WHERE (n.person_id = ? OR nm.mentioned_person_id = ?) AND n.deleted_at IS NULL`
 	
-	mentionsBaseQuery := `
-		SELECT 
-			n.note_uuid as uuid,
-			'mention' as type,
-			n.content,
-			u.name as author_name,
-			n.created_at,
-			n.feedback_type,
-			n.feedback_category,
-			p.name as person_name,
-			sp.name as source_person_name,
-			'mention' as entry_source
-		FROM tab_note_mention nm
-		INNER JOIN tab_note n ON nm.note_id = n.note_id
-		INNER JOIN tab_user u ON n.user_id = u.user_id
-		INNER JOIN tab_person p ON n.person_id = p.person_id
-		LEFT JOIN tab_person sp ON nm.source_person_id = sp.person_id
-		WHERE nm.mentioned_person_id = ? AND n.deleted_at IS NULL`
-	
-	timelineArgs := []interface{}{personID}
-	mentionsArgs := []interface{}{personID}
-	
-	includeTimeline := true
-	includeMentions := true
+	args := []interface{}{personID, personID, personID}
 	
 	// Apply filters
 	if filters.SearchQuery != "" {
 		searchCondition := ` AND (n.content LIKE ? OR u.name LIKE ? OR n.feedback_category LIKE ? OR n.feedback_type LIKE ?)`
 		searchValue := "%" + filters.SearchQuery + "%"
-		
-		timelineBaseQuery += searchCondition
-		mentionsBaseQuery += searchCondition
-		
-		timelineArgs = append(timelineArgs, searchValue, searchValue, searchValue, searchValue)
-		mentionsArgs = append(mentionsArgs, searchValue, searchValue, searchValue, searchValue)
+		query += searchCondition
+		args = append(args, searchValue, searchValue, searchValue, searchValue)
 	}
 	
 	// Apply type filters
 	if len(filters.Types) > 0 {
-		var timelineTypes []string
+		hasDirectTypes := false
 		hasMentionType := false
+		var directTypes []string
 		
 		for _, t := range filters.Types {
 			if t == "mention" {
 				hasMentionType = true
 			} else {
-				timelineTypes = append(timelineTypes, t)
-				timelineArgs = append(timelineArgs, t)
+				hasDirectTypes = true
+				directTypes = append(directTypes, t)
 			}
 		}
 		
-		// If no direct types, exclude timeline
-		if len(timelineTypes) == 0 {
-			includeTimeline = false
-		} else {
-			placeholders := make([]string, len(timelineTypes))
-			for i := range placeholders {
+		if hasDirectTypes && hasMentionType {
+			// Both direct and mention types
+			placeholders := make([]string, len(directTypes))
+			for i, t := range directTypes {
 				placeholders[i] = "?"
+				args = append(args, t)
 			}
-			timelineBaseQuery += ` AND n.type IN (` + joinStringSlice(placeholders, ",") + `)`
-		}
-		
-		// If no mention type, exclude mentions
-		if !hasMentionType {
-			includeMentions = false
+			query += ` AND ((n.type IN (` + joinStringSlice(placeholders, ",") + `) AND nm.mention_id IS NULL) OR nm.mention_id IS NOT NULL)`
+		} else if hasDirectTypes {
+			// Only direct types
+			placeholders := make([]string, len(directTypes))
+			for i, t := range directTypes {
+				placeholders[i] = "?"
+				args = append(args, t)
+			}
+			query += ` AND n.type IN (` + joinStringSlice(placeholders, ",") + `) AND nm.mention_id IS NULL`
+		} else if hasMentionType {
+			// Only mention type
+			query += ` AND nm.mention_id IS NOT NULL`
 		}
 	}
 	
 	// Apply feedback type filters
 	if len(filters.FeedbackTypes) > 0 {
 		placeholders := make([]string, len(filters.FeedbackTypes))
-		for i := range placeholders {
+		for i, ft := range filters.FeedbackTypes {
 			placeholders[i] = "?"
+			args = append(args, ft)
 		}
-		feedbackFilter := ` AND n.feedback_type IN (` + joinStringSlice(placeholders, ",") + `)`
-		
-		if includeTimeline {
-			timelineBaseQuery += feedbackFilter
-			for _, s := range filters.FeedbackTypes {
-				timelineArgs = append(timelineArgs, s)
-			}
-		}
-		
-		if includeMentions {
-			mentionsBaseQuery += feedbackFilter
-			for _, s := range filters.FeedbackTypes {
-				mentionsArgs = append(mentionsArgs, s)
-			}
-		}
+		query += ` AND n.feedback_type IN (` + joinStringSlice(placeholders, ",") + `)`
 	}
 	
 	// Apply period filter
@@ -419,81 +411,48 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		case "1y":
 			dateCondition = ` AND n.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)`
 		}
-		
 		if dateCondition != "" {
-			if includeTimeline {
-				timelineBaseQuery += dateCondition
-			}
-			if includeMentions {
-				mentionsBaseQuery += dateCondition
-			}
+			query += dateCondition
 		}
 	}
 	
-	// Build combined query
-	var queriesParts []string
-	var allArgs []interface{}
+	// Count total records (simplified)
+	countQuery := query
+	countQuerySelect := `SELECT COUNT(*) FROM (`
+	countQueryEnd := `) as subquery`
+	fullCountQuery := countQuerySelect + countQuery + countQueryEnd
 	
-	if includeTimeline {
-		queriesParts = append(queriesParts, "("+timelineBaseQuery+")")
-		allArgs = append(allArgs, timelineArgs...)
-	}
-	
-	if includeMentions {
-		queriesParts = append(queriesParts, "("+mentionsBaseQuery+")")
-		allArgs = append(allArgs, mentionsArgs...)
-	}
-	
-	if len(queriesParts) == 0 {
-		// No results due to filtering
-		return timeline, 0, nil
-	}
-	
-	combinedQuery := joinStringSlice(queriesParts, " UNION ALL ") + " ORDER BY created_at DESC"
-	
-	// Count query (simplified - just count both sources without complex filtering for now)
-	countQuery := `
-		SELECT (
-			SELECT COUNT(*) FROM tab_note n 
-			WHERE n.person_id = ? AND n.deleted_at IS NULL
-		) + (
-			SELECT COUNT(*) FROM tab_note_mention nm 
-			INNER JOIN tab_note n ON nm.note_id = n.note_id
-			WHERE nm.mentioned_person_id = ? AND n.deleted_at IS NULL
-		) as total
-	`
-	
-	// Execute count query
-	stmt, err := r.db.PrepareContext(ctx, countQuery)
+	stmt, err := r.db.PrepareContext(ctx, fullCountQuery)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
 	defer stmt.Close()
 	
-	row := stmt.QueryRowContext(ctx, personID, personID)
+	row := stmt.QueryRowContext(ctx, args...)
 	err = row.Scan(&totalRecords)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
 	
-	// Add pagination
+	// Add ordering and pagination
+	query += ` ORDER BY n.created_at DESC`
 	if take > 0 {
-		combinedQuery += ` LIMIT ?`
-		allArgs = append(allArgs, take)
+		query += ` LIMIT ?`
+		args = append(args, take)
 		if skip > 0 {
-			combinedQuery += ` OFFSET ?`
-			allArgs = append(allArgs, skip)
+			query += ` OFFSET ?`
+			args = append(args, skip)
 		}
 	}
 	
 	// Execute main query
-	stmt2, err := r.db.PrepareContext(ctx, combinedQuery)
+	stmt2, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
 	defer stmt2.Close()
 	
-	rows, err := stmt2.QueryContext(ctx, allArgs...)
+	rows, err := stmt2.QueryContext(ctx, args...)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
@@ -502,13 +461,13 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 	for rows.Next() {
 		var entry entity.UnifiedTimelineEntry
 		var feedbackType, feedbackCategory sql.NullString
-		var personName, sourcePersonName sql.NullString
+		var mentionedByPersonUUID, mentionedByPersonName sql.NullString
 		
 		err = rows.Scan(
 			&entry.UUID, &entry.Type, &entry.Content,
-			&entry.AuthorName, &entry.CreatedAt, &feedbackType,
-			&feedbackCategory, &personName, &sourcePersonName,
-			&entry.EntrySource,
+			&entry.AuthorName, &entry.CreatedAt,
+			&feedbackType, &feedbackCategory,
+			&mentionedByPersonUUID, &mentionedByPersonName,
 		)
 		if err != nil {
 			return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
@@ -521,11 +480,11 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		if feedbackCategory.Valid {
 			entry.FeedbackCategory = &feedbackCategory.String
 		}
-		if personName.Valid {
-			entry.PersonName = &personName.String
+		if mentionedByPersonUUID.Valid {
+			entry.MentionedByPersonUUID = &mentionedByPersonUUID.String
 		}
-		if sourcePersonName.Valid {
-			entry.SourcePersonName = &sourcePersonName.String
+		if mentionedByPersonName.Valid {
+			entry.MentionedByPersonName = &mentionedByPersonName.String
 		}
 		
 		timeline = append(timeline, entry)
@@ -546,12 +505,30 @@ func joinStringSlice(slice []string, separator string) string {
 	if len(slice) == 1 {
 		return slice[0]
 	}
-	
+
 	result := slice[0]
 	for i := 1; i < len(slice); i++ {
 		result += separator + slice[i]
 	}
 	return result
+}
+
+// updateMentionsContent update the content of mentions when the original note is modified
+func (r *noteRepo) updateMentionsContent(ctx context.Context, noteID int64, newContent string) error {
+	query := `
+		UPDATE tab_note_mention 
+		SET full_content = ?
+		WHERE note_id = ?
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, newContent, noteID)
+	return err
 }
 
 func (r *noteRepo) GetPersonMentions(ctx context.Context, mentionedPersonID int64, take, skip int64) (mentions []entity.MentionEntry, totalRecords int64, err error) {
@@ -609,7 +586,7 @@ func (r *noteRepo) GetPersonMentions(ctx context.Context, mentionedPersonID int6
 	for rows.Next() {
 		var mention entity.MentionEntry
 		var feedbackType, feedbackCategory sql.NullString
-		
+
 		err = rows.Scan(
 			&mention.UUID, &mention.Type, &mention.Content,
 			&feedbackType, &feedbackCategory, &mention.CreatedAt,
@@ -618,7 +595,7 @@ func (r *noteRepo) GetPersonMentions(ctx context.Context, mentionedPersonID int6
 		if err != nil {
 			return mentions, totalRecords, mysqlutils.HandleMySQLError(err)
 		}
-		
+
 		// Handle nullable fields
 		if feedbackType.Valid {
 			mention.FeedbackType = &feedbackType.String
@@ -626,10 +603,10 @@ func (r *noteRepo) GetPersonMentions(ctx context.Context, mentionedPersonID int6
 		if feedbackCategory.Valid {
 			mention.FeedbackCategory = &feedbackCategory.String
 		}
-		
+
 		// TODO: In future, we can populate mention.Mentions with detailed mention info
 		// For now, leave it empty as the frontend renders mentions from content parsing
-		
+
 		mentions = append(mentions, mention)
 	}
 

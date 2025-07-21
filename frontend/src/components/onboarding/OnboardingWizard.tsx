@@ -63,15 +63,15 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       
       // Criar objeto da empresa
       const newCompany = {
-        id: response.company.uuid,
-        uuid: response.company.uuid,
-        name: response.company.name,
-        industry: response.company.industry || '',
-        size: response.company.size || '',
-        role: response.company.role || formData.userRole,
-        isDefault: response.company.is_default || true,
-        createdAt: new Date(response.company.created_at),
-        updatedAt: new Date(response.company.updated_at)
+        id: response.uuid,
+        uuid: response.uuid,
+        name: response.name,
+        industry: response.industry || '',
+        size: response.size || '',
+        role: response.role || formData.userRole,
+        isDefault: response.is_default || true,
+        createdAt: new Date(response.created_at),
+        updatedAt: new Date(response.updated_at)
       }
 
       // Adicionar empresa ao store

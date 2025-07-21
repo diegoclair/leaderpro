@@ -142,9 +142,10 @@ type UnifiedTimelineResponse struct {
 	CreatedAt        time.Time `json:"created_at"`
 	FeedbackType     *string   `json:"feedback_type,omitempty"`
 	FeedbackCategory *string   `json:"feedback_category,omitempty"`
-	PersonName       *string   `json:"person_name,omitempty"`       // Nome da pessoa sobre quem a nota foi feita (mentions)
-	SourcePersonName *string   `json:"source_person_name,omitempty"` // Para mentions: pessoa sobre quem falou
-	EntrySource      string    `json:"entry_source"`                // "direct" for timeline, "mention" for mentions
+	
+	// For mentions only - who mentioned this person
+	MentionedByPersonUUID *string `json:"mentioned_by_person_uuid,omitempty"`
+	MentionedByPersonName *string `json:"mentioned_by_person_name,omitempty"`
 }
 
 // TimelineFiltersRequest represents the request filters for timeline endpoint
@@ -164,9 +165,8 @@ func (r *UnifiedTimelineResponse) FillFromUnifiedTimelineEntry(entry entity.Unif
 	r.CreatedAt = entry.CreatedAt
 	r.FeedbackType = entry.FeedbackType
 	r.FeedbackCategory = entry.FeedbackCategory
-	r.PersonName = entry.PersonName
-	r.SourcePersonName = entry.SourcePersonName
-	r.EntrySource = entry.EntrySource
+	r.MentionedByPersonUUID = entry.MentionedByPersonUUID
+	r.MentionedByPersonName = entry.MentionedByPersonName
 }
 
 func (r *TimelineFiltersRequest) ToEntity() entity.TimelineFilters {

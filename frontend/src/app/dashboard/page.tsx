@@ -10,6 +10,7 @@ import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/store
 import { useAllPeopleFromStore, useAllAISuggestions, useLoadDashboardData, useDashboardStats } from '@/lib/stores/peopleStore'
 import { Person } from '@/lib/types'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { CompanySelector } from '@/components/company/CompanySelector'
 import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
 import PersonModal, { PersonFormData } from '@/components/person/PersonModal'
@@ -186,14 +187,23 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AppHeader />
       <main className="container mx-auto px-4 py-6">
-        {/* Header */}
+        {/* Header with Company Selector */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Bem-vindo de volta! Aqui está um resumo do seu time na {activeCompany.name}.
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">
+                Dashboard
+              </h1>
+              <p className="text-muted-foreground">
+                {activeCompany 
+                  ? `Bem-vindo de volta! Aqui está um resumo do seu time na ${activeCompany.name}.`
+                  : 'Bem-vindo de volta! Selecione uma empresa para ver o dashboard.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <CompanySelector />
+            </div>
+          </div>
         </div>
 
       {/* Bento Grid Layout */}

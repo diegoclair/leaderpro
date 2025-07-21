@@ -320,8 +320,7 @@ func (r *userRepo) UpdateUserPreferences(ctx context.Context, userID int64, pref
 	query := `
 		UPDATE user_preferences
 		SET 
-			theme = ?,
-			updated_at = NOW()
+			theme = ?
 		WHERE user_id = ?
 	`
 

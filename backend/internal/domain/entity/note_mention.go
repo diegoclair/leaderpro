@@ -70,12 +70,9 @@ type UnifiedTimelineEntry struct {
 	FeedbackType     *string `json:"feedback_type,omitempty"`
 	FeedbackCategory *string `json:"feedback_category,omitempty"`
 	
-	// For direction identification
-	PersonName       *string `json:"person_name,omitempty"`       // Nome da pessoa sobre quem a nota foi feita (mentions)
-	SourcePersonName *string `json:"source_person_name,omitempty"` // Para mentions: pessoa sobre quem falou
-	
-	// Additional metadata for filtering
-	EntrySource string `json:"entry_source"` // "direct" for timeline, "mention" for mentions
+	// For mentions only - who mentioned this person
+	MentionedByPersonUUID *string `json:"mentioned_by_person_uuid,omitempty"`
+	MentionedByPersonName *string `json:"mentioned_by_person_name,omitempty"`
 }
 
 // TimelineFilters represents filters for the unified timeline endpoint

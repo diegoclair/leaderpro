@@ -21,7 +21,7 @@ export function PersonCard({
 }: PersonCardProps) {
   return (
     <Card 
-      className={`hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer ${className}`}
+      className={`person-card ${className}`}
       onClick={onClick}
     >
       <CardHeader className="pb-3">

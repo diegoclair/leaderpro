@@ -107,9 +107,9 @@ export function UnifiedTimeline({
       setCurrentPage(page)
       
       // Since we now have unified data, we set both activities and mentions to the same data
-      // but separate them in the filtering logic below for UI compatibility
-      const directActivities = timelineData.filter((item: any) => item.entry_source === 'direct')
-      const mentionActivities = timelineData.filter((item: any) => item.entry_source === 'mention')
+      // but separate them in the filtering logic below for UI compatibility  
+      const directActivities = timelineData.filter((item: any) => item.type !== 'mention')
+      const mentionActivities = timelineData.filter((item: any) => item.type === 'mention')
       
       // Always replace data for traditional pagination
       setActivities(directActivities)
@@ -202,19 +202,17 @@ export function UnifiedTimeline({
     return () => clearTimeout(timeoutId)
   }, [filters.searchQuery])
   
-  // Fetch data when person, company, or debounced search changes
+  // Fetch data when any dependency changes
   useEffect(() => {
     if (person && companyId) {
-      fetchTimelineData()
+      // Reset to page 1 when filters change, keep current page for search/pagination
+      const shouldResetPage = filters.types.length > 0 || filters.sentiment.length > 0 || 
+                              filters.direction !== 'all' || filters.period !== 'all' || 
+                              filters.quickView !== null || itemsPerPage !== 25
+      fetchTimelineData(shouldResetPage ? 1 : currentPage)
     }
-  }, [person, companyId, debouncedSearchQuery, fetchTimelineData])
-  
-  // Fetch data immediately when non-search filters change
-  useEffect(() => {
-    if (person && companyId) {
-      fetchTimelineData(1) // Reset to page 1 when filters change
-    }
-  }, [person, companyId, filters.types, filters.sentiment, filters.direction, filters.period, filters.quickView, itemsPerPage, fetchTimelineData])
+  }, [person, companyId, debouncedSearchQuery, filters.types, filters.sentiment, 
+      filters.direction, filters.period, filters.quickView, itemsPerPage, fetchTimelineData, currentPage])
 
   // Simply combine activities since filtering is now done server-side
   const filteredActivities = useMemo(() => {

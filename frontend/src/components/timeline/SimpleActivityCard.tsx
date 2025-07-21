@@ -41,8 +41,9 @@ export interface TimelineActivity {
   created_at: string
   feedback_type?: 'positive' | 'constructive' | 'neutral'
   feedback_category?: string
-  person_name?: string
-  entry_source?: string
+  // For mentions - who mentioned this person
+  mentioned_by_person_uuid?: string
+  mentioned_by_person_name?: string
 }
 
 interface SimpleActivityCardProps {
@@ -162,6 +163,13 @@ export function SimpleActivityCard({ activity, className = '', currentPersonUuid
           label: 'Observação',
           borderColor: 'border-l-green-400'
         }
+      case 'mention':
+        return { 
+          icon: <MessageSquare className="w-4 h-4" />, 
+          color: 'bg-purple-500',
+          label: 'Menção',
+          borderColor: 'border-l-purple-400'
+        }
       default:
         return { 
           icon: <MessageSquare className="w-4 h-4" />, 
@@ -175,7 +183,7 @@ export function SimpleActivityCard({ activity, className = '', currentPersonUuid
   const typeConfig = getTypeConfig()
 
   return (
-    <div className={`border-l-4 ${typeConfig.borderColor} bg-card p-3 rounded-r-lg shadow-sm hover:shadow-md transition-all duration-200 ${className}`}>
+    <div className={`border-l-4 ${typeConfig.borderColor} timeline-card border-l-0 p-4 rounded-r-lg ${className}`}>
       {/* Compact Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -183,15 +191,20 @@ export function SimpleActivityCard({ activity, className = '', currentPersonUuid
             {typeConfig.icon}
           </div>
           <span className="font-semibold text-foreground">{typeConfig.label}</span>
-          {activity.feedback_type && (
+          {activity.type !== 'mention' && activity.feedback_type && (
             <Badge variant={activity.feedback_type === 'positive' ? 'default' : 'secondary'} className="text-xs">
               {activity.feedback_type === 'positive' ? '✨ Positivo' : 
                activity.feedback_type === 'constructive' ? '🔨 Construtivo' : '⚪ Neutro'}
             </Badge>
           )}
-          {activity.feedback_category && (
+          {activity.type !== 'mention' && activity.feedback_category && (
             <Badge variant="outline" className="text-xs">
               {translateFeedbackCategory(activity.feedback_category)}
+            </Badge>
+          )}
+          {activity.type === 'mention' && activity.mentioned_by_person_name && (
+            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+              💬 Mencionado por: {activity.mentioned_by_person_name}
             </Badge>
           )}
         </div>

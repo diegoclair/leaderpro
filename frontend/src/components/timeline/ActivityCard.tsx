@@ -144,7 +144,7 @@ export function ActivityCard({
     : cleanContent
 
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${className}`}>
+    <Card className={`timeline-card ${className}`}>
       <CardContent className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">

@@ -303,7 +303,7 @@ export function FilterBar({
               <Button 
                 variant={advancedFilterCount > 0 ? "default" : "outline"} 
                 size="sm" 
-                className="h-8 gap-2"
+                className="h-8 gap-2 btn-interactive"
               >
                 <Filter className="h-3 w-3" />
                 Filtros Avançados

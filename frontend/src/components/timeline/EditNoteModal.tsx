@@ -38,16 +38,24 @@ export function EditNoteModal({
   onSave 
 }: EditNoteModalProps) {
   const [content, setContent] = useState('')
-  const [type, setType] = useState<'feedback' | 'one_on_one' | 'observation'>('observation')
+  const [type, setType] = useState<'feedback' | 'one_on_one' | 'observation' | 'mention'>('observation')
   const [feedbackType, setFeedbackType] = useState<'positive' | 'constructive' | 'neutral' | ''>('')
   const [feedbackCategory, setFeedbackCategory] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Determine if this is a read-only mention
+  const isReadOnlyMention = activity?.type === 'mention'
 
   // Reset form when activity changes
   useEffect(() => {
     if (activity) {
       setContent(activity.content || '')
-      setType(activity.type as 'feedback' | 'one_on_one' | 'observation')
+      // Handle mention type properly
+      if (activity.type === 'mention') {
+        setType('mention')
+      } else {
+        setType(activity.type as 'feedback' | 'one_on_one' | 'observation')
+      }
       setFeedbackType(activity.feedback_type || '')
       setFeedbackCategory(activity.feedback_category || 'none')
     }
@@ -85,9 +93,14 @@ export function EditNoteModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Editar Anotação</DialogTitle>
+          <DialogTitle>
+            {isReadOnlyMention ? 'Visualizar Menção' : 'Editar Anotação'}
+          </DialogTitle>
           <DialogDescription>
-            Faça as alterações necessárias na anotação abaixo.
+            {isReadOnlyMention 
+              ? 'Esta é uma menção de outra anotação e não pode ser editada.' 
+              : 'Faça as alterações necessárias na anotação abaixo.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -95,7 +108,7 @@ export function EditNoteModal({
           {/* Tipo da Nota */}
           <div className="space-y-2">
             <Label htmlFor="type">Tipo da Anotação</Label>
-            <Select value={type} onValueChange={(value) => setType(value as any)}>
+            <Select value={type} onValueChange={(value) => setType(value as any)} disabled={isReadOnlyMention}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
@@ -118,6 +131,15 @@ export function EditNoteModal({
                     1:1
                   </div>
                 </SelectItem>
+                {/* Menção não deve aparecer como opção editável */}
+                {type === 'mention' && (
+                  <SelectItem value="mention">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                      Menção
+                    </div>
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -126,7 +148,7 @@ export function EditNoteModal({
           {type === 'feedback' && (
             <div className="space-y-2">
               <Label htmlFor="feedback-type">Tipo de Feedback</Label>
-              <Select value={feedbackType} onValueChange={(value) => setFeedbackType(value as any)}>
+              <Select value={feedbackType} onValueChange={(value) => setFeedbackType(value as any)} disabled={isReadOnlyMention}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo de feedback" />
                 </SelectTrigger>
@@ -155,7 +177,7 @@ export function EditNoteModal({
           {type === 'feedback' && (
             <div className="space-y-2">
               <Label htmlFor="feedback-category">Categoria (Opcional)</Label>
-              <Select value={feedbackCategory} onValueChange={setFeedbackCategory}>
+              <Select value={feedbackCategory} onValueChange={setFeedbackCategory} disabled={isReadOnlyMention}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
@@ -176,6 +198,7 @@ export function EditNoteModal({
             <MentionsTextarea
               value={content}
               onChange={setContent}
+              disabled={isReadOnlyMention}
               people={allPeople}
               placeholder={
                 type === 'feedback' 
@@ -193,6 +216,11 @@ export function EditNoteModal({
 
           {/* Preview das badges como na visualização */}
           <div className="flex gap-2 flex-wrap">
+            {isReadOnlyMention && activity?.mentioned_by_person_name && (
+              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                💬 Mencionado por: {activity.mentioned_by_person_name}
+              </Badge>
+            )}
             {type === 'feedback' && feedbackType && (
               <Badge variant={feedbackType === 'positive' ? 'default' : 'secondary'} className="text-xs">
                 {feedbackType === 'positive' ? '✨ Positivo' : 
@@ -209,22 +237,24 @@ export function EditNoteModal({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleClose}>
-            Cancelar
+            {isReadOnlyMention ? 'Fechar' : 'Cancelar'}
           </Button>
-          <Button 
-            type="button" 
-            onClick={handleSave}
-            disabled={!content.trim() || isLoading}
-          >
-            {isLoading ? (
-              <>
-                <LoadingSpinner size="small" className="mr-2" />
-                Salvando...
-              </>
-            ) : (
-              'Salvar Alterações'
-            )}
-          </Button>
+          {!isReadOnlyMention && (
+            <Button 
+              type="button" 
+              onClick={handleSave}
+              disabled={!content.trim() || isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="small" className="mr-2" />
+                  Salvando...
+                </>
+              ) : (
+                'Salvar Alterações'
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

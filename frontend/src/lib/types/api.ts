@@ -68,9 +68,7 @@ export interface CompaniesResponse {
   companies: ApiCompany[]
 }
 
-export interface CompanyCreateResponse {
-  company: ApiCompany
-}
+export type CompanyCreateResponse = ApiCompany
 
 export interface CompanyResponse {
   company: ApiCompany

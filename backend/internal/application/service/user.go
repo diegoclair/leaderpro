@@ -229,13 +229,11 @@ func (s *userService) GetUserPreferences(ctx context.Context) (entity.UserPrefer
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
-	// Get logged user ID
 	userID, err := s.GetLoggedUserID(ctx)
 	if err != nil {
 		return entity.UserPreferences{}, err
 	}
 
-	// Get user preferences
 	preferences, err := s.dm.User().GetUserPreferences(ctx, userID)
 	if err != nil {
 		if mysqlutils.SQLNotFound(err.Error()) {
@@ -244,16 +242,17 @@ func (s *userService) GetUserPreferences(ctx context.Context) (entity.UserPrefer
 				UserID: userID,
 			}
 			defaultPreferences.SetDefaults()
-			
+
 			_, createErr := s.dm.User().CreateUserPreferences(ctx, defaultPreferences)
 			if createErr != nil {
 				s.log.Errorw(ctx, "error creating default preferences", logger.Err(createErr))
 				return preferences, createErr
 			}
-			
+
 			// Return the created preferences
 			return s.dm.User().GetUserPreferences(ctx, userID)
 		}
+
 		s.log.Errorw(ctx, "error getting user preferences", logger.Err(err))
 		return preferences, err
 	}
@@ -265,16 +264,13 @@ func (s *userService) UpdateUserPreferences(ctx context.Context, preferences ent
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
-	// Get logged user ID
 	userID, err := s.GetLoggedUserID(ctx)
 	if err != nil {
 		return preferences, err
 	}
 
-	// Ensure the preferences belong to the logged user
 	preferences.UserID = userID
 
-	// Update preferences
 	err = s.dm.User().UpdateUserPreferences(ctx, userID, preferences)
 	if err != nil {
 		s.log.Errorw(ctx, "error updating user preferences", logger.Err(err))
@@ -286,6 +282,5 @@ func (s *userService) UpdateUserPreferences(ctx context.Context, preferences ent
 		logger.String("theme", preferences.Theme),
 	)
 
-	// Return updated preferences
 	return s.dm.User().GetUserPreferences(ctx, userID)
 }

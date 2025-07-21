@@ -4,9 +4,9 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Settings, Palette, User } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useThemePreferences } from '@/hooks/useThemePreferences'
@@ -74,34 +74,24 @@ export default function SettingsPage() {
         {/* Appearance Settings */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              <CardTitle>Aparência</CardTitle>
-            </div>
+            <CardTitle>Aparência</CardTitle>
             <CardDescription>
-              Personalize a aparência da aplicação
+              Personalize como a aplicação será exibida
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="theme">Tema</Label>
-              <Select
-                value={theme || 'light'}
-                onValueChange={handleThemeChange}
+          <CardContent>
+            <div className="flex items-center justify-between py-2">
+              <div className="space-y-0.5">
+                <Label className="text-base">Tema</Label>
+                <p className="text-sm text-muted-foreground">
+                  Escolha entre o tema claro ou escuro
+                </p>
+              </div>
+              <ThemeToggle
+                theme={theme || 'light'}
+                onThemeChange={handleThemeChange}
                 disabled={isSaving}
-              >
-                <SelectTrigger id="theme" className="w-full">
-                  <SelectValue placeholder="Selecione um tema" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Claro</SelectItem>
-                  <SelectItem value="dark">Escuro</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                {(theme || 'light') === 'light' && 'Tema claro selecionado'}
-                {(theme || 'light') === 'dark' && 'Tema escuro selecionado'}
-              </p>
+              />
             </div>
           </CardContent>
         </Card>
@@ -109,18 +99,23 @@ export default function SettingsPage() {
         {/* Profile Settings Placeholder */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              <CardTitle>Perfil</CardTitle>
-            </div>
+            <CardTitle>Perfil</CardTitle>
             <CardDescription>
               Gerencie as informações do seu perfil
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              Edição de perfil será implementada em breve...
-            </p>
+            <div className="flex items-center justify-between py-2">
+              <div className="space-y-0.5">
+                <Label className="text-base">Editar perfil</Label>
+                <p className="text-sm text-muted-foreground">
+                  Altere suas informações pessoais e de contato
+                </p>
+              </div>
+              <Button variant="outline" disabled>
+                Em breve
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

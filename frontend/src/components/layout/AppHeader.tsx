@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { CompanySelector } from '../company/CompanySelector'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { getInitials } from '@/lib/utils/names'
 
@@ -36,8 +35,8 @@ export function AppHeader({ className }: AppHeaderProps) {
   return (
     <header className={`border-b bg-background px-6 py-4 ${className || ''}`}>
       <div className="flex items-center justify-between">
-        {/* Logo and Company Selector */}
-        <div className="flex items-center gap-6">
+        {/* Logo */}
+        <div className="flex items-center">
           <div 
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => router.push('/dashboard')}
@@ -54,8 +53,6 @@ export function AppHeader({ className }: AppHeaderProps) {
               </span>
             </div>
           </div>
-          
-          <CompanySelector />
         </div>
 
         {/* Navigation and User Menu */}
@@ -65,7 +62,7 @@ export function AppHeader({ className }: AppHeaderProps) {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="gap-2"
+              className="gap-2 btn-interactive"
               onClick={() => router.push('/dashboard')}
             >
               <Building2 className="h-4 w-4" />
@@ -78,7 +75,7 @@ export function AppHeader({ className }: AppHeaderProps) {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full micro-lift">
                 <Avatar className="h-9 w-9">
                   <AvatarFallback className="bg-slate-100 text-slate-600">
                     {user ? getInitials(user.name) : 'U'}

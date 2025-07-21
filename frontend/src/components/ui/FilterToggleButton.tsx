@@ -28,7 +28,7 @@ export function FilterToggleButton({
       variant={isActive ? "default" : "outline"}
       size="sm"
       onClick={onClick}
-      className={`h-8 text-sm gap-2 ${className}`}
+      className={`h-8 text-sm gap-2 btn-interactive ${className}`}
     >
       <Icon className="h-3 w-3" />
       {name}

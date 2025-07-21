@@ -46,23 +46,24 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  /* Tema Claro Melhorado - Hierarquia Visual */
+  --background: oklch(0.995 0.002 264.695);    /* Background quase branco, muito sutil */
+  --foreground: oklch(0.15 0.042 264.695);     /* Texto cinza escuro (não preto puro) */
+  --card: oklch(1 0 0);                        /* Cards brancos puros para contraste máximo */
+  --card-foreground: oklch(0.15 0.042 264.695);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
+  --popover-foreground: oklch(0.15 0.042 264.695);
   --primary: oklch(0.208 0.042 265.755);
   --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
+  --secondary: oklch(0.97 0.005 247.896);      /* Cinza bem mais claro para secundários */
   --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
+  --muted: oklch(0.97 0.005 247.896);          /* Background muted mais claro */
+  --muted-foreground: oklch(0.48 0.035 257.417); /* Texto muted mais legível */
+  --accent: oklch(0.955 0.008 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
+  --border: oklch(0.9 0.015 255.508);          /* Bordas mais visíveis */
+  --input: oklch(0.9 0.015 255.508);
   --ring: oklch(0.704 0.04 256.788);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -80,23 +81,24 @@
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
+  /* Tema Escuro Melhorado - Hierarquia Visual */
+  --background: oklch(0.11 0.035 264.695);     /* Background escuro mais suave */
+  --foreground: oklch(0.94 0.005 247.858);     /* Texto off-white (não branco puro) */
+  --card: oklch(0.17 0.035 265.755);           /* Cards com contraste sutil */
+  --card-foreground: oklch(0.94 0.005 247.858);
+  --popover: oklch(0.17 0.035 265.755);
+  --popover-foreground: oklch(0.94 0.005 247.858);
   --primary: oklch(0.929 0.013 255.508);
   --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.24 0.035 260.031);      /* Secundários mais sutis */
+  --secondary-foreground: oklch(0.94 0.005 247.858);
+  --muted: oklch(0.24 0.035 260.031);          /* Background muted equilibrado */
+  --muted-foreground: oklch(0.65 0.025 256.788); /* Texto muted mais legível */
+  --accent: oklch(0.24 0.035 260.031);
+  --accent-foreground: oklch(0.94 0.005 247.858);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(0.3 0.025 264.695);          /* Bordas mais visíveis no escuro */
+  --input: oklch(0.25 0.03 264.695);           /* Inputs com melhor contraste */
   --ring: oklch(0.551 0.027 264.364);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
@@ -119,5 +121,69 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Sistema de Animação Refinado - Inspirado em GitHub, Linear, Stripe */
+  
+  /* Cards - Efeito sutil com lift */
+  .card-interactive {
+    @apply bg-card border shadow-sm cursor-pointer;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-md hover:-translate-y-0.5;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    @apply active:translate-y-0 active:shadow-sm;
+  }
+  
+  /* Cards pessoas - Efeito GitHub style */
+  .person-card {
+    @apply bg-card border shadow-sm cursor-pointer;
+    @apply transition-all duration-150 ease-out;
+    @apply hover:shadow-lg hover:border-primary/20 hover:-translate-y-1;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+    @apply active:translate-y-0 active:shadow-md;
+  }
+  
+  /* Timeline cards - Efeito Linear style */
+  .timeline-card {
+    @apply bg-card border shadow-sm;
+    @apply transition-all duration-150 ease-out;
+    @apply hover:shadow-md hover:-translate-y-0.5 hover:border-border/60;
+  }
+  
+  /* Botões - Micro-feedback Stripe style */
+  .btn-interactive {
+    @apply transition-all duration-150 ease-out;
+    @apply hover:-translate-y-0.5 hover:shadow-sm;
+    @apply active:translate-y-0 active:shadow-none;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+  
+  /* Loading states elegantes */
+  .loading-fade {
+    @apply animate-pulse;
+  }
+  
+  .loading-slide {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  /* Micro-interactions */
+  .micro-lift {
+    @apply transition-transform duration-100 ease-out;
+    @apply hover:-translate-y-0.5 active:translate-y-0;
+  }
+  
+  .micro-scale {
+    @apply transition-transform duration-100 ease-out;
+    @apply hover:scale-105 active:scale-100;
+  }
+  
+  /* Estados de feedback */
+  .success-bounce {
+    @apply animate-bounce;
+    animation-iteration-count: 2;
+    animation-duration: 0.6s;
   }
 }

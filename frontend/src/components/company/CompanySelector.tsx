@@ -13,11 +13,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useActiveCompany, useCompanies, useSetActiveCompany, useAddCompany, useLoadCompanies } from '@/lib/stores/companyStore'
 import CompanyModal, { CompanyFormData } from './CompanyModal'
 import { apiClient } from '@/lib/stores/authStore'
 import { useNotificationStore } from '@/lib/stores/notificationStore'
-import type { CompanyCreateResponse, ApiCompany } from '@/lib/types/api'
+import type { CompanyCreateResponse } from '@/lib/types/api'
 
 export function CompanySelector() {
   const activeCompany = useActiveCompany()
@@ -29,6 +35,12 @@ export function CompanySelector() {
   
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false)
   const [isCreatingCompany, setIsCreatingCompany] = useState(false)
+
+  // Helper function to truncate company name intelligently
+  const truncateCompanyName = (name: string, maxLength: number = 30) => {
+    if (name.length <= maxLength) return name
+    return name.substring(0, maxLength) + '...'
+  }
 
   const handleCompanySelect = (companyId: string) => {
     const company = companies.find(c => c.id === companyId)
@@ -46,15 +58,15 @@ export function CompanySelector() {
       
       // Convert response to frontend format
       const newCompany = {
-        id: response.company.uuid,
-        uuid: response.company.uuid,
-        name: response.company.name,
-        industry: response.company.industry || '',
-        size: response.company.size || '',
-        role: response.company.role || '',
-        isDefault: response.company.is_default || false,
-        createdAt: new Date(response.company.created_at),
-        updatedAt: new Date(response.company.updated_at)
+        id: response.uuid,
+        uuid: response.uuid,
+        name: response.name,
+        industry: response.industry || '',
+        size: response.size || '',
+        role: response.role || '',
+        isDefault: response.is_default || false,
+        createdAt: new Date(response.created_at),
+        updatedAt: new Date(response.updated_at)
       }
 
       // Update store
@@ -81,27 +93,56 @@ export function CompanySelector() {
   }
 
   return (
-    <>
+    <TooltipProvider>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            className="w-64 justify-between"
-          >
-            <div className="flex items-center gap-2">
-              <span className="truncate">
-                {activeCompany?.name || 'Selecionar empresa...'}
-              </span>
-              {activeCompany?.isDefault && (
-                <Badge variant="secondary" className="text-xs">
-                  Atual
-                </Badge>
-              )}
-            </div>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
+        {activeCompany?.name && activeCompany.name.length > 28 ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-64 justify-between"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="truncate text-left">
+                      {truncateCompanyName(activeCompany.name, 28)}
+                    </span>
+                    {activeCompany?.isDefault && (
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        Atual
+                      </Badge>
+                    )}
+                  </div>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{activeCompany.name}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              className="w-64 justify-between"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="truncate text-left">
+                  {activeCompany?.name || 'Selecionar empresa...'}
+                </span>
+                {activeCompany?.isDefault && (
+                  <Badge variant="secondary" className="text-xs shrink-0">
+                    Atual
+                  </Badge>
+                )}
+              </div>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+        )}
         <DropdownMenuContent className="w-64 p-0">
           <DropdownMenuLabel className="px-2 py-1.5 text-sm font-normal">
             Suas empresas
@@ -109,25 +150,35 @@ export function CompanySelector() {
           <DropdownMenuSeparator />
           
           {companies.map((company) => (
-            <DropdownMenuItem
-              key={company.id}
-              className="flex items-center justify-between px-2 py-2"
-              onClick={() => handleCompanySelect(company.id)}
-            >
-              <div className="flex items-center gap-2">
-                <Check
-                  className={`h-4 w-4 ${
-                    activeCompany?.id === company.id ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-                <span className="truncate">{company.name}</span>
-              </div>
-              {company.isDefault && (
-                <Badge variant="secondary" className="text-xs">
-                  Atual
-                </Badge>
+            <Tooltip key={company.id}>
+              <TooltipTrigger asChild>
+                <DropdownMenuItem
+                  className="flex items-center justify-between px-2 py-2 cursor-pointer"
+                  onClick={() => handleCompanySelect(company.id)}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Check
+                      className={`h-4 w-4 shrink-0 ${
+                        activeCompany?.id === company.id ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    />
+                    <span className="truncate text-left">
+                      {truncateCompanyName(company.name, 32)}
+                    </span>
+                  </div>
+                  {company.isDefault && (
+                    <Badge variant="secondary" className="text-xs shrink-0">
+                      Atual
+                    </Badge>
+                  )}
+                </DropdownMenuItem>
+              </TooltipTrigger>
+              {company.name.length > 32 && (
+                <TooltipContent>
+                  <p>{company.name}</p>
+                </TooltipContent>
               )}
-            </DropdownMenuItem>
+            </Tooltip>
           ))}
           
           <DropdownMenuSeparator />
@@ -148,6 +199,6 @@ export function CompanySelector() {
         onSubmit={handleCreateCompany}
         isLoading={isCreatingCompany}
       />
-    </>
+    </TooltipProvider>
   )
 }
