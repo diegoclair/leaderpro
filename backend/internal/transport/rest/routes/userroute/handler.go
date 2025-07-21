@@ -89,3 +89,32 @@ func (s *Handler) handleUpdateProfile(c echo.Context) error {
 	response := viewmodel.FromEntityUser(user)
 	return routeutils.ResponseAPIOk(c, response)
 }
+
+func (s *Handler) handleGetUserPreferences(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	preferences, err := s.userService.GetUserPreferences(ctx)
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	return routeutils.ResponseAPIOk(c, viewmodel.FromEntityUserPreferences(preferences))
+}
+
+func (s *Handler) handleUpdateUserPreferences(c echo.Context) error {
+	ctx := routeutils.GetContext(c)
+
+	input := viewmodel.UpdateUserPreferences{}
+	err := c.Bind(&input)
+	if err != nil {
+		return routeutils.ResponseInvalidRequestBody(c, err)
+	}
+
+	preferences, err := s.userService.UpdateUserPreferences(ctx, input.ToEntity())
+	if err != nil {
+		return routeutils.HandleError(c, err)
+	}
+
+	response := viewmodel.FromEntityUserPreferences(preferences)
+	return routeutils.ResponseAPIOk(c, response)
+}

@@ -132,6 +132,21 @@ func (mr *MockUserAppMockRecorder) GetUserByUUID(ctx, userUUID any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUUID", reflect.TypeOf((*MockUserApp)(nil).GetUserByUUID), ctx, userUUID)
 }
 
+// GetUserPreferences mocks base method.
+func (m *MockUserApp) GetUserPreferences(ctx context.Context) (entity.UserPreferences, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserPreferences", ctx)
+	ret0, _ := ret[0].(entity.UserPreferences)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserPreferences indicates an expected call of GetUserPreferences.
+func (mr *MockUserAppMockRecorder) GetUserPreferences(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPreferences", reflect.TypeOf((*MockUserApp)(nil).GetUserPreferences), ctx)
+}
+
 // UpdateProfile mocks base method.
 func (m *MockUserApp) UpdateProfile(ctx context.Context, user entity.User) (entity.User, error) {
 	m.ctrl.T.Helper()
@@ -159,6 +174,21 @@ func (m *MockUserApp) UpdateUser(ctx context.Context, userUUID string, user enti
 func (mr *MockUserAppMockRecorder) UpdateUser(ctx, userUUID, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserApp)(nil).UpdateUser), ctx, userUUID, user)
+}
+
+// UpdateUserPreferences mocks base method.
+func (m *MockUserApp) UpdateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (entity.UserPreferences, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPreferences", ctx, preferences)
+	ret0, _ := ret[0].(entity.UserPreferences)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserPreferences indicates an expected call of UpdateUserPreferences.
+func (mr *MockUserAppMockRecorder) UpdateUserPreferences(ctx, preferences any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPreferences", reflect.TypeOf((*MockUserApp)(nil).UpdateUserPreferences), ctx, preferences)
 }
 
 // MockAuthApp is a mock of AuthApp interface.

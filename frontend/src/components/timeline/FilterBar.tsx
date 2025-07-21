@@ -244,10 +244,10 @@ export function FilterBar({
         </div>
       </div>
 
-      {/* Quick Views */}
+      {/* Filtros Rápidos */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">Quick Views:</h3>
+          <h3 className="text-sm font-medium">Filtros Rápidos:</h3>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
               {totalItems > 0 ? `${totalItems} atividades encontradas` : 'Nenhuma atividade'}

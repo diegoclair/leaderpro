@@ -13,9 +13,11 @@ import (
 const GroupRouteName = "users"
 
 const (
-	RootUserRoute      = ""
-	GetProfileRoute    = "/profile"
-	UpdateProfileRoute = "/profile"
+	RootUserRoute           = ""
+	GetProfileRoute         = "/profile"
+	UpdateProfileRoute      = "/profile"
+	GetPreferencesRoute     = "/preferences"
+	UpdatePreferencesRoute  = "/preferences"
 )
 
 type UserRouter struct {
@@ -62,6 +64,29 @@ func (r *UserRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 			{
 				StatusCode: http.StatusOK,
 				Body:       viewmodel.User{},
+			},
+		}).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	privateRouter.GET(GetPreferencesRoute, r.ctrl.handleGetUserPreferences).
+		Summary("Get User Preferences").
+		Description("Get the current user's preferences").
+		Returns([]models.ReturnType{
+			{
+				StatusCode: http.StatusOK,
+				Body:       viewmodel.UserPreferences{},
+			},
+		}).
+		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
+
+	privateRouter.PUT(UpdatePreferencesRoute, r.ctrl.handleUpdateUserPreferences).
+		Summary("Update User Preferences").
+		Description("Update the current user's preferences").
+		Read(viewmodel.UpdateUserPreferences{}).
+		Returns([]models.ReturnType{
+			{
+				StatusCode: http.StatusOK,
+				Body:       viewmodel.UserPreferences{},
 			},
 		}).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)

@@ -224,3 +224,68 @@ func (s *userService) UpdateProfile(ctx context.Context, user entity.User) (enti
 
 	return updatedUser, nil
 }
+
+func (s *userService) GetUserPreferences(ctx context.Context) (entity.UserPreferences, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get logged user ID
+	userID, err := s.GetLoggedUserID(ctx)
+	if err != nil {
+		return entity.UserPreferences{}, err
+	}
+
+	// Get user preferences
+	preferences, err := s.dm.User().GetUserPreferences(ctx, userID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			// Create default preferences if not found
+			defaultPreferences := entity.UserPreferences{
+				UserID: userID,
+			}
+			defaultPreferences.SetDefaults()
+			
+			_, createErr := s.dm.User().CreateUserPreferences(ctx, defaultPreferences)
+			if createErr != nil {
+				s.log.Errorw(ctx, "error creating default preferences", logger.Err(createErr))
+				return preferences, createErr
+			}
+			
+			// Return the created preferences
+			return s.dm.User().GetUserPreferences(ctx, userID)
+		}
+		s.log.Errorw(ctx, "error getting user preferences", logger.Err(err))
+		return preferences, err
+	}
+
+	return preferences, nil
+}
+
+func (s *userService) UpdateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (entity.UserPreferences, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get logged user ID
+	userID, err := s.GetLoggedUserID(ctx)
+	if err != nil {
+		return preferences, err
+	}
+
+	// Ensure the preferences belong to the logged user
+	preferences.UserID = userID
+
+	// Update preferences
+	err = s.dm.User().UpdateUserPreferences(ctx, userID, preferences)
+	if err != nil {
+		s.log.Errorw(ctx, "error updating user preferences", logger.Err(err))
+		return preferences, err
+	}
+
+	s.log.Infow(ctx, "user preferences updated successfully",
+		logger.Int64("user_id", userID),
+		logger.String("theme", preferences.Theme),
+	)
+
+	// Return updated preferences
+	return s.dm.User().GetUserPreferences(ctx, userID)
+}

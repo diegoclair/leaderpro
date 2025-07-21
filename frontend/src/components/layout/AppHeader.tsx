@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { CompanySelector } from '../company/CompanySelector'
-import { ThemeToggle } from './ThemeToggle'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { getInitials } from '@/lib/utils/names'
 
@@ -74,8 +73,7 @@ export function AppHeader({ className }: AppHeaderProps) {
             </Button>
           </nav>
 
-          {/* Theme Toggle */}
-          <ThemeToggle />
+          {/* Theme Toggle - Moved to Settings Page */}
 
           {/* User Menu */}
           <DropdownMenu>
@@ -100,7 +98,7 @@ export function AppHeader({ className }: AppHeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem className="gap-2" onClick={() => router.push('/settings')}>
                 <Settings className="h-4 w-4" />
                 Configurações
               </DropdownMenuItem>

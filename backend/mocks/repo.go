@@ -235,6 +235,21 @@ func (mr *MockUserRepoMockRecorder) CreateUser(ctx, user any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), ctx, user)
 }
 
+// CreateUserPreferences mocks base method.
+func (m *MockUserRepo) CreateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserPreferences", ctx, preferences)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUserPreferences indicates an expected call of CreateUserPreferences.
+func (mr *MockUserRepoMockRecorder) CreateUserPreferences(ctx, preferences any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserPreferences", reflect.TypeOf((*MockUserRepo)(nil).CreateUserPreferences), ctx, preferences)
+}
+
 // GetUserByEmail mocks base method.
 func (m *MockUserRepo) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	m.ctrl.T.Helper()
@@ -280,6 +295,21 @@ func (mr *MockUserRepoMockRecorder) GetUserIDByUUID(ctx, userUUID any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIDByUUID", reflect.TypeOf((*MockUserRepo)(nil).GetUserIDByUUID), ctx, userUUID)
 }
 
+// GetUserPreferences mocks base method.
+func (m *MockUserRepo) GetUserPreferences(ctx context.Context, userID int64) (entity.UserPreferences, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserPreferences", ctx, userID)
+	ret0, _ := ret[0].(entity.UserPreferences)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserPreferences indicates an expected call of GetUserPreferences.
+func (mr *MockUserRepoMockRecorder) GetUserPreferences(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPreferences", reflect.TypeOf((*MockUserRepo)(nil).GetUserPreferences), ctx, userID)
+}
+
 // UpdateLastLogin mocks base method.
 func (m *MockUserRepo) UpdateLastLogin(ctx context.Context, userID int64) error {
 	m.ctrl.T.Helper()
@@ -306,6 +336,20 @@ func (m *MockUserRepo) UpdateUser(ctx context.Context, userID int64, user entity
 func (mr *MockUserRepoMockRecorder) UpdateUser(ctx, userID, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepo)(nil).UpdateUser), ctx, userID, user)
+}
+
+// UpdateUserPreferences mocks base method.
+func (m *MockUserRepo) UpdateUserPreferences(ctx context.Context, userID int64, preferences entity.UserPreferences) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPreferences", ctx, userID, preferences)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserPreferences indicates an expected call of UpdateUserPreferences.
+func (mr *MockUserRepoMockRecorder) UpdateUserPreferences(ctx, userID, preferences any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPreferences", reflect.TypeOf((*MockUserRepo)(nil).UpdateUserPreferences), ctx, userID, preferences)
 }
 
 // MockCompanyRepo is a mock of CompanyRepo interface.

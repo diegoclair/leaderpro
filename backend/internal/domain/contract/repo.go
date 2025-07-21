@@ -31,6 +31,11 @@ type UserRepo interface {
 	GetUserIDByUUID(ctx context.Context, userUUID string) (userID int64, err error)
 	UpdateUser(ctx context.Context, userID int64, user entity.User) (err error)
 	UpdateLastLogin(ctx context.Context, userID int64) (err error)
+	
+	// User Preferences
+	GetUserPreferences(ctx context.Context, userID int64) (preferences entity.UserPreferences, err error)
+	CreateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (createdID int64, err error)
+	UpdateUserPreferences(ctx context.Context, userID int64, preferences entity.UserPreferences) (err error)
 }
 
 type CompanyRepo interface {

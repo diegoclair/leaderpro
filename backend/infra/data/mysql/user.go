@@ -39,6 +39,17 @@ const userSelectBase string = `
 	FROM tab_user u
 `
 
+const userPreferencesSelectBase string = `
+	SELECT 
+		up.id,
+		up.user_id,
+		up.theme,
+		up.created_at,
+		up.updated_at
+	
+	FROM user_preferences up
+`
+
 func (r *userRepo) parseUser(row scanner) (user entity.User, err error) {
 	err = row.Scan(
 		&user.ID,
@@ -231,6 +242,99 @@ func (r *userRepo) UpdateLastLogin(ctx context.Context, userID int64) (err error
 	defer stmt.Close()
 
 	_, err = stmt.ExecContext(ctx, userID)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+
+	return nil
+}
+
+func (r *userRepo) parseUserPreferences(row scanner) (preferences entity.UserPreferences, err error) {
+	err = row.Scan(
+		&preferences.ID,
+		&preferences.UserID,
+		&preferences.Theme,
+		&preferences.CreatedAt,
+		&preferences.UpdatedAt,
+	)
+
+	if err != nil {
+		return preferences, err
+	}
+
+	return preferences, nil
+}
+
+func (r *userRepo) GetUserPreferences(ctx context.Context, userID int64) (preferences entity.UserPreferences, err error) {
+	query := userPreferencesSelectBase + `
+		WHERE up.user_id = ?
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return preferences, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, userID)
+	preferences, err = r.parseUserPreferences(row)
+	if err != nil {
+		return preferences, mysqlutils.HandleMySQLError(err)
+	}
+
+	return preferences, nil
+}
+
+func (r *userRepo) CreateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (createdID int64, err error) {
+	query := `
+		INSERT INTO user_preferences (
+			user_id,
+			theme
+		) 
+		VALUES (?, ?);
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return createdID, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.ExecContext(ctx,
+		preferences.UserID,
+		preferences.Theme,
+	)
+	if err != nil {
+		return createdID, mysqlutils.HandleMySQLError(err)
+	}
+
+	createdID, err = result.LastInsertId()
+	if err != nil {
+		return createdID, mysqlutils.HandleMySQLError(err)
+	}
+
+	return createdID, nil
+}
+
+func (r *userRepo) UpdateUserPreferences(ctx context.Context, userID int64, preferences entity.UserPreferences) (err error) {
+	query := `
+		UPDATE user_preferences
+		SET 
+			theme = ?,
+			updated_at = NOW()
+		WHERE user_id = ?
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx,
+		preferences.Theme,
+		userID,
+	)
 	if err != nil {
 		return mysqlutils.HandleMySQLError(err)
 	}

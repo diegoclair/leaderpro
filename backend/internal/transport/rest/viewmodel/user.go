@@ -68,3 +68,23 @@ func FromEntityUser(user entity.User) User {
 		EmailVerified: user.EmailVerified,
 	}
 }
+
+type UpdateUserPreferences struct {
+	Theme string `json:"theme" validate:"required,oneof=light dark"`
+}
+
+func (u *UpdateUserPreferences) ToEntity() entity.UserPreferences {
+	return entity.UserPreferences{
+		Theme: u.Theme,
+	}
+}
+
+type UserPreferences struct {
+	Theme string `json:"theme"`
+}
+
+func FromEntityUserPreferences(preferences entity.UserPreferences) UserPreferences {
+	return UserPreferences{
+		Theme: preferences.Theme,
+	}
+}

@@ -39,3 +39,23 @@ func (u *User) IsTrialActive() bool {
 func (u *User) HasActiveSubscription() bool {
 	return u.SubscribedAt != nil && u.Plan != ""
 }
+
+// UserPreferences represents user preferences and settings
+type UserPreferences struct {
+	ID     int64
+	UserID int64
+	
+	// Appearance
+	Theme string // system, light, dark
+	
+	// Metadata
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// SetDefaults sets default values for user preferences
+func (p *UserPreferences) SetDefaults() {
+	if p.Theme == "" {
+		p.Theme = "light"
+	}
+}

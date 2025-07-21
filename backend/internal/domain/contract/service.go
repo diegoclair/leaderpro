@@ -16,6 +16,10 @@ type UserApp interface {
 	GetProfile(ctx context.Context) (user entity.User, err error)
 	UpdateProfile(ctx context.Context, user entity.User) (updatedUser entity.User, err error)
 	UpdateUser(ctx context.Context, userUUID string, user entity.User) (err error)
+	
+	// User Preferences
+	GetUserPreferences(ctx context.Context) (preferences entity.UserPreferences, err error)
+	UpdateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (updatedPreferences entity.UserPreferences, err error)
 }
 
 type AuthApp interface {
