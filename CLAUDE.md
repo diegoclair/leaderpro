@@ -406,6 +406,7 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - `000002_create_note_tables.sql` - Notes and mentions system  
 - `000003_add_gender_to_person.sql` - Gender field for contextual text
 - `000004_create_address_table.sql` - Address management
+- `000005_create_user_preferences.sql` - User preferences with theme support
 
 ### Running Migrations
 Migrations run automatically on backend startup. Check `backend/cmd/main.go` for migration logic.

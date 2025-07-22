@@ -338,9 +338,9 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		LEFT JOIN tab_note_mention nm ON n.note_id = nm.note_id AND nm.mentioned_person_id = ?
 		LEFT JOIN tab_person mp ON n.person_id = mp.person_id
 		WHERE (n.person_id = ? OR nm.mentioned_person_id = ?) AND n.deleted_at IS NULL`
-	
-	args := []interface{}{personID, personID, personID}
-	
+
+	args := []any{personID, personID, personID}
+
 	// Apply filters
 	if filters.SearchQuery != "" {
 		searchCondition := ` AND (n.content LIKE ? OR u.name LIKE ? OR n.feedback_category LIKE ? OR n.feedback_type LIKE ?)`
@@ -348,13 +348,13 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		query += searchCondition
 		args = append(args, searchValue, searchValue, searchValue, searchValue)
 	}
-	
+
 	// Apply type filters
 	if len(filters.Types) > 0 {
 		hasDirectTypes := false
 		hasMentionType := false
 		var directTypes []string
-		
+
 		for _, t := range filters.Types {
 			if t == "mention" {
 				hasMentionType = true
@@ -363,7 +363,7 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 				directTypes = append(directTypes, t)
 			}
 		}
-		
+
 		if hasDirectTypes && hasMentionType {
 			// Both direct and mention types
 			placeholders := make([]string, len(directTypes))
@@ -385,7 +385,7 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 			query += ` AND nm.mention_id IS NOT NULL`
 		}
 	}
-	
+
 	// Apply feedback type filters
 	if len(filters.FeedbackTypes) > 0 {
 		placeholders := make([]string, len(filters.FeedbackTypes))
@@ -395,7 +395,7 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		}
 		query += ` AND n.feedback_type IN (` + joinStringSlice(placeholders, ",") + `)`
 	}
-	
+
 	// Apply period filter
 	if filters.Period != "" && filters.Period != "all" {
 		var dateCondition string
@@ -415,25 +415,25 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 			query += dateCondition
 		}
 	}
-	
+
 	// Count total records (simplified)
 	countQuery := query
 	countQuerySelect := `SELECT COUNT(*) FROM (`
 	countQueryEnd := `) as subquery`
 	fullCountQuery := countQuerySelect + countQuery + countQueryEnd
-	
+
 	stmt, err := r.db.PrepareContext(ctx, fullCountQuery)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
 	defer stmt.Close()
-	
+
 	row := stmt.QueryRowContext(ctx, args...)
 	err = row.Scan(&totalRecords)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
-	
+
 	// Add ordering and pagination
 	query += ` ORDER BY n.created_at DESC`
 	if take > 0 {
@@ -444,25 +444,25 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 			args = append(args, skip)
 		}
 	}
-	
+
 	// Execute main query
 	stmt2, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
 	defer stmt2.Close()
-	
+
 	rows, err := stmt2.QueryContext(ctx, args...)
 	if err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
 	defer rows.Close()
-	
+
 	for rows.Next() {
 		var entry entity.UnifiedTimelineEntry
 		var feedbackType, feedbackCategory sql.NullString
 		var mentionedByPersonUUID, mentionedByPersonName sql.NullString
-		
+
 		err = rows.Scan(
 			&entry.UUID, &entry.Type, &entry.Content,
 			&entry.AuthorName, &entry.CreatedAt,
@@ -472,7 +472,7 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		if err != nil {
 			return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 		}
-		
+
 		// Handle nullable fields
 		if feedbackType.Valid {
 			entry.FeedbackType = &feedbackType.String
@@ -486,14 +486,14 @@ func (r *noteRepo) GetPersonTimeline(ctx context.Context, personID int64, filter
 		if mentionedByPersonName.Valid {
 			entry.MentionedByPersonName = &mentionedByPersonName.String
 		}
-		
+
 		timeline = append(timeline, entry)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return timeline, totalRecords, mysqlutils.HandleMySQLError(err)
 	}
-	
+
 	return timeline, totalRecords, nil
 }
 
