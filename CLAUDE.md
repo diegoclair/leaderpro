@@ -18,6 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Testing**: Testcontainers + go-sqlmock for unit/integration tests
 - **Observability**: Prometheus, Grafana, Jaeger tracing
 - **Architecture**: Domain-Driven Design with Clean Architecture principles
+- **CI/CD**: GitHub Actions with coverage reports via Coveralls
 
 ### Frontend (Next.js) - ✅ FULLY IMPLEMENTED  
 - **Next.js 15.3.5** with App Router and React 19.0.0
@@ -25,9 +26,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Styling**: TailwindCSS v4 + shadcn/ui components
 - **State**: Zustand stores with localStorage persistence
 - **Icons**: Lucide React, **Date Utils**: date-fns
-- **Deploy**: GitHub Pages via GitHub Actions (auto-deploy on main push)
+- **Deploy**: GitHub Pages via GitHub Actions (auto-deploy on main push) - **TEMPORARY SETUP**
+- **Animation**: Performance-optimized animation system with tw-animate-css
 
 ## Development Commands
+
+### Using Tilt (Recommended for Full Stack Development)
+```bash
+# Start all services with hot reload (frontend + backend + infra)
+tilt up
+
+# Stop all services
+tilt down
+
+# View Tilt UI
+# Open http://localhost:10350 in browser
+```
 
 ### Frontend (Next.js)
 ```bash
@@ -48,17 +62,20 @@ make docs          # Generate Swagger API docs
 make clean-volumes # Clean Docker volumes if needed
 
 # Individual commands
-go test -v -cover ./internal/domain/...  # Run specific package tests
+go test -v -cover ./...                      # Run all tests
+go test -v -cover ./internal/domain/...      # Run specific package tests
 go test -v -run TestFunctionName ./path/to/package  # Run single test
+govulncheck ./...                            # Check for vulnerabilities
 ```
 
-**Note**: The user typically handles `make start` manually, so don't run it automatically.
+**Note**: The user typically handles `make start` or `tilt up` manually, so don't run it automatically.
 
 ### Key URLs After Starting
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000  
 - **Swagger Docs**: http://localhost:5000/swagger/
-- **Live Demo**: https://diegoclair.github.io/leaderpro/
+- **Live Demo**: https://diegoclair.github.io/leaderpro/ (temporary)
+- **Tilt UI**: http://localhost:10350
 
 ### Service Ports
 - **MySQL**: 3306
@@ -76,7 +93,7 @@ go test -v -run TestFunctionName ./path/to/package  # Run single test
 backend/
 ├── cmd/main.go               # App entry point
 ├── internal/
-│   ├── domain/entity/        # Business entities (User, Company, Person)
+│   ├── domain/entity/        # Business entities (User, Company, Person, OneOnOne)
 │   ├── application/service/  # Use cases/business logic  
 │   └── transport/rest/       # HTTP handlers + routes
 ├── infra/
@@ -93,17 +110,20 @@ frontend/src/
 ├── app/                     # Next.js App Router pages
 │   ├── auth/               # Login/register pages
 │   ├── dashboard/          # Main dashboard  
-│   └── profile/[id]/       # Person profile pages
+│   ├── profile/[id]/       # Person profile pages
+│   └── settings/           # User preferences/settings
 ├── components/
 │   ├── ui/                 # shadcn/ui base components
 │   ├── auth/               # AuthGuard, auth forms
 │   ├── company/            # CompanySelector
-│   └── profile/            # Profile tabs + @mention system
+│   ├── profile/            # Profile tabs + @mention system
+│   └── timeline/           # UnifiedTimeline, FilterBar, Pagination
 ├── lib/
 │   ├── stores/             # Zustand stores (auth, company, people)
 │   ├── api/client.ts       # ⭐ Centralized API client 
+│   ├── utils/              # storageManager, dates, gender formatting
 │   └── types/              # TypeScript definitions
-└── hooks/                  # Custom React hooks
+└── hooks/                  # Custom React hooks (useThemePreferences)
 ```
 
 ## Implementation Status
@@ -116,20 +136,24 @@ frontend/src/
 - **Unified Timeline System** - Complete timeline with server-side filtering, search, and pagination
 - Smart date formatting (days/months/years ago) with exact date tooltips
 - Dark/light theme toggle + responsive design
+- **Settings Page** - User preferences with backend-persisted theme
+- **Animation System** - Performance-optimized with tw-animate-css
 
-**Backend (Go)**: Authentication + company + person management implemented
+**Backend (Go)**: Authentication + company + person + timeline implemented
 - PASETO-based JWT authentication (15min/24h tokens)
 - User registration/login with automatic token refresh
 - Company CRUD operations with user ownership model
 - **Person Management API** - Complete CRUD endpoints for people
 - **Unified Timeline API** - Server-side filtering, search, and pagination for all person activities
 - **Generic Parameter Utilities** - Type-safe parameter parsing with Go generics
+- **User Preferences API** - Theme persistence and user settings
+- **Address Management** - Person addresses (migration 000004)
 - MySQL integration with Clean Architecture
 - Onboarding flow (frontend wizard → backend company creation)
 
 ### ⏳ Next Priorities
 1. **1:1 Meetings API** - Backend endpoints for meeting notes
-2. **AI Integration** - OpenAI/Claude API for contextual suggestions
+2. **AI Integration** - OpenAI/Claude API for contextual suggestions (see `/plan/000003-ai-implementation-plan.md`)
 3. **Member Get Member System** - Referral tracking with discounts
 
 ## Member Get Member Strategy
@@ -165,6 +189,8 @@ frontend/src/
 4. **Prompt Engineering**: Generate suggestions
 5. **Response Caching**: Redis for frequent queries
 
+**Note**: Detailed implementation plan available at `/plan/000003-ai-implementation-plan.md`
+
 ## Testing Strategy
 
 ### Backend Testing
@@ -174,6 +200,8 @@ frontend/src/
 - **Integration Tests**: Testcontainers automatically spins up MySQL/Redis in Docker
 - **Mock Generation**: `make mocks` generates mocks using uber/mock
 - **Test Coverage**: Full coverage expected with `-cover` flag
+- **Vulnerability Check**: `govulncheck ./...` for security scanning
+- **CI/CD**: GitHub Actions runs tests on every push with Coveralls integration
 
 ### Frontend Testing  
 - **Linting**: `npm run lint` (ESLint + Next.js rules)
@@ -199,6 +227,9 @@ frontend/src/
 - `PhoneInput` - Input com máscara brasileira
 - `SubmitButton` - Botões de envio padronizados
 - `MentionsInputComponent` - Sistema de @mentions
+- `Pagination` - Componente de paginação customizável
+- `EditNoteModal` - Modal para edição de notas
+- `FilterBar` - Barra de filtros com quick views
 
 ### 🗄️ Storage Manager - USAR SEMPRE ⚠️ CRÍTICO PARA SEGURANÇA
 **NUNCA use localStorage diretamente! SEMPRE use o Storage Manager:**
@@ -366,17 +397,21 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - `backend/internal/transport/rest/routes/` - HTTP route handlers
 - `backend/internal/transport/rest/routeutils/request.go` - ⭐ **Generic parameter utilities** (use sempre!)
 - `backend/migrator/mysql/sql/` - Database migrations
+- `backend/Tiltfile` - Tilt orchestration configuration
 
 ### Frontend Critical Files  
-- `frontend/src/app/` - Next.js App Router pages (auth, dashboard, profile)
+- `frontend/src/app/` - Next.js App Router pages (auth, dashboard, profile, settings)
 - `frontend/src/lib/stores/authStore.ts` - ⭐ **apiClient centralizado** (use sempre!)
 - `frontend/src/lib/utils/storageManager.ts` - ⭐ **Storage Manager** (use sempre!)
 - `frontend/src/lib/utils/dates.ts` - ⭐ **Smart date formatting** (use sempre!)
+- `frontend/src/lib/utils/gender.ts` - **Gender-aware Portuguese formatting**
 - `frontend/src/lib/stores/` - Zustand state stores (auth, company, people)
 - `frontend/src/components/ui/` - ⭐ **Componentes compartilhados** (verifique primeiro!)
 - `frontend/src/components/timeline/` - ⭐ **Timeline components** (UnifiedTimeline, FilterBar, etc.)
 - `frontend/src/lib/constants/` - ⭐ **Constantes centralizadas** (use sempre!)
 - `frontend/src/lib/types/index.ts` - TypeScript type definitions
+- `frontend/src/hooks/useThemePreferences.ts` - Theme persistence hook
+- `frontend/Tiltfile` - Tilt orchestration configuration
 
 ## Environment & Configuration
 
@@ -384,17 +419,20 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - **Docker** (backend services)
 - **Go 1.24.5+** (backend development)
 - **Node.js 18+** (frontend development)
+- **Tilt** (optional, for orchestrated development)
 
 ### Configuration
 - **Backend Config**: `backend/deployment/config-local.toml`  
 - **Frontend ENV**: `NEXT_PUBLIC_API_URL` (defaults to http://localhost:5000)
 - **Default Ports**: Frontend (3000), Backend (5000), MySQL (3306), Redis (6379)
 - **Docker Services**: `backend/docker-compose.yml` orchestrates MySQL, Redis, Prometheus, Grafana, Jaeger
+- **Tilt Config**: Root `Tiltfile` includes both backend and frontend configurations
 
 ### Deployment
-- **Frontend**: Auto-deploys to GitHub Pages on push to main branch via GitHub Actions
+- **Frontend**: Auto-deploys to GitHub Pages on push to main branch via GitHub Actions (**TEMPORARY**)
 - **Build Output**: `frontend/out` directory (Next.js static export)
 - **CI/CD**: Uses Node.js 18 in GitHub Actions pipeline
+- **Backend CI**: GitHub Actions runs tests with coverage on every push
 
 ## Database Migrations
 
@@ -414,7 +452,7 @@ Migrations run automatically on backend startup. Check `backend/cmd/main.go` for
 
 ## Recent Technical Improvements
 
-### ✅ System of Gender Complete
+### ✅ Gender System Complete
 Full-stack implementation for contextual text in Portuguese:
 - Backend: ENUM field with validation
 - Frontend: Gender select with Portuguese labels
@@ -436,15 +474,40 @@ includeArchived := routeutils.GetBoolQueryParam(c, "include_archived")
 page := routeutils.GetIntQueryParam(c, "page", 1)
 ```
 
+### ✅ User Preferences with Theme Persistence
+- Backend API for user preferences
+- Frontend settings page with theme toggle
+- `useThemePreferences` hook for backend sync
+- Automatic theme application on login
+
+### ✅ Animation System
+- Performance-optimized with tw-animate-css
+- Documentation at `/frontend/ANIMATION_SYSTEM.md`
+- Consistent animation patterns across components
+
 ## Documentation References
 
 ### Main Documentation Files
 - `/README.md` - Project overview and business context
 - `/plan/000001-projeto-leaderpro.md` - Complete business plan
+- `/plan/000003-ai-implementation-plan.md` - AI implementation strategy
 - `/frontend/README.md` - Frontend architecture details
+- `/frontend/ANIMATION_SYSTEM.md` - Animation system guide
+- `/frontend/STORAGE_MANAGER_DEMO.md` - Storage manager usage examples
 - `/backend/README.md` - Backend API documentation
+- `/github-pages.md` - Temporary GitHub Pages setup guide
 
 ## Common Development Workflows
+
+### Full Stack Development with Tilt
+```bash
+# Start everything with hot reload
+tilt up
+
+# Check service status at http://localhost:10350
+# Frontend changes auto-reload
+# Backend changes trigger rebuilds
+```
 
 ### Running a Single Backend Test
 ```bash
@@ -459,7 +522,7 @@ npx tsc --noEmit  # Check for TypeScript errors without building
 ```
 
 ### Viewing API Documentation
-After running `make start` in backend:
+After running `make start` in backend or `tilt up`:
 - Swagger UI: http://localhost:5000/swagger/
 
 ### Clearing All Docker Data (Full Reset)
@@ -467,6 +530,8 @@ After running `make start` in backend:
 cd backend
 make clean-volumes  # Removes all Docker volumes
 make start         # Restart with fresh database
+# OR
+tilt up            # If using Tilt
 ```
 
 ## Business Context
@@ -480,3 +545,6 @@ make start         # Restart with fresh database
 - **Unlimited**: R$ 79.90/month (unlimited people)
 - **Trial**: 30 days free
 - **Early Adopter**: 6 months for R$ 9.90
+
+### AI Integration Strategy
+The AI assistant will be the key differentiator, acting as a 24/7 leadership coach. Implementation uses a flexible attribute system (`person_attributes` table) to store dynamic person data that feeds into AI context generation. See `/plan/000003-ai-implementation-plan.md` for detailed implementation strategy.

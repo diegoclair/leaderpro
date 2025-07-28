@@ -18,93 +18,119 @@ Desenvolver um assistente de IA especialista em gestão de pessoas que seja o di
 3. **Relevância Temporal**: Priorizar informações recentes mantendo contexto histórico
 4. **Escalabilidade**: Sistema deve funcionar com milhares de usuários e milhões de notas
 
-## 2. Arquitetura de Dados Proposta
+## 2. Arquitetura de Dados
 
-### 2.1 Modelo Híbrido: Relacional + Flexível
+### 2.1 Tabela de Atributos Dinâmicos
 
-#### Opção 1: Tabela de Atributos Dinâmicos (Recomendada)
 ```sql
--- Tabela principal permanece como está
-CREATE TABLE persons (
-    id BIGINT PRIMARY KEY,
-    name VARCHAR(255),
-    email VARCHAR(255),
-    -- campos estruturados essenciais
-);
-
--- Nova tabela para atributos flexíveis (ULTRA SIMPLIFICADA)
+-- Tabela para atributos flexíveis da pessoa
 CREATE TABLE person_attributes (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     person_id BIGINT NOT NULL,
     attribute_key VARCHAR(100) NOT NULL,
     attribute_value TEXT NOT NULL,
+    extracted_from_note_id BIGINT NULL, -- Referência à nota que originou o atributo
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (person_id) REFERENCES persons(id),
+    FOREIGN KEY (extracted_from_note_id) REFERENCES notes(id),
     UNIQUE KEY unique_person_attribute (person_id, attribute_key),
     INDEX idx_person (person_id)
 );
 
 -- Exemplos de uso (tudo como string):
--- ('has_children', 'true')
--- ('children_names', 'João, Maria')
--- ('preferred_meeting_time', '14:00')
--- ('communication_style', 'direct')
--- ('hobbies', 'corrida, leitura, videogame')
+-- ('has_children', 'true', NULL)
+-- ('children_names', 'João, Maria', 12345)
+-- ('preferred_meeting_time', '14:00', NULL)
+-- ('communication_style', 'direct', 12346)
+-- ('hobbies', 'corrida, leitura, videogame', NULL)
 ```
 
-**Vantagens:**
-- Ultra simples: apenas 5 campos essenciais
-- Zero overhead cognitivo
-- UNIQUE constraint evita duplicação
-- Fácil de implementar, manter e escalar
-- Filosofia: menos é mais
+### 2.2 Tabela de Prompts
 
-**Desvantagens:**
-- Sem rastreamento de origem (manual vs IA)
-- Parsing necessário para valores complexos (mas isso é OK)
-
-#### Opção 2: Campo JSONB no MySQL 8
 ```sql
-ALTER TABLE persons ADD COLUMN attributes JSON;
-
--- Exemplo de estrutura:
-{
-  "personal": {
-    "has_children": true,
-    "children": ["João", "Maria"],
-    "pets": ["Max (dog)"],
-    "hobbies": ["running", "reading"]
-  },
-  "work_preferences": {
-    "meeting_time": "afternoon",
-    "communication_style": "direct",
-    "feedback_preference": "written"
-  },
-  "ai_insights": {
-    "strengths": ["technical", "mentoring"],
-    "growth_areas": ["delegation"],
-    "last_updated": "2024-01-15T10:30:00Z"
-  }
-}
+-- Versionamento e histórico de prompts
+CREATE TABLE ai_prompts (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    type VARCHAR(50) NOT NULL, -- 'leadership_coach', 'attribute_extraction', 'meeting_suggestions'
+    version INT NOT NULL,
+    prompt TEXT NOT NULL,
+    model VARCHAR(50) NOT NULL, -- 'gpt-4', 'gpt-3.5-turbo', etc
+    temperature DECIMAL(3,2) DEFAULT 0.7,
+    max_tokens INT DEFAULT 2000,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT NOT NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    INDEX idx_type_active (type, is_active),
+    UNIQUE KEY unique_type_version (type, version)
+);
 ```
 
-**Vantagens:**
-- Performance para leitura
-- Estrutura mais natural
-- Suporte nativo MySQL 8
+### 2.3 Tabela de Uso e Feedback
 
-**Desvantagens:**
-- Menos flexível para queries
-- Histórico de mudanças mais complexo
-- Validação mais difícil
+```sql
+-- Rastreamento de uso da IA
+CREATE TABLE ai_usage_tracker (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    company_id BIGINT NOT NULL,
+    prompt_id BIGINT NOT NULL,
+    person_id BIGINT NULL, -- Contexto da pessoa (se aplicável)
+    request_type VARCHAR(50) NOT NULL, -- 'chat', 'extraction', 'suggestion'
+    tokens_used INT NOT NULL,
+    cost_usd DECIMAL(10,6) NOT NULL,
+    response_time_ms INT NOT NULL,
+    feedback ENUM('helpful', 'not_helpful', 'neutral') NULL,
+    feedback_comment TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (company_id) REFERENCES companies(id),
+    FOREIGN KEY (prompt_id) REFERENCES ai_prompts(id),
+    FOREIGN KEY (person_id) REFERENCES persons(id),
+    INDEX idx_user_date (user_id, created_at),
+    INDEX idx_company_date (company_id, created_at),
+    INDEX idx_feedback (feedback)
+);
 
-### 2.2 Recomendação: Opção 1 (Tabela de Atributos Simplificada)
-Recomendo a tabela de atributos simplificada por:
-- **Simplicidade**: Tudo como string, sem complexidade desnecessária
-- **Filosofia KISS**: IA só adiciona quando tem 100% de certeza
-- **Pragmatismo**: Começar simples e evoluir se necessário
-- **Manutenção**: Código mais limpo e fácil de debugar
+-- Conteúdo das conversas (separado para facilitar expurgo)
+CREATE TABLE ai_conversations (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    usage_id BIGINT NOT NULL,
+    user_message TEXT NOT NULL,
+    ai_response TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 180 DAY), -- 180 dias padrão
+    FOREIGN KEY (usage_id) REFERENCES ai_usage_tracker(id),
+    INDEX idx_usage (usage_id),
+    INDEX idx_expires (expires_at)
+);
+```
+
+**Vantagens da estrutura separada:**
+- Facilita expurgo de dados antigos (DELETE FROM ai_conversations WHERE expires_at < NOW())
+- Mantém métricas e feedback permanentemente em ai_usage_tracker
+- Permite análise de custos e performance sem dados sensíveis
+- Flexibilidade para diferentes políticas de retenção
+
+### 2.4 Job de Limpeza de Dados
+
+```sql
+-- Procedure para expurgo automático
+DELIMITER //
+CREATE PROCEDURE cleanup_ai_conversations()
+BEGIN
+    DELETE FROM ai_conversations 
+    WHERE expires_at < NOW() 
+    LIMIT 1000; -- Processa em lotes para não travar o banco
+END//
+DELIMITER ;
+
+-- Agendar para rodar diariamente
+CREATE EVENT cleanup_old_ai_data
+ON SCHEDULE EVERY 1 DAY
+DO CALL cleanup_ai_conversations();
+```
 
 ## 3. Arquitetura Simplificada da IA
 
@@ -284,20 +310,16 @@ Se não tiver certeza absoluta sobre algo, NÃO inclua.`,
 ## 5. Implementação em 3 Passos
 
 ### Passo 1: Base de Dados (1-2 dias)
-```sql
--- Migration simples
-CREATE TABLE person_attributes (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    person_id BIGINT NOT NULL,
-    attribute_key VARCHAR(100) NOT NULL,
-    attribute_value TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (person_id) REFERENCES persons(id),
-    UNIQUE KEY unique_person_attribute (person_id, attribute_key),
-    INDEX idx_person (person_id)
-);
-```
+
+**Migration 000006 - Estrutura da IA:**
+- Tabela `person_attributes` (seção 2.1)
+- Tabela `ai_prompts` (seção 2.2) 
+- Tabela `ai_usage_tracker` (seção 2.3)
+- Tabela `ai_conversations` (seção 2.3)
+
+**Migration 000007 - Job de limpeza automática:**
+- Procedure `cleanup_ai_conversations()` (seção 2.4)
+- Event scheduler para executar diariamente
 
 ### Passo 2: Endpoints de IA (3-5 dias)
 ```go
@@ -401,6 +423,45 @@ Bem abaixo do valor da mensalidade (R$ 49.90), tornando viável.
 - IA: *Analisa perfil e gaps identificados*
 - IA: "Pedro precisa desenvolver estas habilidades: ..."
 
+## 9. Avaliação Futura: MCP (Model Context Protocol)
+
+### 9.1 O que é MCP
+MCP (Model Context Protocol) é um protocolo padronizado que permite à IA interagir diretamente com sistemas externos, incluindo bancos de dados. Existem implementações maduras para MySQL em 2025.
+
+### 9.2 Potencial para LeaderPro
+```go
+// Possível implementação futura
+type MCPProvider interface {
+    InsertPersonAttribute(ctx context.Context, attr PersonAttribute) error
+    GetPersonContext(ctx context.Context, personID int64) (PersonContext, error)
+}
+```
+
+### 9.3 Benefícios Potenciais
+- ✅ IA escreve diretamente no banco (sem passar pelo código)
+- ✅ Maior precisão (IA vê schema real, evita alucinações)
+- ✅ Redução de código intermediário
+- ✅ Protocolo padronizado e seguro
+
+### 9.4 Riscos e Considerações
+- ⚠️ **Segurança**: IA com acesso direto ao banco
+- ⚠️ **Controle**: Bypass dos controles de validação da aplicação
+- ⚠️ **Auditoria**: Mais difícil rastrear mudanças
+- ⚠️ **Debugging**: Harder to debug issues
+- ⚠️ **Compliance**: Pode violar políticas de acesso a dados
+
+### 9.5 Implementações Disponíveis
+- `@benborla29/mcp-server-mysql` (Node.js)
+- `designcomputer/mysql_mcp_server` (Python)
+- Azure Database for MySQL MCP Server (Microsoft)
+
+### 9.6 Recomendação
+**Implementar primeiro sem MCP**. Avaliar MCP apenas após:
+1. Sistema básico funcionando em produção
+2. Análise de segurança completa
+3. Definição de políticas de acesso
+4. Testes extensivos em ambiente isolado
+
 ## Conclusão Simplificada
 
 **Filosofia**: Começar ultra simples e iterar rapidamente.
@@ -409,6 +470,7 @@ Bem abaixo do valor da mensalidade (R$ 49.90), tornando viável.
 - ✅ Sem cache complexo
 - ✅ Sem vector stores
 - ✅ Apenas OpenAI
+- ✅ Repositórios tradicionais (sem MCP inicialmente)
 - ✅ Custo baixo
 - ✅ Implementação em 1 semana
 
