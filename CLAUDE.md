@@ -48,7 +48,8 @@ make docs          # Generate Swagger API docs
 make clean-volumes # Clean Docker volumes if needed
 
 # Individual commands
-go test -v -cover ./internal/domain/...  # Run specific test
+go test -v -cover ./internal/domain/...  # Run specific package tests
+go test -v -run TestFunctionName ./path/to/package  # Run single test
 ```
 
 **Note**: The user typically handles `make start` manually, so don't run it automatically.
@@ -428,10 +429,11 @@ Full-stack implementation for contextual text in Portuguese:
 ### ✅ Generic Parameter Utilities (Go)
 Type-safe parameter parsing with Go generics:
 ```go
-// Example usage
+// Example usage from backend/internal/transport/rest/routeutils/request.go
 noteTypes, _ := routeutils.GetArrayParam(c.QueryParam("types"), ",", routeutils.StringConverter)
 companyID, _ := routeutils.GetRequiredParam(c.Param("company_id"), routeutils.StringConverter, "company_id required")
 includeArchived := routeutils.GetBoolQueryParam(c, "include_archived")
+page := routeutils.GetIntQueryParam(c, "page", 1)
 ```
 
 ## Documentation References
@@ -441,6 +443,31 @@ includeArchived := routeutils.GetBoolQueryParam(c, "include_archived")
 - `/plan/000001-projeto-leaderpro.md` - Complete business plan
 - `/frontend/README.md` - Frontend architecture details
 - `/backend/README.md` - Backend API documentation
+
+## Common Development Workflows
+
+### Running a Single Backend Test
+```bash
+cd backend
+go test -v -run TestCreateCompany ./internal/application/service/
+```
+
+### Checking Frontend Type Errors
+```bash
+cd frontend
+npx tsc --noEmit  # Check for TypeScript errors without building
+```
+
+### Viewing API Documentation
+After running `make start` in backend:
+- Swagger UI: http://localhost:5000/swagger/
+
+### Clearing All Docker Data (Full Reset)
+```bash
+cd backend
+make clean-volumes  # Removes all Docker volumes
+make start         # Restart with fresh database
+```
 
 ## Business Context
 
