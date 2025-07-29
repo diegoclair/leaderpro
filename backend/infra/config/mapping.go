@@ -12,6 +12,7 @@ type Config struct {
 	Cache    CacheConfig `mapstructure:"cache"`
 	DB       DBConfig    `mapstructure:"db"`
 	Log      LogConfig   `mapstructure:"log"`
+	AI       AIConfig    `mapstructure:"ai"`
 	closers  []func()
 	closerMu sync.Mutex
 	ctx      context.Context
@@ -81,4 +82,32 @@ type RedisConfig struct {
 	Pass              string        `mapstructure:"pass"`
 	Prefix            string        `mapstructure:"prefix"`
 	DefaultExpiration time.Duration `mapstructure:"default-expiration"`
+}
+
+type AIConfig struct {
+	DefaultProvider string         `mapstructure:"default-provider"`
+	OpenAI          OpenAIConfig   `mapstructure:"openai"`
+	Anthropic       AnthropicConfig `mapstructure:"anthropic"`
+	RateLimit       RateLimitConfig `mapstructure:"rate-limit"`
+}
+
+type OpenAIConfig struct {
+	APIKey      string  `mapstructure:"api-key"`
+	Model       string  `mapstructure:"model"`
+	Temperature float64 `mapstructure:"temperature"`
+	MaxTokens   int     `mapstructure:"max-tokens"`
+	BaseURL     string  `mapstructure:"base-url"`
+}
+
+type AnthropicConfig struct {
+	APIKey      string  `mapstructure:"api-key"`
+	Model       string  `mapstructure:"model"`
+	Temperature float64 `mapstructure:"temperature"`
+	MaxTokens   int     `mapstructure:"max-tokens"`
+}
+
+type RateLimitConfig struct {
+	RequestsPerMinute int `mapstructure:"requests-per-minute"`
+	RequestsPerHour   int `mapstructure:"requests-per-hour"`
+	RequestsPerDay    int `mapstructure:"requests-per-day"`
 }

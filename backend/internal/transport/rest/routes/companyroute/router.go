@@ -28,6 +28,7 @@ func NewRouter(ctrl *Handler) *CompanyRouter {
 }
 
 func (r *CompanyRouter) RegisterRoutes(g *routeutils.EchoGroups) {
+	// Routes that don't need company validation (create and list all user companies)
 	router := g.PrivateGroup.Group(GroupRouteName)
 
 	router.POST(RootRoute, r.ctrl.handleCreateCompany).
@@ -47,7 +48,10 @@ func (r *CompanyRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 		}).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
 
-	router.GET(CompanyByUUIDRoute, r.ctrl.handleGetCompanyByUUID).
+	// Routes that need company ownership validation (specific company operations)
+	companyRouter := g.CompanyGroup.Group(GroupRouteName)
+
+	companyRouter.GET(CompanyByUUIDRoute, r.ctrl.handleGetCompanyByUUID).
 		Summary("Get company by UUID").
 		Description("Get company details by UUID").
 		Returns([]models.ReturnType{
@@ -59,7 +63,7 @@ func (r *CompanyRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 		PathParam("company_uuid", "company uuid", goswag.StringType, true).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
 
-	router.PUT(CompanyByUUIDRoute, r.ctrl.handleUpdateCompany).
+	companyRouter.PUT(CompanyByUUIDRoute, r.ctrl.handleUpdateCompany).
 		Summary("Update company").
 		Description("Update company by UUID").
 		Read(viewmodel.CompanyRequest{}).
@@ -67,7 +71,7 @@ func (r *CompanyRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 		PathParam("company_uuid", "company uuid", goswag.StringType, true).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
 
-	router.DELETE(CompanyByUUIDRoute, r.ctrl.handleDeleteCompany).
+	companyRouter.DELETE(CompanyByUUIDRoute, r.ctrl.handleDeleteCompany).
 		Summary("Delete company").
 		Description("Delete company by UUID").
 		Returns([]models.ReturnType{{StatusCode: http.StatusNoContent}}).

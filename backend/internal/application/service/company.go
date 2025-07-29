@@ -13,7 +13,7 @@ import (
 	"github.com/twinj/uuid"
 )
 
-type companyService struct {
+type companyApp struct {
 	cache     contract.CacheManager
 	dm        contract.DataManager
 	log       logger.Logger
@@ -21,8 +21,8 @@ type companyService struct {
 	authApp   contract.AuthApp
 }
 
-func newCompanyService(infra domain.Infrastructure, authApp contract.AuthApp) contract.CompanyApp {
-	return &companyService{
+func newCompanyApp(infra domain.Infrastructure, authApp contract.AuthApp) contract.CompanyApp {
+	return &companyApp{
 		cache:     infra.CacheManager(),
 		dm:        infra.DataManager(),
 		log:       infra.Logger(),
@@ -31,7 +31,7 @@ func newCompanyService(infra domain.Infrastructure, authApp contract.AuthApp) co
 	}
 }
 
-func (s *companyService) CreateCompany(ctx context.Context, company entity.Company) (entity.Company, error) {
+func (s *companyApp) CreateCompany(ctx context.Context, company entity.Company) (entity.Company, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -66,7 +66,7 @@ func (s *companyService) CreateCompany(ctx context.Context, company entity.Compa
 		s.log.Errorw(ctx, "error creating company", logger.Err(err))
 		return company, err
 	}
-	
+
 	// Set the created ID
 	company.ID = companyID
 
@@ -81,7 +81,7 @@ func (s *companyService) CreateCompany(ctx context.Context, company entity.Compa
 	return company, nil
 }
 
-func (s *companyService) GetCompanyByUUID(ctx context.Context, companyUUID string) (entity.Company, error) {
+func (s *companyApp) GetCompanyByUUID(ctx context.Context, companyUUID string) (entity.Company, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -97,7 +97,20 @@ func (s *companyService) GetCompanyByUUID(ctx context.Context, companyUUID strin
 	return company, nil
 }
 
-func (s *companyService) GetUserCompanies(ctx context.Context) ([]entity.Company, error) {
+func (s *companyApp) GetLoggedUserCompany(ctx context.Context) (entity.Company, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return entity.Company{}, err
+	}
+
+	return s.GetCompanyByUUID(ctx, companyUUID)
+}
+
+func (s *companyApp) GetUserCompanies(ctx context.Context) ([]entity.Company, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -115,7 +128,7 @@ func (s *companyService) GetUserCompanies(ctx context.Context) ([]entity.Company
 	return companies, nil
 }
 
-func (s *companyService) UpdateCompany(ctx context.Context, companyUUID string, company entity.Company) error {
+func (s *companyApp) UpdateCompany(ctx context.Context, companyUUID string, company entity.Company) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -144,7 +157,20 @@ func (s *companyService) UpdateCompany(ctx context.Context, companyUUID string, 
 	return nil
 }
 
-func (s *companyService) DeleteCompany(ctx context.Context, companyUUID string) error {
+func (s *companyApp) UpdateLoggedUserCompany(ctx context.Context, company entity.Company) error {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	return s.UpdateCompany(ctx, companyUUID, company)
+}
+
+func (s *companyApp) DeleteCompany(ctx context.Context, companyUUID string) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -174,7 +200,7 @@ func (s *companyService) DeleteCompany(ctx context.Context, companyUUID string) 
 }
 
 // unsetUserDefaultCompanies removes the default flag from all companies of a user
-func (s *companyService) unsetUserDefaultCompanies(ctx context.Context, userID int64) error {
+func (s *companyApp) unsetUserDefaultCompanies(ctx context.Context, userID int64) error {
 	companies, err := s.dm.Company().GetCompaniesByUser(ctx, userID)
 	if err != nil {
 		return err
@@ -193,3 +219,56 @@ func (s *companyService) unsetUserDefaultCompanies(ctx context.Context, userID i
 	return nil
 }
 
+func (s *companyApp) DeleteLoggedUserCompany(ctx context.Context) error {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	return s.DeleteCompany(ctx, companyUUID)
+}
+
+// ValidateCompanyOwnership validates that the user owns the specified company
+func (s *companyApp) ValidateCompanyOwnership(ctx context.Context, companyUUID string, userUUID string) error {
+	s.log.Infow(ctx, "Process Started: validating company ownership",
+		logger.String("company_uuid", companyUUID),
+		logger.String("user_uuid", userUUID),
+	)
+	defer s.log.Infow(ctx, "Process Finished")
+
+	// Get company by UUID
+	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return resterrors.NewNotFoundError("company not found")
+		}
+		s.log.Errorw(ctx, "error getting company by UUID", logger.Err(err))
+		return err
+	}
+
+	// Get user by UUID to get user ID
+	user, err := s.dm.User().GetUserByUUID(ctx, userUUID)
+	if err != nil {
+		if mysqlutils.SQLNotFound(err.Error()) {
+			return resterrors.NewUnauthorizedError("user not found")
+		}
+		s.log.Errorw(ctx, "error getting user by UUID", logger.Err(err))
+		return err
+	}
+
+	// Check if the company belongs to the user
+	if company.UserOwnerID != user.ID {
+		s.log.Warnw(ctx, "user trying to access company they don't own",
+			logger.Int64("company_owner_id", company.UserOwnerID),
+			logger.Int64("requesting_user_id", user.ID),
+			logger.String("company_uuid", companyUUID),
+		)
+		return resterrors.NewUnauthorizedError("you don't have permission to access this company")
+	}
+
+	return nil
+}

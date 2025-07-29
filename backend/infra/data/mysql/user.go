@@ -127,7 +127,8 @@ func (r *userRepo) CreateUser(ctx context.Context, user entity.User) (createdID 
 
 func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (user entity.User, err error) {
 	query := userSelectBase + `
-		WHERE u.email = ? AND u.active = 1
+		WHERE u.email  = ?
+		  AND u.active = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -147,7 +148,8 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (user entit
 
 func (r *userRepo) GetUserByUUID(ctx context.Context, userUUID string) (user entity.User, err error) {
 	query := userSelectBase + `
-		WHERE u.user_uuid = ? AND u.active = 1
+		WHERE u.user_uuid = ?
+		  AND u.active    = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -168,8 +170,10 @@ func (r *userRepo) GetUserByUUID(ctx context.Context, userUUID string) (user ent
 func (r *userRepo) GetUserIDByUUID(ctx context.Context, userUUID string) (userID int64, err error) {
 	query := `
 		SELECT user_id
-		FROM tab_user
-		WHERE user_uuid = ? AND active = 1
+
+		FROM  tab_user
+		WHERE user_uuid = ?
+		  AND active    = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)

@@ -16,6 +16,7 @@ import (
 	"github.com/diegoclair/leaderpro/internal/transport/rest/viewmodel"
 	echo "github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func TestHandler_handleCreatePerson(t *testing.T) {
@@ -31,11 +32,13 @@ func TestHandler_handleCreatePerson(t *testing.T) {
 			},
 			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
+				// Mock company ownership validation
+				m.CompanyAppMock.EXPECT().ValidateCompanyOwnership(gomock.Any(), "company-uuid-123", gomock.Any()).Return(nil).Times(1)
 			},
 			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					personReq := body.(viewmodel.PersonRequest)
-					m.PersonAppMock.EXPECT().CreatePerson(ctx, "company-uuid-123", personReq.ToEntity()).Return(nil).Times(1)
+					m.PersonAppMock.EXPECT().CreatePerson(ctx, personReq.ToEntity()).Return(entity.Person{}, nil).Times(1)
 				}
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -52,11 +55,13 @@ func TestHandler_handleCreatePerson(t *testing.T) {
 			},
 			SetupAuth: func(ctx context.Context, t *testing.T, req *http.Request, m test.AppMocks) {
 				test.AddAuthorization(ctx, t, req, m)
+				// Mock company ownership validation
+				m.CompanyAppMock.EXPECT().ValidateCompanyOwnership(gomock.Any(), "company-uuid-123", gomock.Any()).Return(nil).Times(1)
 			},
 			BuildMocks: func(ctx context.Context, m test.AppMocks, body any) {
 				if body != nil {
 					personReq := body.(viewmodel.PersonRequest)
-					m.PersonAppMock.EXPECT().CreatePerson(ctx, "company-uuid-123", personReq.ToEntity()).Return(fmt.Errorf("error to create person")).Times(1)
+					m.PersonAppMock.EXPECT().CreatePerson(ctx, personReq.ToEntity()).Return(entity.Person{}, fmt.Errorf("error to create person")).Times(1)
 				}
 			},
 			CheckResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -127,7 +132,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 					{UUID: "person-1", Name: "John Doe"},
 					{UUID: "person-2", Name: "Jane Smith"},
 				}
-				m.PersonAppMock.EXPECT().GetCompanyPeople(ctx, args.companyUUID).Return(mockPeople, nil).Times(1)
+				m.PersonAppMock.EXPECT().GetCompanyPeople(ctx).Return(mockPeople, nil).Times(1)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -145,7 +150,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 				mockPeople := []entity.Person{
 					{UUID: "person-1", Name: "John Doe"},
 				}
-				m.PersonAppMock.EXPECT().SearchPeople(ctx, args.companyUUID, args.search).Return(mockPeople, nil).Times(1)
+				m.PersonAppMock.EXPECT().SearchPeople(ctx, args.search).Return(mockPeople, nil).Times(1)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -158,7 +163,7 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 				companyUUID: "company-uuid-123",
 			},
 			buildMocks: func(ctx context.Context, m test.AppMocks, args args) {
-				m.PersonAppMock.EXPECT().GetCompanyPeople(ctx, args.companyUUID).Return(nil, fmt.Errorf("error to get people")).Times(1)
+				m.PersonAppMock.EXPECT().GetCompanyPeople(ctx).Return(nil, fmt.Errorf("error to get people")).Times(1)
 			},
 			checkResponse: func(t *testing.T, resp *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusServiceUnavailable, resp.Code)
@@ -183,6 +188,10 @@ func TestHandler_handleGetCompanyPeople(t *testing.T) {
 			require.NoError(t, err)
 
 			ctx := test.GetTestContext(t, req, recorder, true)
+
+			// Setup authentication and company ownership validation
+			test.AddAuthorization(ctx, t, req, m)
+			m.CompanyAppMock.EXPECT().ValidateCompanyOwnership(gomock.Any(), tt.args.companyUUID, gomock.Any()).Return(nil).Times(1)
 
 			if tt.buildMocks != nil {
 				tt.buildMocks(ctx, m, tt.args)
@@ -255,6 +264,10 @@ func TestHandler_handleGetPersonByUUID(t *testing.T) {
 			require.NoError(t, err)
 
 			ctx := test.GetTestContext(t, req, recorder, true)
+
+			// Setup authentication and company ownership validation
+			test.AddAuthorization(ctx, t, req, m)
+			m.CompanyAppMock.EXPECT().ValidateCompanyOwnership(gomock.Any(), tt.args.companyUUID, gomock.Any()).Return(nil).Times(1)
 
 			if tt.buildMocks != nil {
 				tt.buildMocks(ctx, m, tt.args)
@@ -336,6 +349,10 @@ func TestHandler_handleUpdatePerson(t *testing.T) {
 
 			ctx := test.GetTestContext(t, req, recorder, true)
 
+			// Setup authentication and company ownership validation
+			test.AddAuthorization(ctx, t, req, m)
+			m.CompanyAppMock.EXPECT().ValidateCompanyOwnership(gomock.Any(), tt.args.companyUUID, gomock.Any()).Return(nil).Times(1)
+
 			if tt.buildMocks != nil {
 				tt.buildMocks(ctx, m, tt.args)
 			}
@@ -404,6 +421,10 @@ func TestHandler_handleDeletePerson(t *testing.T) {
 			require.NoError(t, err)
 
 			ctx := test.GetTestContext(t, req, recorder, true)
+
+			// Setup authentication and company ownership validation
+			test.AddAuthorization(ctx, t, req, m)
+			m.CompanyAppMock.EXPECT().ValidateCompanyOwnership(gomock.Any(), tt.args.companyUUID, gomock.Any()).Return(nil).Times(1)
 
 			if tt.buildMocks != nil {
 				tt.buildMocks(ctx, m, tt.args)

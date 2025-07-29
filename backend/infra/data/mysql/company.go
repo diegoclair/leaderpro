@@ -103,7 +103,8 @@ func (r *companyRepo) CreateCompany(ctx context.Context, company entity.Company)
 
 func (r *companyRepo) GetCompanyByID(ctx context.Context, companyID int64) (company entity.Company, err error) {
 	query := companySelectBase + `
-		WHERE c.company_id = ? AND c.active = 1
+		WHERE c.company_id = ?
+		  AND c.active     = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -123,7 +124,8 @@ func (r *companyRepo) GetCompanyByID(ctx context.Context, companyID int64) (comp
 
 func (r *companyRepo) GetCompanyByUUID(ctx context.Context, companyUUID string) (company entity.Company, err error) {
 	query := companySelectBase + `
-		WHERE c.company_uuid = ? AND c.active = 1
+		WHERE c.company_uuid = ?
+		  AND c.active       = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -143,7 +145,8 @@ func (r *companyRepo) GetCompanyByUUID(ctx context.Context, companyUUID string) 
 
 func (r *companyRepo) GetCompaniesByUser(ctx context.Context, userID int64) (companies []entity.Company, err error) {
 	query := companySelectBase + `
-		WHERE c.user_owner_id = ? AND c.active = 1
+		WHERE c.user_owner_id = ?
+		  AND c.active        = 1
 		ORDER BY c.created_at DESC
 	`
 
@@ -178,14 +181,15 @@ func (r *companyRepo) GetCompaniesByUser(ctx context.Context, userID int64) (com
 func (r *companyRepo) UpdateCompany(ctx context.Context, companyID int64, company entity.Company) (err error) {
 	query := `
 		UPDATE tab_company
-		SET 
-			name = ?,
-			industry = ?,
-			size = ?,
-			role = ?,
-			is_default = ?,
-			updated_at = NOW()
-		WHERE company_id = ? AND active = 1
+		  SET  name       = ?,
+		       industry   = ?,
+		       size       = ?,
+		       role       = ?,
+		       is_default = ?,
+		       updated_at = NOW()
+
+		WHERE company_id = ?
+		  AND active     = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -212,9 +216,9 @@ func (r *companyRepo) UpdateCompany(ctx context.Context, companyID int64, compan
 func (r *companyRepo) DeleteCompany(ctx context.Context, companyID int64) (err error) {
 	query := `
 		UPDATE tab_company
-		SET 
-			active = 0,
-			updated_at = NOW()
+		  SET  active     = 0,
+		       updated_at = NOW()
+
 		WHERE company_id = ?
 	`
 

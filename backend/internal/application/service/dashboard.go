@@ -48,7 +48,7 @@ func (s *dashboardService) GetDashboardData(ctx context.Context, companyUUID str
 	// Get people data
 	go func() {
 		defer wg.Done()
-		people, err := s.personApp.GetCompanyPeople(ctx, companyUUID)
+		people, err := s.personApp.GetCompanyPeople(ctx)
 		if err != nil {
 			peopleErr = err
 			return

@@ -32,7 +32,7 @@ func NewRouter(ctrl *Handler) *PersonRouter {
 }
 
 func (r *PersonRouter) RegisterRoutes(g *routeutils.EchoGroups) {
-	router := g.PrivateGroup.Group(GroupRouteName)
+	router := g.CompanyGroup.Group(GroupRouteName)
 
 	router.POST(RootRoute, r.ctrl.handleCreatePerson).
 		Summary("Create a new person").

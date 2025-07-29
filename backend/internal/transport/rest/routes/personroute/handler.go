@@ -33,20 +33,15 @@ func NewHandler(personService contract.PersonApp) *Handler {
 func (s *Handler) handleCreatePerson(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
 	input := viewmodel.PersonRequest{}
-	err = c.Bind(&input)
+	err := c.Bind(&input)
 	if err != nil {
 		return routeutils.ResponseInvalidRequestBody(c, err)
 	}
 
 	person := input.ToEntity()
 
-	createdPerson, err := s.personService.CreatePerson(ctx, person, companyUUID)
+	createdPerson, err := s.personService.CreatePerson(ctx, person)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -60,20 +55,16 @@ func (s *Handler) handleCreatePerson(c echo.Context) error {
 func (s *Handler) handleGetCompanyPeople(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
+	search := c.QueryParam("search")
+
+	var people []entity.Person
+	var err error
+	if search != "" {
+		people, err = s.personService.SearchPeople(ctx, search)
+	} else {
+		people, err = s.personService.GetCompanyPeople(ctx)
 	}
 
-	search := c.QueryParam("search")
-	
-	var people []entity.Person
-	if search != "" {
-		people, err = s.personService.SearchPeople(ctx, companyUUID, search)
-	} else {
-		people, err = s.personService.GetCompanyPeople(ctx, companyUUID)
-	}
-	
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -148,11 +139,6 @@ func (s *Handler) handleDeletePerson(c echo.Context) error {
 func (s *Handler) handleCreateNote(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
 	personUUID, err := routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
 	if err != nil {
 		return routeutils.HandleError(c, err)
@@ -166,7 +152,7 @@ func (s *Handler) handleCreateNote(c echo.Context) error {
 
 	note := input.ToEntity()
 
-	createdNote, err := s.personService.CreateNote(ctx, note, companyUUID, personUUID)
+	createdNote, err := s.personService.CreateNote(ctx, note, personUUID)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -188,16 +174,15 @@ func (s *Handler) handleGetPersonTimeline(c echo.Context) error {
 	// Parse filters from query parameters using routeutils helpers
 	types := routeutils.GetStringArrayQueryParam(c, "types", ",")
 	feedbackTypes := routeutils.GetStringArrayQueryParam(c, "feedback_types", ",")
-	
+
 	filtersReq := viewmodel.TimelineFiltersRequest{
-		SearchQuery:    c.QueryParam("search_query"),
+		SearchQuery:   c.QueryParam("search_query"),
 		Types:         types,
 		FeedbackTypes: feedbackTypes,
 		Direction:     c.QueryParam("direction"),
 		Period:        c.QueryParam("period"),
 	}
-	
-	
+
 	filters := filtersReq.ToEntity()
 	take, skip := routeutils.GetPagingParams(c, "", "")
 
@@ -248,12 +233,7 @@ func (s *Handler) handleGetPersonMentions(c echo.Context) error {
 func (s *Handler) handleUpdateNote(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	_, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	_, err = routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	_, err := routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -283,12 +263,7 @@ func (s *Handler) handleUpdateNote(c echo.Context) error {
 func (s *Handler) handleDeleteNote(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	_, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	_, err = routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
+	_, err := routeutils.GetRequiredStringPathParam(c, "person_uuid", "Invalid person_uuid")
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}

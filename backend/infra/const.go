@@ -7,9 +7,10 @@ func (k Key) String() string {
 }
 
 const (
-	UserUUIDKey Key = "UserUUID"
-	TokenKey    Key = "user-token"
-	SessionKey  Key = "Session"
+	UserUUIDKey    Key = "UserUUID"
+	CompanyUUIDKey Key = "CompanyUUID"
+	TokenKey       Key = "user-token"
+	SessionKey     Key = "Session"
 )
 
 const (

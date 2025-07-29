@@ -71,12 +71,7 @@ func (s *Handler) handleGetCompanies(c echo.Context) error {
 func (s *Handler) handleGetCompanyByUUID(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	company, err := s.companyService.GetCompanyByUUID(ctx, companyUUID)
+	company, err := s.companyService.GetLoggedUserCompany(ctx)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -90,18 +85,13 @@ func (s *Handler) handleGetCompanyByUUID(c echo.Context) error {
 func (s *Handler) handleUpdateCompany(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
 	input := viewmodel.CompanyRequest{}
-	err = c.Bind(&input)
+	err := c.Bind(&input)
 	if err != nil {
 		return routeutils.ResponseInvalidRequestBody(c, err)
 	}
 
-	err = s.companyService.UpdateCompany(ctx, companyUUID, input.ToEntity())
+	err = s.companyService.UpdateLoggedUserCompany(ctx, input.ToEntity())
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}
@@ -112,12 +102,7 @@ func (s *Handler) handleUpdateCompany(c echo.Context) error {
 func (s *Handler) handleDeleteCompany(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "Invalid company_uuid")
-	if err != nil {
-		return routeutils.HandleError(c, err)
-	}
-
-	err = s.companyService.DeleteCompany(ctx, companyUUID)
+	err := s.companyService.DeleteLoggedUserCompany(ctx)
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}

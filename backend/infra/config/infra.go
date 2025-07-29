@@ -7,6 +7,7 @@ import (
 
 	"github.com/diegoclair/go_utils/logger"
 	"github.com/diegoclair/go_utils/validator"
+	"github.com/diegoclair/leaderpro/infra/ai"
 	"github.com/diegoclair/leaderpro/infra/auth"
 	"github.com/diegoclair/leaderpro/infra/cache"
 	infraContract "github.com/diegoclair/leaderpro/infra/contract"
@@ -204,4 +205,49 @@ func (c *Config) GetTracer() trace.Tracer {
 	})
 
 	return tracer
+}
+
+var (
+	aiManager     *ai.Manager
+	aiManagerOnce sync.Once
+)
+
+// GetAIManager returns a new AI manager or panics if it fails
+func (c *Config) GetAIManager() *ai.Manager {
+	aiManagerOnce.Do(func() {
+		var (
+			err error
+			log logger.Logger = c.GetLogger()
+		)
+
+		// Convert config types to avoid import cycle
+		aiConfig := ai.Config{
+			DefaultProvider: c.AI.DefaultProvider,
+			OpenAI: ai.OpenAIConfig{
+				APIKey:      c.AI.OpenAI.APIKey,
+				Model:       c.AI.OpenAI.Model,
+				Temperature: c.AI.OpenAI.Temperature,
+				MaxTokens:   c.AI.OpenAI.MaxTokens,
+				BaseURL:     c.AI.OpenAI.BaseURL,
+			},
+			Anthropic: ai.AnthropicConfig{
+				APIKey:      c.AI.Anthropic.APIKey,
+				Model:       c.AI.Anthropic.Model,
+				Temperature: c.AI.Anthropic.Temperature,
+				MaxTokens:   c.AI.Anthropic.MaxTokens,
+			},
+			RateLimit: ai.RateLimitConfig{
+				RequestsPerMinute: c.AI.RateLimit.RequestsPerMinute,
+				RequestsPerHour:   c.AI.RateLimit.RequestsPerHour,
+				RequestsPerDay:    c.AI.RateLimit.RequestsPerDay,
+			},
+		}
+
+		aiManager, err = ai.NewManager(aiConfig)
+		if err != nil {
+			log.Fatalw(c.ctx, "Failed to create AI manager", logger.Err(err))
+		}
+	})
+
+	return aiManager
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/diegoclair/leaderpro/internal/application/service"
 	"github.com/diegoclair/leaderpro/internal/domain"
 	"github.com/diegoclair/leaderpro/internal/domain/contract"
+	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/airoute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/authroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/companyroute"
 	"github.com/diegoclair/leaderpro/internal/transport/rest/routes/dashboardroute"
@@ -66,6 +67,7 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, in
 
 	pingHandler := pingroute.NewHandler()
 	authHandler := authroute.NewHandler(services.Auth, authToken, authHelper, infra.Logger())
+	aiHandler := airoute.NewHandler(services.AI)
 	companyHandler := companyroute.NewHandler(services.Company)
 	dashboardHandler := dashboardroute.NewHandler(services.Dashboard)
 	personHandler := personroute.NewHandler(services.Person)
@@ -73,6 +75,7 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, in
 
 	pingRoute := pingroute.NewRouter(pingHandler)
 	authRoute := authroute.NewRouter(authHandler)
+	aiRoute := airoute.NewRouter(aiHandler)
 	companyRoute := companyroute.NewRouter(companyHandler)
 	dashboardRoute := dashboardroute.NewRouter(dashboardHandler)
 	personRoute := personroute.NewRouter(personHandler)
@@ -82,13 +85,14 @@ func NewRestServer(services *service.Apps, authToken infraContract.AuthToken, in
 
 	server := &Server{Router: router, cache: infra.CacheManager()}
 	server.addRouters(authRoute)
+	server.addRouters(aiRoute)
 	server.addRouters(companyRoute)
 	server.addRouters(dashboardRoute)
 	server.addRouters(personRoute)
 	server.addRouters(pingRoute)
 	server.addRouters(swaggerRoute)
 	server.addRouters(userRoute)
-	server.registerAppRouters(authToken)
+	server.registerAppRouters(authToken, services.Company)
 
 	server.setupPrometheus(appName)
 
@@ -99,11 +103,14 @@ func (r *Server) addRouters(router routeutils.IRoute) {
 	r.routes = append(r.routes, router)
 }
 
-func (r *Server) registerAppRouters(authToken infraContract.AuthToken) {
+func (r *Server) registerAppRouters(authToken infraContract.AuthToken, companyService contract.CompanyApp) {
 	g := &routeutils.EchoGroups{}
 	g.AppGroup = r.Router.Group("/")
 	g.PrivateGroup = g.AppGroup.Group("",
 		servermiddleware.AuthMiddlewarePrivateRoute(authToken, r.cache),
+	)
+	g.CompanyGroup = g.PrivateGroup.Group("",
+		servermiddleware.CompanyOwnershipMiddleware(companyService),
 	)
 
 	for _, appRouter := range r.routes {

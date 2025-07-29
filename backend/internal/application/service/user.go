@@ -14,7 +14,7 @@ import (
 	"github.com/twinj/uuid"
 )
 
-type userService struct {
+type userApp struct {
 	cache     contract.CacheManager
 	crypto    contract.Crypto
 	dm        contract.DataManager
@@ -22,8 +22,8 @@ type userService struct {
 	validator validator.Validator
 }
 
-func newUserSvc(infra domain.Infrastructure) contract.UserApp {
-	return &userService{
+func newUserApp(infra domain.Infrastructure) contract.UserApp {
+	return &userApp{
 		cache:     infra.CacheManager(),
 		crypto:    infra.Crypto(),
 		dm:        infra.DataManager(),
@@ -32,7 +32,7 @@ func newUserSvc(infra domain.Infrastructure) contract.UserApp {
 	}
 }
 
-func (s *userService) CreateUser(ctx context.Context, user entity.User) (entity.User, error) {
+func (s *userApp) CreateUser(ctx context.Context, user entity.User) (entity.User, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -84,7 +84,7 @@ func (s *userService) CreateUser(ctx context.Context, user entity.User) (entity.
 	return user, nil
 }
 
-func (s *userService) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
+func (s *userApp) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -100,7 +100,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (entity.
 	return user, nil
 }
 
-func (s *userService) GetUserByUUID(ctx context.Context, userUUID string) (entity.User, error) {
+func (s *userApp) GetUserByUUID(ctx context.Context, userUUID string) (entity.User, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -119,7 +119,7 @@ func (s *userService) GetUserByUUID(ctx context.Context, userUUID string) (entit
 	return user, nil
 }
 
-func (s *userService) GetLoggedUser(ctx context.Context) (entity.User, error) {
+func (s *userApp) GetLoggedUser(ctx context.Context) (entity.User, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -137,7 +137,7 @@ func (s *userService) GetLoggedUser(ctx context.Context) (entity.User, error) {
 	return user, nil
 }
 
-func (s *userService) GetLoggedUserID(ctx context.Context) (int64, error) {
+func (s *userApp) GetLoggedUserID(ctx context.Context) (int64, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -159,7 +159,7 @@ func (s *userService) GetLoggedUserID(ctx context.Context) (int64, error) {
 	return userID, nil
 }
 
-func (s *userService) UpdateUser(ctx context.Context, userUUID string, user entity.User) error {
+func (s *userApp) UpdateUser(ctx context.Context, userUUID string, user entity.User) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -188,7 +188,7 @@ func (s *userService) UpdateUser(ctx context.Context, userUUID string, user enti
 	return nil
 }
 
-func (s *userService) GetProfile(ctx context.Context) (entity.User, error) {
+func (s *userApp) GetProfile(ctx context.Context) (entity.User, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -200,7 +200,7 @@ func (s *userService) GetProfile(ctx context.Context) (entity.User, error) {
 	return user, nil
 }
 
-func (s *userService) UpdateProfile(ctx context.Context, user entity.User) (entity.User, error) {
+func (s *userApp) UpdateProfile(ctx context.Context, user entity.User) (entity.User, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -225,7 +225,7 @@ func (s *userService) UpdateProfile(ctx context.Context, user entity.User) (enti
 	return updatedUser, nil
 }
 
-func (s *userService) GetUserPreferences(ctx context.Context) (entity.UserPreferences, error) {
+func (s *userApp) GetUserPreferences(ctx context.Context) (entity.UserPreferences, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -260,7 +260,7 @@ func (s *userService) GetUserPreferences(ctx context.Context) (entity.UserPrefer
 	return preferences, nil
 }
 
-func (s *userService) UpdateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (entity.UserPreferences, error) {
+func (s *userApp) UpdateUserPreferences(ctx context.Context, preferences entity.UserPreferences) (entity.UserPreferences, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 

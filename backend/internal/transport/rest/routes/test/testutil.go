@@ -60,9 +60,15 @@ func GetServerTest(t *testing.T) (m AppMocks, server goswag.Echo, ctrl *gomock.C
 		servermiddleware.AuthMiddlewarePrivateRoute(getTestTokenMaker(t), m.CacheMock),
 	)
 
+	// Create CompanyGroup with middleware to properly test company-scoped routes
+	companyGroup := privateGroup.Group("",
+		servermiddleware.CompanyOwnershipMiddleware(m.CompanyAppMock),
+	)
+	
 	g := &routeutils.EchoGroups{
 		AppGroup:     appGroup,
 		PrivateGroup: privateGroup,
+		CompanyGroup: companyGroup,
 	}
 	authHelper := shared.NewAuthHelper(m.AuthAppMock, m.UserAppMock, m.AuthTokenMock)
 
@@ -138,6 +144,7 @@ func GetTestContext(t *testing.T, req *http.Request, w http.ResponseWriter, auth
 	c := echo.New().NewContext(req, w)
 	if authEndpoint {
 		c.Set(infra.UserUUIDKey.String(), userUUID)
+		c.Set(infra.CompanyUUIDKey.String(), "company-uuid-123") // Set default company for tests
 		c.Set(infra.SessionKey.String(), sessionUUID)
 	}
 	return routeutils.GetContext(c)

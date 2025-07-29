@@ -15,25 +15,32 @@ import (
 	"github.com/twinj/uuid"
 )
 
-type personService struct {
+type personApp struct {
 	dm        contract.DataManager
 	log       logger.Logger
 	validator validator.Validator
 	authApp   contract.AuthApp
+	aiApp     contract.AIApp
 }
 
-func newPersonService(infra domain.Infrastructure, authApp contract.AuthApp) contract.PersonApp {
-	return &personService{
+func newPersonApp(infra domain.Infrastructure, authApp contract.AuthApp) *personApp {
+	return &personApp{
 		dm:        infra.DataManager(),
 		log:       infra.Logger(),
 		validator: infra.Validator(),
 		authApp:   authApp,
+		aiApp:     nil, // Will be set later via SetAIApp
 	}
+}
+
+// SetAIApp sets the AI service for this person service
+func (s *personApp) SetAIApp(aiApp contract.AIApp) {
+	s.aiApp = aiApp
 }
 
 // validateUserCompanyAccess checks if the logged user has access to a specific company
 // Returns the company entity if access is granted, or error if not
-func (s *personService) validateUserCompanyAccess(ctx context.Context, userID, companyID int64) (entity.Company, error) {
+func (s *personApp) validateUserCompanyAccess(ctx context.Context, userID, companyID int64) (entity.Company, error) {
 	company, err := s.dm.Company().GetCompanyByID(ctx, companyID)
 	if err != nil {
 		if mysqlutils.SQLNotFound(err.Error()) {
@@ -56,12 +63,18 @@ func (s *personService) validateUserCompanyAccess(ctx context.Context, userID, c
 	return company, nil
 }
 
-func (s *personService) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (entity.Person, error) {
+func (s *personApp) CreatePerson(ctx context.Context, person entity.Person) (entity.Person, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
 	// Generate UUID for the person
 	person.UUID = uuid.NewV4().String()
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return person, fmt.Errorf("failed to get company UUID: %w", err)
+	}
 
 	// Get company by UUID and validate it belongs to the logged user
 	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
@@ -114,7 +127,7 @@ func (s *personService) CreatePerson(ctx context.Context, person entity.Person, 
 	return person, nil
 }
 
-func (s *personService) GetPersonByUUID(ctx context.Context, personUUID string) (entity.Person, error) {
+func (s *personApp) GetPersonByUUID(ctx context.Context, personUUID string) (entity.Person, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -142,9 +155,15 @@ func (s *personService) GetPersonByUUID(ctx context.Context, personUUID string) 
 	return person, nil
 }
 
-func (s *personService) GetCompanyPeople(ctx context.Context, companyUUID string) ([]entity.Person, error) {
+func (s *personApp) GetCompanyPeople(ctx context.Context) ([]entity.Person, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get company UUID: %w", err)
+	}
 
 	// Get company by UUID and validate it belongs to the logged user
 	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
@@ -186,7 +205,7 @@ func (s *personService) GetCompanyPeople(ctx context.Context, companyUUID string
 	return people, nil
 }
 
-func (s *personService) UpdatePerson(ctx context.Context, personUUID string, person entity.Person) error {
+func (s *personApp) UpdatePerson(ctx context.Context, personUUID string, person entity.Person) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -228,7 +247,7 @@ func (s *personService) UpdatePerson(ctx context.Context, personUUID string, per
 	return nil
 }
 
-func (s *personService) DeletePerson(ctx context.Context, personUUID string) error {
+func (s *personApp) DeletePerson(ctx context.Context, personUUID string) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -271,9 +290,15 @@ func (s *personService) DeletePerson(ctx context.Context, personUUID string) err
 	return nil
 }
 
-func (s *personService) SearchPeople(ctx context.Context, companyUUID string, search string) ([]entity.Person, error) {
+func (s *personApp) SearchPeople(ctx context.Context, search string) ([]entity.Person, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get company UUID: %w", err)
+	}
 
 	// Get company by UUID and validate it belongs to the logged user
 	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
@@ -316,9 +341,15 @@ func (s *personService) SearchPeople(ctx context.Context, companyUUID string, se
 }
 
 // CreateNote creates a new note for a person
-func (s *personService) CreateNote(ctx context.Context, note entity.Note, companyUUID string, personUUID string) (entity.Note, error) {
+func (s *personApp) CreateNote(ctx context.Context, note entity.Note, personUUID string) (entity.Note, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
+
+	// Get company UUID from context
+	companyUUID, err := s.authApp.GetCompanyFromContext(ctx)
+	if err != nil {
+		return note, fmt.Errorf("failed to get company UUID: %w", err)
+	}
 
 	// Get and validate company ownership
 	company, err := s.dm.Company().GetCompanyByUUID(ctx, companyUUID)
@@ -377,6 +408,27 @@ func (s *personService) CreateNote(ctx context.Context, note entity.Note, compan
 
 	note.ID = noteID
 
+	// Automatically extract attributes using AI (asynchronous)
+	if s.aiApp != nil {
+		go func() {
+			// Create a new context for the background task
+			bgCtx := context.Background()
+			_, extractionErr := s.aiApp.ExtractAttributesFromNote(bgCtx, noteID)
+			if extractionErr != nil {
+				s.log.Warnw(bgCtx, "failed to extract attributes from note",
+					logger.Err(extractionErr),
+					logger.Int64("note_id", noteID),
+					logger.String("note_uuid", note.UUID),
+				)
+			} else {
+				s.log.Infow(bgCtx, "attributes extracted successfully from note",
+					logger.Int64("note_id", noteID),
+					logger.String("note_uuid", note.UUID),
+				)
+			}
+		}()
+	}
+
 	// Process mentions from content
 	mentionedUUIDs := note.ExtractMentionUUIDs()
 	for _, mentionedUUID := range mentionedUUIDs {
@@ -412,7 +464,7 @@ func (s *personService) CreateNote(ctx context.Context, note entity.Note, compan
 
 		_, err = s.dm.Note().CreateNoteMention(ctx, mention)
 		if err != nil {
-			s.log.Errorw(ctx, "error creating note mention", 
+			s.log.Errorw(ctx, "error creating note mention",
 				logger.Err(err),
 				logger.String("mentioned_person_uuid", mentionedUUID),
 			)
@@ -431,7 +483,7 @@ func (s *personService) CreateNote(ctx context.Context, note entity.Note, compan
 }
 
 // GetPersonTimeline gets the complete timeline (notes + mentions) for a person
-func (s *personService) GetPersonTimeline(ctx context.Context, personUUID string, filters entity.TimelineFilters, take, skip int64) ([]entity.UnifiedTimelineEntry, int64, error) {
+func (s *personApp) GetPersonTimeline(ctx context.Context, personUUID string, filters entity.TimelineFilters, take, skip int64) ([]entity.UnifiedTimelineEntry, int64, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -476,7 +528,7 @@ func (s *personService) GetPersonTimeline(ctx context.Context, personUUID string
 }
 
 // GetPersonMentions gets notes where this person was mentioned (feedbacks received)
-func (s *personService) GetPersonMentions(ctx context.Context, personUUID string, take, skip int64) ([]entity.MentionEntry, int64, error) {
+func (s *personApp) GetPersonMentions(ctx context.Context, personUUID string, take, skip int64) ([]entity.MentionEntry, int64, error) {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -518,7 +570,7 @@ func (s *personService) GetPersonMentions(ctx context.Context, personUUID string
 }
 
 // UpdateNote updates an existing note
-func (s *personService) UpdateNote(ctx context.Context, noteUUID string, updatedNote entity.Note) error {
+func (s *personApp) UpdateNote(ctx context.Context, noteUUID string, updatedNote entity.Note) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 
@@ -601,7 +653,7 @@ func (s *personService) UpdateNote(ctx context.Context, noteUUID string, updated
 
 		_, err = s.dm.Note().CreateNoteMention(ctx, mention)
 		if err != nil {
-			s.log.Errorw(ctx, "error creating mention during update", 
+			s.log.Errorw(ctx, "error creating mention during update",
 				logger.Err(err),
 				logger.String("mentioned_person_uuid", mentionedUUID),
 			)
@@ -617,7 +669,7 @@ func (s *personService) UpdateNote(ctx context.Context, noteUUID string, updated
 }
 
 // DeleteNote deletes a note and its mentions
-func (s *personService) DeleteNote(ctx context.Context, noteUUID string) error {
+func (s *personApp) DeleteNote(ctx context.Context, noteUUID string) error {
 	s.log.Info(ctx, "Process Started")
 	defer s.log.Info(ctx, "Process Finished")
 

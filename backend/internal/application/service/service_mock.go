@@ -24,6 +24,8 @@ type allMocks struct {
 	mockLogger       logger.Logger
 
 	mockUserSvc *mocks.MockUserApp
+	
+	mockAIProvider *mocks.MockAIProvider
 
 	mockDomain *mocks.MockInfrastructure
 }
@@ -48,6 +50,7 @@ func newServiceTestMock(t *testing.T) (m allMocks, ctrl *gomock.Controller) {
 	v := cfg.GetValidator(t)
 
 	userSvc := mocks.NewMockUserApp(ctrl)
+	aiProvider := mocks.NewMockAIProvider(ctrl)
 
 	domainMock := mocks.NewMockInfrastructure(ctrl)
 	domainMock.EXPECT().DataManager().Return(dm).AnyTimes()
@@ -63,13 +66,14 @@ func newServiceTestMock(t *testing.T) (m allMocks, ctrl *gomock.Controller) {
 		mockAuthRepo:     authRepo,
 		mockCrypto:       crypto,
 		mockUserSvc:      userSvc,
+		mockAIProvider:   aiProvider,
 		mockDomain:       domainMock,
 		mockValidator:    v,
 		mockLogger:       log,
 	}
 
 	// validate func New
-	s, err := New(domainMock, time.Minute)
+	s, err := New(domainMock, aiProvider, time.Minute)
 	require.NoError(t, err)
 	require.NotNil(t, s)
 

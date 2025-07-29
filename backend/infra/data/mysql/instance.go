@@ -28,6 +28,7 @@ type MysqlConn struct {
 	companyRepo contract.CompanyRepo
 	personRepo  contract.PersonRepo
 	noteRepo    contract.NoteRepo
+	aiRepo      contract.AIRepo
 }
 
 // helps test the Instance function
@@ -90,6 +91,7 @@ func repoInstances(dbConn dbConn) *MysqlConn {
 		companyRepo: newCompanyRepo(dbConn),
 		personRepo:  newPersonRepo(dbConn),
 		noteRepo:    newNoteRepo(dbConn),
+		aiRepo:      newAIRepo(dbConn),
 	}
 }
 
@@ -139,4 +141,8 @@ func (c *MysqlConn) Person() contract.PersonRepo {
 
 func (c *MysqlConn) Note() contract.NoteRepo {
 	return c.noteRepo
+}
+
+func (c *MysqlConn) AI() contract.AIRepo {
+	return c.aiRepo
 }

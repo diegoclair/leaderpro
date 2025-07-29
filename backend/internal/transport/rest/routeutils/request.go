@@ -13,6 +13,7 @@ import (
 func GetContext(c echo.Context) (ctx context.Context) {
 	ctx = c.Request().Context()
 	ctx = context.WithValue(ctx, infra.UserUUIDKey, c.Get(infra.UserUUIDKey.String()))
+	ctx = context.WithValue(ctx, infra.CompanyUUIDKey, c.Get(infra.CompanyUUIDKey.String()))
 	ctx = context.WithValue(ctx, infra.SessionKey, c.Get(infra.SessionKey.String()))
 	return ctx
 }

@@ -24,8 +24,17 @@ func newNoteRepo(db dbConn) contract.NoteRepo {
 func (r *noteRepo) CreateNote(ctx context.Context, note entity.Note) (createdID int64, err error) {
 	query := `
 		INSERT INTO tab_note (
-			note_uuid, company_id, person_id, user_id, type, content, 
-			feedback_type, feedback_category, created_at, updated_at
+			note_uuid, 
+			company_id,
+			person_id,
+			user_id,
+			type,
+			content,
+			feedback_type,
+			feedback_category,
+			created_at,
+			updated_at
+
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
@@ -36,9 +45,16 @@ func (r *noteRepo) CreateNote(ctx context.Context, note entity.Note) (createdID 
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx,
-		note.UUID, note.CompanyID, note.PersonID, note.UserID, note.Type,
-		note.Content, note.FeedbackType, note.FeedbackCategory,
-		note.CreatedAt, note.UpdatedAt,
+		note.UUID,
+		note.CompanyID,
+		note.PersonID,
+		note.UserID,
+		note.Type,
+		note.Content,
+		note.FeedbackType,
+		note.FeedbackCategory,
+		note.CreatedAt,
+		note.UpdatedAt,
 	)
 	if err != nil {
 		return createdID, mysqlutils.HandleMySQLError(err)
@@ -54,10 +70,22 @@ func (r *noteRepo) CreateNote(ctx context.Context, note entity.Note) (createdID 
 
 func (r *noteRepo) GetNoteByUUID(ctx context.Context, noteUUID string) (note entity.Note, err error) {
 	query := `
-		SELECT note_id, note_uuid, company_id, person_id, user_id, type, content,
-			   feedback_type, feedback_category, created_at, updated_at
+		SELECT 
+			note_id,
+			note_uuid,
+			company_id,
+			person_id,
+			user_id,
+			type,
+			content,
+			feedback_type,
+			feedback_category,
+			created_at,
+			updated_at
+
 		FROM tab_note 
-		WHERE note_uuid = ? AND deleted_at IS NULL
+		WHERE note_uuid  = ? 
+		  AND deleted_at IS NULL
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -68,9 +96,64 @@ func (r *noteRepo) GetNoteByUUID(ctx context.Context, noteUUID string) (note ent
 
 	row := stmt.QueryRowContext(ctx, noteUUID)
 	err = row.Scan(
-		&note.ID, &note.UUID, &note.CompanyID, &note.PersonID, &note.UserID,
-		&note.Type, &note.Content, &note.FeedbackType, &note.FeedbackCategory,
-		&note.CreatedAt, &note.UpdatedAt,
+		&note.ID,
+		&note.UUID,
+		&note.CompanyID,
+		&note.PersonID,
+		&note.UserID,
+		&note.Type,
+		&note.Content,
+		&note.FeedbackType,
+		&note.FeedbackCategory,
+		&note.CreatedAt,
+		&note.UpdatedAt,
+	)
+	if err != nil {
+		return note, mysqlutils.HandleMySQLError(err)
+	}
+
+	return note, nil
+}
+
+func (r *noteRepo) GetNoteByID(ctx context.Context, noteID int64) (note entity.Note, err error) {
+	query := `
+		SELECT 
+		 	note_id,
+			note_uuid,
+			company_id,
+			person_id,
+			user_id,
+			type,
+			content,
+			feedback_type,
+			feedback_category,
+			created_at,
+			updated_at
+		
+		FROM tab_note 
+		WHERE note_id 	 = ? 
+		  AND deleted_at IS NULL
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return note, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, noteID)
+	err = row.Scan(
+		&note.ID,
+		&note.UUID,
+		&note.CompanyID,
+		&note.PersonID,
+		&note.UserID,
+		&note.Type,
+		&note.Content,
+		&note.FeedbackType,
+		&note.FeedbackCategory,
+		&note.CreatedAt,
+		&note.UpdatedAt,
 	)
 	if err != nil {
 		return note, mysqlutils.HandleMySQLError(err)
@@ -82,9 +165,11 @@ func (r *noteRepo) GetNoteByUUID(ctx context.Context, noteUUID string) (note ent
 func (r *noteRepo) GetNotesByPerson(ctx context.Context, personID int64, take, skip int64) (notes []entity.Note, totalRecords int64, err error) {
 	// Count query
 	countQuery := `
-		SELECT COUNT(*) 
-		FROM tab_note 
-		WHERE person_id = ? AND deleted_at IS NULL
+		SELECT COUNT(*)
+
+		FROM  tab_note
+		WHERE person_id  = ?
+		  AND deleted_at IS NULL
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, countQuery)
@@ -101,10 +186,22 @@ func (r *noteRepo) GetNotesByPerson(ctx context.Context, personID int64, take, s
 
 	// Data query
 	query := `
-		SELECT note_id, note_uuid, company_id, person_id, user_id, type, content,
-			   feedback_type, feedback_category, created_at, updated_at
+		SELECT 
+			note_id,
+			note_uuid,
+			company_id,
+			person_id,
+			user_id,
+			type,
+			content,
+			feedback_type,
+			feedback_category,
+			created_at,
+			updated_at
+
 		FROM tab_note 
-		WHERE person_id = ? AND deleted_at IS NULL
+		WHERE person_id  = ? 
+		  AND deleted_at IS NULL
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
@@ -141,11 +238,84 @@ func (r *noteRepo) GetNotesByPerson(ctx context.Context, personID int64, take, s
 	return notes, totalRecords, nil
 }
 
+func (r *noteRepo) GetNotesByPersonIDPaginated(ctx context.Context, personID int64, page, quantity int64) (notes []entity.Note, err error) {
+	// Calculate offset
+	offset := (page - 1) * quantity
+
+	query := `
+		SELECT 
+			note_id,
+			note_uuid,
+			company_id,
+			person_id,
+			user_id,
+			type,
+			content,
+			feedback_type,
+			feedback_category,
+			created_at,
+			updated_at
+
+		FROM tab_note 
+		WHERE person_id  = ? 
+		  AND deleted_at IS NULL
+
+		ORDER BY created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return notes, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, personID, quantity, offset)
+	if err != nil {
+		return notes, mysqlutils.HandleMySQLError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var note entity.Note
+		err = rows.Scan(
+			&note.ID,
+			&note.UUID,
+			&note.CompanyID,
+			&note.PersonID,
+			&note.UserID,
+			&note.Type,
+			&note.Content,
+			&note.FeedbackType,
+			&note.FeedbackCategory,
+			&note.CreatedAt,
+			&note.UpdatedAt,
+		)
+		if err != nil {
+			return notes, mysqlutils.HandleMySQLError(err)
+		}
+		notes = append(notes, note)
+	}
+
+	if err = rows.Err(); err != nil {
+		return notes, mysqlutils.HandleMySQLError(err)
+	}
+
+	return notes, nil
+}
+
 func (r *noteRepo) UpdateNote(ctx context.Context, noteID int64, note entity.Note) (err error) {
 	query := `
 		UPDATE tab_note 
-		SET type = ?, content = ?, feedback_type = ?, feedback_category = ?, updated_at = ?
-		WHERE note_id = ? AND deleted_at IS NULL
+		SET 
+			type 				= ?, 
+		  	content 			= ?, 
+			feedback_type 		= ?,
+			feedback_category 	= ?, 
+			updated_at 			= ?
+
+		WHERE note_id 		= ? 
+		  AND deleted_at 	IS NULL
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -154,7 +324,7 @@ func (r *noteRepo) UpdateNote(ctx context.Context, noteID int64, note entity.Not
 	}
 	defer stmt.Close()
 
-	// Se não for feedback, força feedback_type e feedback_category como NULL
+	// If not feedback, force feedback_type and feedback_category as NULL
 	var feedbackType, feedbackCategory interface{}
 	if note.Type == "feedback" {
 		feedbackType = note.FeedbackType
@@ -181,7 +351,6 @@ func (r *noteRepo) UpdateNote(ctx context.Context, noteID int64, note entity.Not
 		return sql.ErrNoRows
 	}
 
-	// Atualiza as mentions relacionadas a esta nota para manter sincronização
 	err = r.updateMentionsContent(ctx, noteID, note.Content)
 	if err != nil {
 		return mysqlutils.HandleMySQLError(err)

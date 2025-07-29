@@ -14,24 +14,34 @@ type Apps struct {
 	Company   contract.CompanyApp
 	Person    contract.PersonApp
 	Dashboard contract.DashboardApp
+	AI        contract.AIApp
 }
 
 // New to get instance of all services
-func New(infra domain.Infrastructure, accessTokenDuration time.Duration) (*Apps, error) {
+func New(infra domain.Infrastructure, aiProvider contract.AIProvider, accessTokenDuration time.Duration) (*Apps, error) {
 	if err := validateInfrastructure(infra); err != nil {
 		return nil, err
 	}
 
-	userApp := newUserSvc(infra)
+	userApp := newUserApp(infra)
 	authApp := newAuthApp(infra, userApp, accessTokenDuration)
-	personApp := newPersonService(infra, authApp)
+	personApp := newPersonApp(infra, authApp)
+
+	// Initialize AI service if AI Provider is provided
+	var aiApp contract.AIApp
+	if aiProvider != nil {
+		aiApp = newAIApp(infra, aiProvider, authApp)
+		// Inject AI service into person service for automatic extraction
+		personApp.SetAIApp(aiApp)
+	}
 
 	return &Apps{
 		User:      userApp,
 		Auth:      authApp,
-		Company:   newCompanyService(infra, authApp),
+		Company:   newCompanyApp(infra, authApp),
 		Person:    personApp,
 		Dashboard: newDashboardService(infra, authApp, personApp),
+		AI:        aiApp,
 	}, nil
 }
 

@@ -161,3 +161,22 @@ func (s *authApp) GetLoggedUserID(ctx context.Context) (int64, error) {
 
 	return userID, nil
 }
+
+func (s *authApp) GetCompanyFromContext(ctx context.Context) (string, error) {
+	s.log.Info(ctx, "Process Started")
+	defer s.log.Info(ctx, "Process Finished")
+
+	companyUUID := ctx.Value(infra.CompanyUUIDKey)
+	if companyUUID == nil {
+		s.log.Error(ctx, "company UUID not found in context")
+		return "", resterrors.NewBadRequestError("company_uuid is required")
+	}
+
+	companyUUIDStr, ok := companyUUID.(string)
+	if !ok {
+		s.log.Error(ctx, "invalid company UUID type in context")
+		return "", resterrors.NewInternalServerError("invalid company context")
+	}
+
+	return companyUUIDStr, nil
+}

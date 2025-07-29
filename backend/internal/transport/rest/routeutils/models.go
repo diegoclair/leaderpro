@@ -8,4 +8,6 @@ type EchoGroups struct {
 	AppGroup models.EchoGroup
 	// PrivateGroup is the group for routes that need to be authenticated (login required)
 	PrivateGroup models.EchoGroup
+	// CompanyGroup is the group for routes that need authentication + company ownership validation
+	CompanyGroup models.EchoGroup
 }

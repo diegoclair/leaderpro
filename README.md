@@ -59,9 +59,10 @@ O protótipo atual demonstra:
 - ✅ Sistema de @menções com feedback cruzado
 - ✅ **Timeline unificada** com filtragem avançada e paginação
 - ✅ Formatação inteligente de datas (dias/meses/anos atrás)
-- ✅ Backend Go + MySQL + Redis funcionando
+- ✅ **Backend IA completo** - Coach de liderança funcional
+- ✅ Backend Go + MySQL + Redis + OpenAI integrado
 
-> **Nota**: Backend completo implementado. Integração com IA está no roadmap.
+> **Nota**: Backend IA totalmente implementado. Interface frontend para IA está no roadmap.
 
 ## 🚀 Visão de Produto
 
@@ -189,6 +190,27 @@ func GetPeopleWithFilters(c echo.Context) error {
 - **📝 `MentionsInputComponent`** - Sistema @mentions com react-mentions
 - **🔘 Select components** - Tratamento correto de valores vazios
 
+### ✅ Sistema de IA Completo (Backend)
+**Coach de liderança contextual totalmente implementado:**
+
+**Backend (Go + OpenAI):**
+- **🤖 Chat API** - Endpoint `/companies/{id}/people/{id}/ai/chat` funcional
+- **🧠 Extração de Atributos** - Processamento automático de notas com IA
+- **📊 Sistema de Usage** - Tracking de tokens, custos e relatórios
+- **🔄 Feedback Loop** - Rating de respostas para melhoria contínua
+- **🏗️ Arquitetura Provider** - Abstração para OpenAI/Claude/outros LLMs
+- **⚡ Performance** - Context building otimizado e caching inteligente
+- **🔒 Segurança** - Validation middleware e rate limiting
+
+**Funcionalidades IA:**
+- **Coach Contextual:** IA conhece histórico completo da pessoa (atributos, 1:1s, feedbacks)
+- **Extração Automática:** IA extrai atributos das notas (hobbies, família, skills, etc.)
+- **Sugestões Personalizadas:** Recommendations baseadas em patterns temporais
+- **Relatórios de Uso:** Transparência total de tokens e custos
+- **Múltiplos Providers:** Preparado para OpenAI, Claude, modelos locais
+
+**Próximo:** Interface frontend para aproveitar toda essa inteligência (Plano 004)
+
 ### ✅ Segurança e Performance
 **Padrões obrigatórios para evitar bugs de segurança:**
 
@@ -238,6 +260,8 @@ func GetPeopleWithFilters(c echo.Context) error {
 
 ### Arquivos Principais
 - `/plan/000001-projeto-leaderpro.md` - Plano de negócio completo e análise de mercado
+- `/plan/000003-ai-implementation-plan.md` - ✅ **Plano de IA backend** (implementado)
+- `/plan/000004-frontend-ai-integration.md` - 🚧 **Plano de IA frontend** (próximo)
 - `/CLAUDE.md` - Diretrizes técnicas gerais e arquitetura do projeto
 - `/frontend/README.md` - **Documentação específica do frontend** (arquitetura, componentes, boas práticas)
 - `/backend/README.md` - Documentação da API e backend (a ser criado)

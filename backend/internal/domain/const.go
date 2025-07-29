@@ -21,3 +21,9 @@ const (
 	FeedbackCategorySkill         = "skill"
 	FeedbackCategoryCollaboration = "collaboration"
 )
+
+// AI prompt types constants
+const (
+	AIPromptTypeLeadershipCoach    = "leadership_coach"
+	AIPromptTypeAttributeExtraction = "attribute_extraction"
+)

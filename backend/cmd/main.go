@@ -46,15 +46,8 @@ func main() {
 		return
 	}
 	log.Info(ctx, "Migrations completed successfully")
-	
-	// Alternative: With custom options using the options pattern
-	// err = mysql.MigrateWithOptions(cfg.GetDataManager().(*db.MysqlConn).DB(),
-	// 	sqlmigrator.WithDescriptionProcessor(func(filename, instruction string) string {
-	// 		return "LEADER: " + sqlmigrator.ExtractActionDescription(instruction)
-	// 	}),
-	// )
 
-	apps, err := service.New(infra, cfg.App.Auth.AccessTokenDuration)
+	apps, err := service.New(infra, cfg.GetAIManager().GetDefaultProvider(), cfg.App.Auth.AccessTokenDuration)
 	if err != nil {
 		log.Errorw(ctx, "error to get domain services", logger.Err(err))
 		return

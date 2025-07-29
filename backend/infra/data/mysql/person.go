@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/diegoclair/go_utils/mysqlutils"
 	"github.com/diegoclair/leaderpro/internal/domain"
@@ -153,7 +155,8 @@ func (r *personRepo) CreatePerson(ctx context.Context, person entity.Person) (cr
 
 func (r *personRepo) GetPersonByUUID(ctx context.Context, personUUID string) (person entity.Person, err error) {
 	query := getPersonSelectBase() + `
-		WHERE p.person_uuid = ? AND p.active = 1
+		WHERE p.person_uuid = ?
+		  AND p.active      = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -171,9 +174,31 @@ func (r *personRepo) GetPersonByUUID(ctx context.Context, personUUID string) (pe
 	return person, nil
 }
 
+func (r *personRepo) GetPersonByID(ctx context.Context, personID int64) (person entity.Person, err error) {
+	query := getPersonSelectBase() + `
+		WHERE p.person_id = ?
+		  AND p.active    = 1
+	`
+
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return person, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, personID)
+	person, err = r.parsePerson(row)
+	if err != nil {
+		return person, mysqlutils.HandleMySQLError(err)
+	}
+
+	return person, nil
+}
+
 func (r *personRepo) GetPersonsByCompany(ctx context.Context, companyID int64) (people []entity.Person, err error) {
 	query := getPersonSelectBase() + `
-		WHERE p.company_id = ? AND p.active = 1
+		WHERE p.company_id = ?
+		  AND p.active     = 1
 		ORDER BY p.name ASC
 	`
 
@@ -203,23 +228,24 @@ func (r *personRepo) GetPersonsByCompany(ctx context.Context, companyID int64) (
 func (r *personRepo) UpdatePerson(ctx context.Context, personID int64, person entity.Person) (err error) {
 	query := `
 		UPDATE tab_person
-		SET 
-			name = ?,
-			email = ?,
-			position = ?,
-			department = ?,
-			phone = ?,
-			birthday = ?,
-			start_date = ?,
-			is_manager = ?,
-			manager_id = ?,
-			notes = ?,
-			has_kids = ?,
-			gender = ?,
-			interests = ?,
-			personality = ?,
-			updated_at = NOW()
-		WHERE person_id = ? AND active = 1
+		  SET  name        = ?,
+		       email       = ?,
+		       position    = ?,
+		       department  = ?,
+		       phone       = ?,
+		       birthday    = ?,
+		       start_date  = ?,
+		       is_manager  = ?,
+		       manager_id  = ?,
+		       notes       = ?,
+		       has_kids    = ?,
+		       gender      = ?,
+		       interests   = ?,
+		       personality = ?,
+		       updated_at  = NOW()
+
+		WHERE person_id = ?
+		  AND active    = 1
 	`
 
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -332,4 +358,106 @@ func (r *personRepo) GetPeopleCountByCompany(ctx context.Context, companyID int6
 	}
 
 	return count, nil
+}
+
+// ========== Person Attributes ==========
+
+func (r *personRepo) CreatePersonAttribute(ctx context.Context, attr entity.PersonAttribute) (entity.PersonAttribute, error) {
+	query := `
+		INSERT INTO person_attributes (person_id, attribute_key, attribute_value, source, extracted_from_note_id)
+		VALUES (?, ?, ?, ?, ?)
+	`
+	
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return entity.PersonAttribute{}, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.ExecContext(ctx, attr.PersonID, attr.AttributeKey, attr.AttributeValue, attr.Source, attr.ExtractedFromNoteID)
+	if err != nil {
+		return entity.PersonAttribute{}, mysqlutils.HandleMySQLError(err)
+	}
+	
+	id, err := result.LastInsertId()
+	if err != nil {
+		return entity.PersonAttribute{}, err
+	}
+	
+	attr.ID = id
+	return attr, nil
+}
+
+func (r *personRepo) GetPersonAttributesMap(ctx context.Context, personID int64) (map[string]string, error) {
+	query := `
+		SELECT attribute_key, attribute_value
+		FROM person_attributes
+		WHERE person_id = ?
+		ORDER BY updated_at DESC
+	`
+	
+	stmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, personID)
+	if err != nil {
+		return nil, mysqlutils.HandleMySQLError(err)
+	}
+	defer rows.Close()
+	
+	attributes := make(map[string]string)
+	for rows.Next() {
+		var key, value string
+		err := rows.Scan(&key, &value)
+		if err != nil {
+			return nil, err
+		}
+		attributes[key] = value
+	}
+	
+	return attributes, nil
+}
+
+func (r *personRepo) BulkUpsertPersonAttributes(ctx context.Context, personID int64, attributes map[string]string, source string, sourceNoteID *int64) error {
+	if len(attributes) == 0 {
+		return nil
+	}
+	
+	// Build upsert query (INSERT ... ON DUPLICATE KEY UPDATE)
+	query := `
+		INSERT INTO person_attributes (person_id, attribute_key, attribute_value, source, extracted_from_note_id)
+		VALUES %s
+		ON DUPLICATE KEY UPDATE
+			attribute_value = VALUES(attribute_value),
+			source = VALUES(source),
+			extracted_from_note_id = VALUES(extracted_from_note_id),
+			updated_at = CURRENT_TIMESTAMP
+	`
+	
+	// Build placeholders and values
+	var placeholders []string
+	var args []interface{}
+	
+	for key, value := range attributes {
+		placeholders = append(placeholders, "(?, ?, ?, ?, ?)")
+		args = append(args, personID, key, value, source, sourceNoteID)
+	}
+	
+	finalQuery := fmt.Sprintf(query, strings.Join(placeholders, ", "))
+	
+	stmt, err := r.db.PrepareContext(ctx, finalQuery)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+	defer stmt.Close()
+	
+	_, err = stmt.ExecContext(ctx, args...)
+	if err != nil {
+		return mysqlutils.HandleMySQLError(err)
+	}
+	
+	return nil
 }

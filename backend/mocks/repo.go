@@ -44,6 +44,20 @@ func (m *MockDataManager) EXPECT() *MockDataManagerMockRecorder {
 	return m.recorder
 }
 
+// AI mocks base method.
+func (m *MockDataManager) AI() contract.AIRepo {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AI")
+	ret0, _ := ret[0].(contract.AIRepo)
+	return ret0
+}
+
+// AI indicates an expected call of AI.
+func (mr *MockDataManagerMockRecorder) AI() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AI", reflect.TypeOf((*MockDataManager)(nil).AI))
+}
+
 // Auth mocks base method.
 func (m *MockDataManager) Auth() contract.AuthRepo {
 	m.ctrl.T.Helper()
@@ -488,6 +502,20 @@ func (m *MockPersonRepo) EXPECT() *MockPersonRepoMockRecorder {
 	return m.recorder
 }
 
+// BulkUpsertPersonAttributes mocks base method.
+func (m *MockPersonRepo) BulkUpsertPersonAttributes(ctx context.Context, personID int64, attributes map[string]string, source string, sourceNoteID *int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkUpsertPersonAttributes", ctx, personID, attributes, source, sourceNoteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkUpsertPersonAttributes indicates an expected call of BulkUpsertPersonAttributes.
+func (mr *MockPersonRepoMockRecorder) BulkUpsertPersonAttributes(ctx, personID, attributes, source, sourceNoteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkUpsertPersonAttributes", reflect.TypeOf((*MockPersonRepo)(nil).BulkUpsertPersonAttributes), ctx, personID, attributes, source, sourceNoteID)
+}
+
 // CreatePerson mocks base method.
 func (m *MockPersonRepo) CreatePerson(ctx context.Context, person entity.Person) (int64, error) {
 	m.ctrl.T.Helper()
@@ -501,6 +529,21 @@ func (m *MockPersonRepo) CreatePerson(ctx context.Context, person entity.Person)
 func (mr *MockPersonRepoMockRecorder) CreatePerson(ctx, person any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockPersonRepo)(nil).CreatePerson), ctx, person)
+}
+
+// CreatePersonAttribute mocks base method.
+func (m *MockPersonRepo) CreatePersonAttribute(ctx context.Context, attr entity.PersonAttribute) (entity.PersonAttribute, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePersonAttribute", ctx, attr)
+	ret0, _ := ret[0].(entity.PersonAttribute)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreatePersonAttribute indicates an expected call of CreatePersonAttribute.
+func (mr *MockPersonRepoMockRecorder) CreatePersonAttribute(ctx, attr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePersonAttribute", reflect.TypeOf((*MockPersonRepo)(nil).CreatePersonAttribute), ctx, attr)
 }
 
 // DeletePerson mocks base method.
@@ -530,6 +573,36 @@ func (m *MockPersonRepo) GetPeopleCountByCompany(ctx context.Context, companyID 
 func (mr *MockPersonRepoMockRecorder) GetPeopleCountByCompany(ctx, companyID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeopleCountByCompany", reflect.TypeOf((*MockPersonRepo)(nil).GetPeopleCountByCompany), ctx, companyID)
+}
+
+// GetPersonAttributesMap mocks base method.
+func (m *MockPersonRepo) GetPersonAttributesMap(ctx context.Context, personID int64) (map[string]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonAttributesMap", ctx, personID)
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPersonAttributesMap indicates an expected call of GetPersonAttributesMap.
+func (mr *MockPersonRepoMockRecorder) GetPersonAttributesMap(ctx, personID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonAttributesMap", reflect.TypeOf((*MockPersonRepo)(nil).GetPersonAttributesMap), ctx, personID)
+}
+
+// GetPersonByID mocks base method.
+func (m *MockPersonRepo) GetPersonByID(ctx context.Context, personID int64) (entity.Person, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonByID", ctx, personID)
+	ret0, _ := ret[0].(entity.Person)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPersonByID indicates an expected call of GetPersonByID.
+func (mr *MockPersonRepoMockRecorder) GetPersonByID(ctx, personID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonByID", reflect.TypeOf((*MockPersonRepo)(nil).GetPersonByID), ctx, personID)
 }
 
 // GetPersonByUUID mocks base method.
@@ -719,6 +792,21 @@ func (mr *MockNoteRepoMockRecorder) GetMentionsByPerson(ctx, mentionedPersonID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMentionsByPerson", reflect.TypeOf((*MockNoteRepo)(nil).GetMentionsByPerson), ctx, mentionedPersonID, take, skip)
 }
 
+// GetNoteByID mocks base method.
+func (m *MockNoteRepo) GetNoteByID(ctx context.Context, noteID int64) (entity.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNoteByID", ctx, noteID)
+	ret0, _ := ret[0].(entity.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNoteByID indicates an expected call of GetNoteByID.
+func (mr *MockNoteRepoMockRecorder) GetNoteByID(ctx, noteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNoteByID", reflect.TypeOf((*MockNoteRepo)(nil).GetNoteByID), ctx, noteID)
+}
+
 // GetNoteByUUID mocks base method.
 func (m *MockNoteRepo) GetNoteByUUID(ctx context.Context, noteUUID string) (entity.Note, error) {
 	m.ctrl.T.Helper()
@@ -748,6 +836,21 @@ func (m *MockNoteRepo) GetNotesByPerson(ctx context.Context, personID, take, ski
 func (mr *MockNoteRepoMockRecorder) GetNotesByPerson(ctx, personID, take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotesByPerson", reflect.TypeOf((*MockNoteRepo)(nil).GetNotesByPerson), ctx, personID, take, skip)
+}
+
+// GetNotesByPersonIDPaginated mocks base method.
+func (m *MockNoteRepo) GetNotesByPersonIDPaginated(ctx context.Context, personID, page, quantity int64) ([]entity.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotesByPersonIDPaginated", ctx, personID, page, quantity)
+	ret0, _ := ret[0].([]entity.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotesByPersonIDPaginated indicates an expected call of GetNotesByPersonIDPaginated.
+func (mr *MockNoteRepoMockRecorder) GetNotesByPersonIDPaginated(ctx, personID, page, quantity any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotesByPersonIDPaginated", reflect.TypeOf((*MockNoteRepo)(nil).GetNotesByPersonIDPaginated), ctx, personID, page, quantity)
 }
 
 // GetOneOnOnesCountThisMonth mocks base method.
@@ -809,4 +912,102 @@ func (m *MockNoteRepo) UpdateNote(ctx context.Context, noteID int64, note entity
 func (mr *MockNoteRepoMockRecorder) UpdateNote(ctx, noteID, note any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteRepo)(nil).UpdateNote), ctx, noteID, note)
+}
+
+// MockAIRepo is a mock of AIRepo interface.
+type MockAIRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockAIRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockAIRepoMockRecorder is the mock recorder for MockAIRepo.
+type MockAIRepoMockRecorder struct {
+	mock *MockAIRepo
+}
+
+// NewMockAIRepo creates a new mock instance.
+func NewMockAIRepo(ctrl *gomock.Controller) *MockAIRepo {
+	mock := &MockAIRepo{ctrl: ctrl}
+	mock.recorder = &MockAIRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAIRepo) EXPECT() *MockAIRepoMockRecorder {
+	return m.recorder
+}
+
+// CreateConversation mocks base method.
+func (m *MockAIRepo) CreateConversation(ctx context.Context, conversation entity.AIConversation) (entity.AIConversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateConversation", ctx, conversation)
+	ret0, _ := ret[0].(entity.AIConversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateConversation indicates an expected call of CreateConversation.
+func (mr *MockAIRepoMockRecorder) CreateConversation(ctx, conversation any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateConversation", reflect.TypeOf((*MockAIRepo)(nil).CreateConversation), ctx, conversation)
+}
+
+// CreateUsage mocks base method.
+func (m *MockAIRepo) CreateUsage(ctx context.Context, usage entity.AIUsageTracker) (entity.AIUsageTracker, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUsage", ctx, usage)
+	ret0, _ := ret[0].(entity.AIUsageTracker)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUsage indicates an expected call of CreateUsage.
+func (mr *MockAIRepoMockRecorder) CreateUsage(ctx, usage any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUsage", reflect.TypeOf((*MockAIRepo)(nil).CreateUsage), ctx, usage)
+}
+
+// GetActivePromptByType mocks base method.
+func (m *MockAIRepo) GetActivePromptByType(ctx context.Context, promptType string) (entity.AIPrompt, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetActivePromptByType", ctx, promptType)
+	ret0, _ := ret[0].(entity.AIPrompt)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetActivePromptByType indicates an expected call of GetActivePromptByType.
+func (mr *MockAIRepoMockRecorder) GetActivePromptByType(ctx, promptType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActivePromptByType", reflect.TypeOf((*MockAIRepo)(nil).GetActivePromptByType), ctx, promptType)
+}
+
+// GetUsageReport mocks base method.
+func (m *MockAIRepo) GetUsageReport(ctx context.Context, userID int64, period string) (entity.AIUsageReport, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsageReport", ctx, userID, period)
+	ret0, _ := ret[0].(entity.AIUsageReport)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsageReport indicates an expected call of GetUsageReport.
+func (mr *MockAIRepoMockRecorder) GetUsageReport(ctx, userID, period any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsageReport", reflect.TypeOf((*MockAIRepo)(nil).GetUsageReport), ctx, userID, period)
+}
+
+// UpdateUsageFeedback mocks base method.
+func (m *MockAIRepo) UpdateUsageFeedback(ctx context.Context, usageID int64, feedback, comment string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUsageFeedback", ctx, usageID, feedback, comment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUsageFeedback indicates an expected call of UpdateUsageFeedback.
+func (mr *MockAIRepoMockRecorder) UpdateUsageFeedback(ctx, usageID, feedback, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsageFeedback", reflect.TypeOf((*MockAIRepo)(nil).UpdateUsageFeedback), ctx, usageID, feedback, comment)
 }

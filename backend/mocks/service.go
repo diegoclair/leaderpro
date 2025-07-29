@@ -229,6 +229,21 @@ func (mr *MockAuthAppMockRecorder) CreateSession(ctx, session any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockAuthApp)(nil).CreateSession), ctx, session)
 }
 
+// GetCompanyFromContext mocks base method.
+func (m *MockAuthApp) GetCompanyFromContext(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCompanyFromContext", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCompanyFromContext indicates an expected call of GetCompanyFromContext.
+func (mr *MockAuthAppMockRecorder) GetCompanyFromContext(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompanyFromContext", reflect.TypeOf((*MockAuthApp)(nil).GetCompanyFromContext), ctx)
+}
+
 // GetLoggedUserID mocks base method.
 func (m *MockAuthApp) GetLoggedUserID(ctx context.Context) (int64, error) {
 	m.ctrl.T.Helper()
@@ -341,6 +356,20 @@ func (mr *MockCompanyAppMockRecorder) DeleteCompany(ctx, companyUUID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCompany", reflect.TypeOf((*MockCompanyApp)(nil).DeleteCompany), ctx, companyUUID)
 }
 
+// DeleteLoggedUserCompany mocks base method.
+func (m *MockCompanyApp) DeleteLoggedUserCompany(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLoggedUserCompany", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteLoggedUserCompany indicates an expected call of DeleteLoggedUserCompany.
+func (mr *MockCompanyAppMockRecorder) DeleteLoggedUserCompany(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLoggedUserCompany", reflect.TypeOf((*MockCompanyApp)(nil).DeleteLoggedUserCompany), ctx)
+}
+
 // GetCompanyByUUID mocks base method.
 func (m *MockCompanyApp) GetCompanyByUUID(ctx context.Context, companyUUID string) (entity.Company, error) {
 	m.ctrl.T.Helper()
@@ -354,6 +383,21 @@ func (m *MockCompanyApp) GetCompanyByUUID(ctx context.Context, companyUUID strin
 func (mr *MockCompanyAppMockRecorder) GetCompanyByUUID(ctx, companyUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompanyByUUID", reflect.TypeOf((*MockCompanyApp)(nil).GetCompanyByUUID), ctx, companyUUID)
+}
+
+// GetLoggedUserCompany mocks base method.
+func (m *MockCompanyApp) GetLoggedUserCompany(ctx context.Context) (entity.Company, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLoggedUserCompany", ctx)
+	ret0, _ := ret[0].(entity.Company)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLoggedUserCompany indicates an expected call of GetLoggedUserCompany.
+func (mr *MockCompanyAppMockRecorder) GetLoggedUserCompany(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoggedUserCompany", reflect.TypeOf((*MockCompanyApp)(nil).GetLoggedUserCompany), ctx)
 }
 
 // GetUserCompanies mocks base method.
@@ -385,6 +429,34 @@ func (mr *MockCompanyAppMockRecorder) UpdateCompany(ctx, companyUUID, company an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCompany", reflect.TypeOf((*MockCompanyApp)(nil).UpdateCompany), ctx, companyUUID, company)
 }
 
+// UpdateLoggedUserCompany mocks base method.
+func (m *MockCompanyApp) UpdateLoggedUserCompany(ctx context.Context, company entity.Company) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLoggedUserCompany", ctx, company)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLoggedUserCompany indicates an expected call of UpdateLoggedUserCompany.
+func (mr *MockCompanyAppMockRecorder) UpdateLoggedUserCompany(ctx, company any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLoggedUserCompany", reflect.TypeOf((*MockCompanyApp)(nil).UpdateLoggedUserCompany), ctx, company)
+}
+
+// ValidateCompanyOwnership mocks base method.
+func (m *MockCompanyApp) ValidateCompanyOwnership(ctx context.Context, companyUUID, userUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateCompanyOwnership", ctx, companyUUID, userUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ValidateCompanyOwnership indicates an expected call of ValidateCompanyOwnership.
+func (mr *MockCompanyAppMockRecorder) ValidateCompanyOwnership(ctx, companyUUID, userUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateCompanyOwnership", reflect.TypeOf((*MockCompanyApp)(nil).ValidateCompanyOwnership), ctx, companyUUID, userUUID)
+}
+
 // MockPersonApp is a mock of PersonApp interface.
 type MockPersonApp struct {
 	ctrl     *gomock.Controller
@@ -410,33 +482,33 @@ func (m *MockPersonApp) EXPECT() *MockPersonAppMockRecorder {
 }
 
 // CreateNote mocks base method.
-func (m *MockPersonApp) CreateNote(ctx context.Context, note entity.Note, companyUUID, personUUID string) (entity.Note, error) {
+func (m *MockPersonApp) CreateNote(ctx context.Context, note entity.Note, personUUID string) (entity.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNote", ctx, note, companyUUID, personUUID)
+	ret := m.ctrl.Call(m, "CreateNote", ctx, note, personUUID)
 	ret0, _ := ret[0].(entity.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNote indicates an expected call of CreateNote.
-func (mr *MockPersonAppMockRecorder) CreateNote(ctx, note, companyUUID, personUUID any) *gomock.Call {
+func (mr *MockPersonAppMockRecorder) CreateNote(ctx, note, personUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockPersonApp)(nil).CreateNote), ctx, note, companyUUID, personUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockPersonApp)(nil).CreateNote), ctx, note, personUUID)
 }
 
 // CreatePerson mocks base method.
-func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person, companyUUID string) (entity.Person, error) {
+func (m *MockPersonApp) CreatePerson(ctx context.Context, person entity.Person) (entity.Person, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePerson", ctx, person, companyUUID)
+	ret := m.ctrl.Call(m, "CreatePerson", ctx, person)
 	ret0, _ := ret[0].(entity.Person)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreatePerson indicates an expected call of CreatePerson.
-func (mr *MockPersonAppMockRecorder) CreatePerson(ctx, person, companyUUID any) *gomock.Call {
+func (mr *MockPersonAppMockRecorder) CreatePerson(ctx, person any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockPersonApp)(nil).CreatePerson), ctx, person, companyUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockPersonApp)(nil).CreatePerson), ctx, person)
 }
 
 // DeleteNote mocks base method.
@@ -468,18 +540,18 @@ func (mr *MockPersonAppMockRecorder) DeletePerson(ctx, personUUID any) *gomock.C
 }
 
 // GetCompanyPeople mocks base method.
-func (m *MockPersonApp) GetCompanyPeople(ctx context.Context, companyUUID string) ([]entity.Person, error) {
+func (m *MockPersonApp) GetCompanyPeople(ctx context.Context) ([]entity.Person, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCompanyPeople", ctx, companyUUID)
+	ret := m.ctrl.Call(m, "GetCompanyPeople", ctx)
 	ret0, _ := ret[0].([]entity.Person)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCompanyPeople indicates an expected call of GetCompanyPeople.
-func (mr *MockPersonAppMockRecorder) GetCompanyPeople(ctx, companyUUID any) *gomock.Call {
+func (mr *MockPersonAppMockRecorder) GetCompanyPeople(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompanyPeople", reflect.TypeOf((*MockPersonApp)(nil).GetCompanyPeople), ctx, companyUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompanyPeople", reflect.TypeOf((*MockPersonApp)(nil).GetCompanyPeople), ctx)
 }
 
 // GetPersonByUUID mocks base method.
@@ -530,18 +602,18 @@ func (mr *MockPersonAppMockRecorder) GetPersonTimeline(ctx, personUUID, filters,
 }
 
 // SearchPeople mocks base method.
-func (m *MockPersonApp) SearchPeople(ctx context.Context, companyUUID, search string) ([]entity.Person, error) {
+func (m *MockPersonApp) SearchPeople(ctx context.Context, search string) ([]entity.Person, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchPeople", ctx, companyUUID, search)
+	ret := m.ctrl.Call(m, "SearchPeople", ctx, search)
 	ret0, _ := ret[0].([]entity.Person)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchPeople indicates an expected call of SearchPeople.
-func (mr *MockPersonAppMockRecorder) SearchPeople(ctx, companyUUID, search any) *gomock.Call {
+func (mr *MockPersonAppMockRecorder) SearchPeople(ctx, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchPeople", reflect.TypeOf((*MockPersonApp)(nil).SearchPeople), ctx, companyUUID, search)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchPeople", reflect.TypeOf((*MockPersonApp)(nil).SearchPeople), ctx, search)
 }
 
 // UpdateNote mocks base method.
@@ -609,4 +681,102 @@ func (m *MockDashboardApp) GetDashboardData(ctx context.Context, companyUUID str
 func (mr *MockDashboardAppMockRecorder) GetDashboardData(ctx, companyUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDashboardData", reflect.TypeOf((*MockDashboardApp)(nil).GetDashboardData), ctx, companyUUID)
+}
+
+// MockAIApp is a mock of AIApp interface.
+type MockAIApp struct {
+	ctrl     *gomock.Controller
+	recorder *MockAIAppMockRecorder
+	isgomock struct{}
+}
+
+// MockAIAppMockRecorder is the mock recorder for MockAIApp.
+type MockAIAppMockRecorder struct {
+	mock *MockAIApp
+}
+
+// NewMockAIApp creates a new mock instance.
+func NewMockAIApp(ctrl *gomock.Controller) *MockAIApp {
+	mock := &MockAIApp{ctrl: ctrl}
+	mock.recorder = &MockAIAppMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAIApp) EXPECT() *MockAIAppMockRecorder {
+	return m.recorder
+}
+
+// ChatWithLeadershipCoach mocks base method.
+func (m *MockAIApp) ChatWithLeadershipCoach(ctx context.Context, req entity.ChatRequest) (entity.ChatResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatWithLeadershipCoach", ctx, req)
+	ret0, _ := ret[0].(entity.ChatResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatWithLeadershipCoach indicates an expected call of ChatWithLeadershipCoach.
+func (mr *MockAIAppMockRecorder) ChatWithLeadershipCoach(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatWithLeadershipCoach", reflect.TypeOf((*MockAIApp)(nil).ChatWithLeadershipCoach), ctx, req)
+}
+
+// ExtractAttributesFromNote mocks base method.
+func (m *MockAIApp) ExtractAttributesFromNote(ctx context.Context, noteID int64) (entity.AttributesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtractAttributesFromNote", ctx, noteID)
+	ret0, _ := ret[0].(entity.AttributesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtractAttributesFromNote indicates an expected call of ExtractAttributesFromNote.
+func (mr *MockAIAppMockRecorder) ExtractAttributesFromNote(ctx, noteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtractAttributesFromNote", reflect.TypeOf((*MockAIApp)(nil).ExtractAttributesFromNote), ctx, noteID)
+}
+
+// GetPersonContext mocks base method.
+func (m *MockAIApp) GetPersonContext(ctx context.Context, personID int64) (entity.PersonAIContext, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersonContext", ctx, personID)
+	ret0, _ := ret[0].(entity.PersonAIContext)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPersonContext indicates an expected call of GetPersonContext.
+func (mr *MockAIAppMockRecorder) GetPersonContext(ctx, personID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersonContext", reflect.TypeOf((*MockAIApp)(nil).GetPersonContext), ctx, personID)
+}
+
+// GetUsageReport mocks base method.
+func (m *MockAIApp) GetUsageReport(ctx context.Context, period string) (entity.AIUsageReport, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsageReport", ctx, period)
+	ret0, _ := ret[0].(entity.AIUsageReport)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsageReport indicates an expected call of GetUsageReport.
+func (mr *MockAIAppMockRecorder) GetUsageReport(ctx, period any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsageReport", reflect.TypeOf((*MockAIApp)(nil).GetUsageReport), ctx, period)
+}
+
+// SendFeedback mocks base method.
+func (m *MockAIApp) SendFeedback(ctx context.Context, usageID int64, feedback, comment string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendFeedback", ctx, usageID, feedback, comment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendFeedback indicates an expected call of SendFeedback.
+func (mr *MockAIAppMockRecorder) SendFeedback(ctx, usageID, feedback, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendFeedback", reflect.TypeOf((*MockAIApp)(nil).SendFeedback), ctx, usageID, feedback, comment)
 }

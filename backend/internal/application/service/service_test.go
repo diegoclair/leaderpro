@@ -13,7 +13,7 @@ func TestNew(t *testing.T) {
 		m, ctrl := newServiceTestMock(t)
 		defer ctrl.Finish()
 
-		apps, err := New(m.mockDomain, time.Hour)
+		apps, err := New(m.mockDomain, m.mockAIProvider, time.Hour)
 		assert.NoError(t, err)
 		assert.NotNil(t, apps)
 	})
@@ -24,7 +24,7 @@ func TestNew(t *testing.T) {
 		m.mockDomain.EXPECT().Logger().Return(nil)
 		defer ctrl.Finish()
 
-		apps, err := New(m.mockDomain, time.Hour)
+		apps, err := New(m.mockDomain, m.mockAIProvider, time.Hour)
 		assert.Error(t, err)
 		assert.Nil(t, apps)
 	})
