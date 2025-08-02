@@ -202,7 +202,7 @@ export const usePeopleStore = create<PeopleState>((set, get) => ({
     
     try {
       // Fetch dashboard data (people + stats) from unified API
-      const response = await apiClient.authGet<DashboardResponse>(`/dashboard?company_uuid=${companyUuid}`)
+      const response = await apiClient.authGet<DashboardResponse>(`/companies/${companyUuid}/dashboard`)
       
       // Convert people API response to frontend format
       const apiPeople = Array.isArray(response.people) ? response.people : []

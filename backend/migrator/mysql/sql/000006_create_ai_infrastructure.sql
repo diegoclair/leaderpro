@@ -5,11 +5,11 @@
 -- Table for flexible person attributes
 CREATE TABLE IF NOT EXISTS `person_attributes` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `person_id` BIGINT NOT NULL,
+    `person_id` INT NOT NULL,
     `attribute_key` VARCHAR(100) NOT NULL,
     `attribute_value` TEXT NOT NULL,
     `source` ENUM('manual', 'ai_extracted', 'imported') NOT NULL DEFAULT 'manual',
-    `extracted_from_note_id` BIGINT NULL,
+    `extracted_from_note_id` INT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `ai_usage_tracker` (
     `user_id` INT NOT NULL,
     `company_id` INT NOT NULL,
     `prompt_id` BIGINT NOT NULL,
-    `person_id` BIGINT NULL, -- Person context (if applicable)
+    `person_id` INT NULL, -- Person context (if applicable)
     `request_type` VARCHAR(50) NOT NULL, -- 'chat', 'extraction', 'suggestion'
     `tokens_used` INT NOT NULL,
     `cost_usd` DECIMAL(10,6) NOT NULL,

@@ -11,14 +11,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture & Tech Stack
 
 ### Backend (Go) - Clean Architecture + DDD
-- **Go 1.24.5** with Echo v4.13.3 framework
+- **Go 1.23+** with Echo v4.13.3 framework
 - **Database**: MySQL 8.0.32 with GORM ORM  
 - **Cache**: Redis 7.4.2 for sessions and caching
 - **Auth**: PASETO tokens (15min access, 24h refresh) via `user-token` header
 - **Testing**: Testcontainers + go-sqlmock for unit/integration tests
 - **Observability**: Prometheus, Grafana, Jaeger tracing
 - **Architecture**: Domain-Driven Design with Clean Architecture principles
-- **CI/CD**: GitHub Actions with coverage reports via Coveralls
+- **AI Providers**: OpenAI and Anthropic support with configurable models
 
 ### Frontend (Next.js) - ✅ FULLY IMPLEMENTED  
 - **Next.js 15.3.5** with App Router and React 19.0.0
@@ -66,6 +66,9 @@ go test -v -cover ./...                      # Run all tests
 go test -v -cover ./internal/domain/...      # Run specific package tests
 go test -v -run TestFunctionName ./path/to/package  # Run single test
 govulncheck ./...                            # Check for vulnerabilities
+
+# Integration tests with testcontainers
+go test -tags=integration -v ./...           # Run integration tests
 ```
 
 **Note**: The user typically handles `make start` or `tilt up` manually, so don't run it automatically.
@@ -173,16 +176,30 @@ Backend AI Flow:
 ├── Transport Layer: /routes/airoute/ (handlers + validation)
 ├── Application Layer: /application/service/ai.go (business logic)
 ├── Domain Layer: /domain/entity/ai.go (entities + interfaces)
-├── Infrastructure: /infra/ai/openai/ (provider implementation)
+├── Infrastructure: /infra/ai/ (openai + anthropic providers)
 └── Data Layer: /infra/data/mysql/ai.go (persistence)
 ```
 
 ### Key Features
 - **Contextual AI**: Complete person context (attributes, timeline, preferences)
-- **Provider Pattern**: Easy to swap OpenAI/Claude/local models
+- **Multi-Provider**: OpenAI and Anthropic support with easy extensibility
 - **Usage Tracking**: Token counting, cost calculation, usage reports
 - **Attribute System**: Flexible key-value storage for person insights
 - **Feedback Loop**: Response quality tracking for continuous improvement
+- **Background Jobs**: Automatic cleanup of old conversations (30 days)
+
+### Configuration (backend/deployment/config-local.toml)
+```toml
+[ai.openai]
+api_key = "${OPENAI_API_KEY}"  # Environment variable
+model = "gpt-4o"
+max_tokens = 4096
+
+[ai.anthropic]  
+api_key = "${ANTHROPIC_API_KEY}"  # Environment variable
+model = "claude-3-5-sonnet-latest"
+max_tokens = 4096
+```
 
 **Implementation Status**: ✅ Backend complete (Plan 003), ⏳ Frontend next (Plan 004)
 
@@ -227,11 +244,17 @@ Backend AI Flow:
 - **Unit Tests**: `go test -v -cover ./...` for all packages
 - **Specific Tests**: `go test -v -cover ./internal/domain/...` for targeted testing
 - **Single Test**: `go test -v -run TestName ./path/to/package`
-- **Integration Tests**: Testcontainers automatically spins up MySQL/Redis in Docker
+- **Integration Tests**: `go test -tags=integration -v ./...` with Testcontainers
 - **Mock Generation**: `make mocks` generates mocks using uber/mock
 - **Test Coverage**: Full coverage expected with `-cover` flag
 - **Vulnerability Check**: `govulncheck ./...` for security scanning
-- **CI/CD**: GitHub Actions runs tests on every push with Coveralls integration
+
+#### Test Utilities Available
+The codebase includes comprehensive test utilities in `backend/internal/infra/data/mysql/testutil/`:
+- `testForUpdateDeleteErrorsWithMock` - Test update/delete error scenarios
+- `testForInsertErrorsWithMock` - Test insert error scenarios  
+- `testForSelectErrorsWithMock` - Test select error scenarios
+- `testForPaginatedSelectErrorsWithMock` - Test paginated query errors
 
 ### Frontend Testing  
 - **Linting**: `npm run lint` (ESLint + Next.js rules)
@@ -458,11 +481,23 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - **Docker Services**: `backend/docker-compose.yml` orchestrates MySQL, Redis, Prometheus, Grafana, Jaeger
 - **Tilt Config**: Root `Tiltfile` includes both backend and frontend configurations
 
+#### Required Environment Variables
+```bash
+# For AI functionality (backend)
+export OPENAI_API_KEY="your-openai-key"
+export ANTHROPIC_API_KEY="your-anthropic-key"
+```
+
+#### MySQL Event Scheduler
+The AI system requires MySQL event scheduler to be enabled for automatic cleanup:
+```sql
+SET GLOBAL event_scheduler = ON;  # Run in MySQL after first startup
+```
+
 ### Deployment
 - **Frontend**: Auto-deploys to GitHub Pages on push to main branch via GitHub Actions (**TEMPORARY**)
 - **Build Output**: `frontend/out` directory (Next.js static export)
-- **CI/CD**: Uses Node.js 18 in GitHub Actions pipeline
-- **Backend CI**: GitHub Actions runs tests with coverage on every push
+- **CI/CD**: Frontend deployment via `.github/workflows/deploy.yml`
 
 ## Database Migrations
 
@@ -476,6 +511,8 @@ func (s *CompanyService) CreateCompany(ctx context.Context, company entity.Compa
 - `000003_add_gender_to_person.sql` - Gender field for contextual text
 - `000004_create_address_table.sql` - Address management
 - `000005_create_user_preferences.sql` - User preferences with theme support
+- `000006_create_ai_tables.sql` - AI infrastructure (attributes, prompts, usage, conversations)
+- `000007_create_ai_cleanup_job.sql` - AI conversation cleanup stored procedure
 
 ### Running Migrations
 Migrations run automatically on backend startup. Check `backend/cmd/main.go` for migration logic.
@@ -519,8 +556,9 @@ page := routeutils.GetIntQueryParam(c, "page", 1)
 
 ### Main Documentation Files
 - `/README.md` - Project overview and business context
-- `/plan/000001-projeto-leaderpro.md` - Complete business plan
+- `/plan/000001-projeto-leaderpro.md` - Complete business plan (Portuguese)
 - `/plan/000003-ai-implementation-plan.md` - AI implementation strategy
+- `/plan/000004-frontend-ai-integration.md` - Frontend AI integration plan
 - `/frontend/README.md` - Frontend architecture details
 - `/frontend/ANIMATION_SYSTEM.md` - Animation system guide
 - `/frontend/STORAGE_MANAGER_DEMO.md` - Storage manager usage examples

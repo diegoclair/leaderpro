@@ -2,23 +2,23 @@
 -- Migration 000007: AI Cleanup Job
 -- ================================================
 
--- Procedure for automatic cleanup of old conversations
-DELIMITER //
+-- Note: This migration creates a stored procedure and event for cleanup
+-- The DELIMITER syntax doesn't work well in migration tools, so we'll create it directly
 
-CREATE PROCEDURE IF NOT EXISTS `cleanup_ai_conversations`()
-BEGIN
-    DELETE FROM `ai_conversations` 
-    WHERE `expires_at` < NOW() 
-    LIMIT 1000; -- Process in batches to avoid blocking database
-END//
+-- Drop procedure if exists to avoid conflicts
+DROP PROCEDURE IF EXISTS `cleanup_ai_conversations`;
 
-DELIMITER ;
+-- Create procedure without DELIMITER (single statement)
+CREATE PROCEDURE `cleanup_ai_conversations`()
+DELETE FROM `ai_conversations` 
+WHERE `expires_at` < NOW() 
+LIMIT 1000;
 
--- Event scheduler to run daily at 2:00 AM
-CREATE EVENT IF NOT EXISTS `cleanup_old_ai_data`
+-- Drop event if exists to avoid conflicts  
+DROP EVENT IF EXISTS `cleanup_old_ai_data`;
+
+-- Create event scheduler to run daily at 2:00 AM
+CREATE EVENT `cleanup_old_ai_data`
 ON SCHEDULE EVERY 1 DAY
 STARTS TIMESTAMP(CURRENT_DATE + INTERVAL 1 DAY, '02:00:00')
 DO CALL `cleanup_ai_conversations`();
-
--- Enable event scheduler if not enabled
-SET GLOBAL event_scheduler = ON;

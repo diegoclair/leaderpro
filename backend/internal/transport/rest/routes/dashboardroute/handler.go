@@ -32,7 +32,7 @@ func NewHandler(dashboardService contract.DashboardApp) *Handler {
 func (s *Handler) handleGetDashboard(c echo.Context) error {
 	ctx := routeutils.GetContext(c)
 
-	companyUUID, err := routeutils.GetRequiredStringQueryParam(c, "company_uuid", "company_uuid query parameter is required")
+	companyUUID, err := routeutils.GetRequiredStringPathParam(c, "company_uuid", "company_uuid path parameter is required")
 	if err != nil {
 		return routeutils.HandleError(c, err)
 	}

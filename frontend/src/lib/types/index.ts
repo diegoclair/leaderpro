@@ -106,3 +106,4 @@ export type AISuggestion = {
 
 // Re-export API types for convenience
 export * from './api'
+export * from './ai'

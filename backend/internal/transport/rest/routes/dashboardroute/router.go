@@ -10,7 +10,7 @@ import (
 	"github.com/diegoclair/leaderpro/infra"
 )
 
-const GroupRouteName = "dashboard"
+const GroupRouteName = "companies/:company_uuid/dashboard"
 
 const (
 	RootRoute = ""
@@ -27,7 +27,7 @@ func NewRouter(ctrl *Handler) *DashboardRouter {
 }
 
 func (r *DashboardRouter) RegisterRoutes(g *routeutils.EchoGroups) {
-	router := g.PrivateGroup.Group(GroupRouteName)
+	router := g.CompanyGroup.Group(GroupRouteName)
 
 	router.GET(RootRoute, r.ctrl.handleGetDashboard).
 		Summary("Get dashboard data").
@@ -38,6 +38,6 @@ func (r *DashboardRouter) RegisterRoutes(g *routeutils.EchoGroups) {
 				Body:       viewmodel.DashboardResponse{},
 			},
 		}).
-		QueryParam("company_uuid", "Company UUID to get dashboard data", goswag.StringType, true).
+		PathParam("company_uuid", "Company UUID to get dashboard data", goswag.StringType, true).
 		HeaderParam(infra.TokenKey.String(), infra.TokenKeyDescription, goswag.StringType, true)
 }

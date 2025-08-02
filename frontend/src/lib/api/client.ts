@@ -178,14 +178,19 @@ class ApiClient {
       const errorData = await response.json().catch(() => ({ message: 'Erro na requisição' }))
       const errorMessage = errorData.message || `Erro ${response.status}`
       
-      // Mostrar notificação de erro para requisições autenticadas
-      await setNotificationStore()
-      if (getNotificationStore && !url.includes('/auth/logout')) {
-        try {
-          const store = await getNotificationStore()
-          store.showError('Erro na requisição', errorMessage)
-        } catch {
-          // Se falhar ao mostrar notificação, continuar mesmo assim
+      // Não mostrar notificação de erro para logout ou se é erro de IA
+      // (pois outras partes do código já mostram notificações específicas)
+      const shouldShowNotification = !url.includes('/auth/logout') && !url.includes('/ai/')
+      
+      if (shouldShowNotification) {
+        await setNotificationStore()
+        if (getNotificationStore) {
+          try {
+            const store = await getNotificationStore()
+            store.showError('Erro na requisição', errorMessage)
+          } catch {
+            // Se falhar ao mostrar notificação, continuar mesmo assim
+          }
         }
       }
       

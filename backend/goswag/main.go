@@ -17,7 +17,7 @@ func main() {
 
 	//	@host			localhost:5000
 	//	@schemes		http
-	//	@servers.url http://localhost:5000
+	//	@servers.url	http://localhost:5000
 
 	server := rest.NewRestServer(&service.Apps{}, nil, domain.NewInfrastructureServices(), "")
 	server.Router.GenerateSwagger()

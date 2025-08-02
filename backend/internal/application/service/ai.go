@@ -78,6 +78,7 @@ func (s *aiApp) ChatWithLeadershipCoach(ctx context.Context, req entity.ChatRequ
 	start := time.Now()
 	response, err := s.aiProvider.Chat(ctx, req, prompt.Prompt, contextPrompt)
 	if err != nil {
+		s.log.Errorw(ctx, "AI provider failed", logger.Err(err))
 		return entity.ChatResponse{}, fmt.Errorf("ai provider error: %w", err)
 	}
 	responseTime := int(time.Since(start).Milliseconds())
@@ -140,6 +141,7 @@ func (s *aiApp) ExtractAttributesFromNote(ctx context.Context, noteID int64) (en
 	start := time.Now()
 	extractedAttributes, usageInfo, err := s.aiProvider.ExtractAttributes(ctx, extractionReq, prompt.Prompt)
 	if err != nil {
+		s.log.Errorw(ctx, "AI provider extraction failed", logger.Err(err))
 		return entity.AttributesResponse{}, fmt.Errorf("ai extraction error: %w", err)
 	}
 	responseTime := int(time.Since(start).Milliseconds())

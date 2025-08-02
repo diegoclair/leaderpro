@@ -39,6 +39,16 @@ export const NOTE_ENDPOINTS = {
   DELETE: (companyUuid: string, personUuid: string, noteUuid: string) => `/companies/${companyUuid}/people/${personUuid}/notes/${noteUuid}`,
 } as const
 
+// AI endpoints
+export const AI_ENDPOINTS = {
+  CHAT: (companyUuid: string, personUuid: string) => 
+    `/companies/${companyUuid}/people/${personUuid}/ai/chat`,
+  USAGE: (companyUuid: string, period?: string) => 
+    `/companies/${companyUuid}/ai/usage${period ? `?period=${period}` : ''}`,
+  FEEDBACK: (companyUuid: string, usageId: number) => 
+    `/companies/${companyUuid}/ai/usage/${usageId}/feedback`,
+} as const
+
 // Utility function to get all endpoints
 export const API_ENDPOINTS = {
   AUTH: AUTH_ENDPOINTS,
@@ -46,4 +56,5 @@ export const API_ENDPOINTS = {
   COMPANY: COMPANY_ENDPOINTS,
   PERSON: PERSON_ENDPOINTS,
   NOTE: NOTE_ENDPOINTS,
+  AI: AI_ENDPOINTS,
 } as const
