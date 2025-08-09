@@ -13,7 +13,7 @@ import {
   User, 
   Clock,
   Edit3,
-  Building2
+  Building2,
 } from 'lucide-react'
 import { useAllPeopleFromStore, useLoadPeopleFromAPI, useUpdatePerson } from '@/lib/stores/peopleStore'
 import { useActiveCompany, useLoadCompanies, useCompanyStore } from '@/lib/stores/companyStore'
@@ -27,6 +27,7 @@ import CreatePersonDialog from '@/components/profile/CreatePersonDialog'
 import PersonModal, { PersonFormData } from '@/components/person/PersonModal'
 import { formatTimeAgoWithoutSuffix, formatLastOneOnOne } from '@/lib/utils/dates'
 import { getInitials } from '@/lib/utils/names'
+import { cn } from '@/lib/utils'
 
 export default function ProfilePage() {
   const { isLoading: authLoading, shouldRender } = useAuthRedirect({ requireAuth: true })
@@ -194,7 +195,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      
       <main className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -290,9 +290,8 @@ export default function ProfilePage() {
           </TabsContent>
           
         </Tabs>
-      </main>
-
-      <CreatePersonDialog
+        
+        <CreatePersonDialog
         open={showCreatePersonDialog}
         onClose={closeCreateDialog}
         personName={personToCreate}
@@ -310,6 +309,7 @@ export default function ProfilePage() {
         person={person}
         onSubmit={handleEditPerson}
       />
+      </main>
     </div>
   )
 }

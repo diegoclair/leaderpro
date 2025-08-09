@@ -1,5 +1,9 @@
 update_settings(max_parallel_updates=10)
 
+# Load .env file using Tilt's official dotenv extension
+load('ext://dotenv', 'dotenv')
+dotenv()  # Load .env file from current directory
+
 # Load Docker Compose resources
 docker_compose('./docker-compose.yml')
 
@@ -18,8 +22,8 @@ def build_start(service_name, label, main_file):
     labels = ['%s' % label]
     
     # use the flag -gcflags to build without compilers optimization, it will help us attach debug tools - DON'T USE IT IN PRODUCTION
-    build_command = '%s go build -gcflags="all=-N -l" -o ./.bin/%s/%s ./%s' % (go_flags, label, service_name, main_file)  
-
+    build_command = '%s go build -gcflags="all=-N -l" -o ./.bin/%s/%s ./%s' % (go_flags, label, service_name, main_file) 
+    
     local_resource(
         service_name,
         labels=labels,

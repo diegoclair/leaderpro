@@ -12,6 +12,17 @@ interface UseAIChatOptions {
   onError?: (error: Error) => void
 }
 
+export interface AIChatState {
+  messages: ChatMessage[]
+  isLoading: boolean
+  error: string | null
+  sendMessage: (message: string) => Promise<void>
+  sendFeedback: (messageId: string, feedback: 'helpful' | 'not_helpful' | 'neutral', comment?: string) => Promise<void>
+  clearMessages: () => void
+  retryLastMessage: () => void
+  messagesEndRef: React.RefObject<HTMLDivElement | null>
+}
+
 export function useAIChat({ personUuid, onError }: UseAIChatOptions) {
   const activeCompany = useCompanyStore(state => state.activeCompany)
   const [messages, setMessages] = useState<ChatMessage[]>([])

@@ -1,15 +1,14 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { InfoCard } from '@/components/ui/info-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { 
   Send, 
   Bot, 
-  Sparkles, 
   ThumbsUp, 
   ThumbsDown, 
   RefreshCw,
@@ -32,6 +31,7 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
   const [inputMessage, setInputMessage] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const chatState = useAIChat({ personUuid: person.uuid })
   const {
     messages,
     isLoading,
@@ -41,7 +41,7 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
     clearMessages,
     retryLastMessage,
     messagesEndRef
-  } = useAIChat({ personUuid: person.uuid })
+  } = chatState
 
   // Auto-focus input after sending
   useEffect(() => {
@@ -69,69 +69,67 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
   const showQuickSuggestions = messages.length === 0
 
   return (
-    <Card className={cn("flex flex-col h-[600px]", className)}>
-      <CardContent className="flex-1 flex flex-col p-0">
+    <InfoCard
+      title="Assistente de Liderança IA"
+      icon={Bot}
+      className={cn("h-[500px]", className)}
+      headerAction={null}
+      contentClassName="flex-1 flex flex-col p-0"
+    >
         
-        <ScrollArea className="flex-1 p-4">
+        <ScrollArea className="flex-1 px-3 py-4">
           {showQuickSuggestions ? (
             <div className="space-y-4">
-              {/* Welcome message */}
-              <div className="text-center py-6">
-                <Bot className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
+              {/* Welcome com estilo */}
+              <div className="text-center py-3">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-3">
+                  <Bot className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-sm font-medium mb-1">
                   Como posso ajudar com {person.name}?
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  Use as sugestões abaixo ou faça sua própria pergunta
+                <p className="text-xs text-muted-foreground">
+                  Escolha uma sugestão ou digite sua pergunta
                 </p>
               </div>
 
-              {/* Quick Suggestions */}
+              {/* Sugestões com melhor design */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Sugestões Rápidas
-                  </span>
-                </div>
-                <div className="grid gap-2">
-                  <Button
-                    variant="outline"
-                    className="justify-start text-left h-auto py-2.5 px-3"
-                    onClick={() => handleQuickSuggestion(`Que perguntas fazer na próxima 1:1 com ${person.name}?`)}
-                  >
-                    <div>
-                      <div className="font-medium text-sm mb-0.5">💬 Perguntas para 1:1</div>
-                      <div className="text-xs text-muted-foreground">
-                        Sugestões personalizadas para sua próxima reunião
-                      </div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start text-left h-auto py-2.5 px-3"
-                    onClick={() => handleQuickSuggestion(`Como dar feedback construtivo para ${person.name} sobre pontualidade?`)}
-                  >
-                    <div>
-                      <div className="font-medium text-sm mb-0.5">📝 Dicas de feedback</div>
-                      <div className="text-xs text-muted-foreground">
-                        Como abordar tópicos sensíveis de forma construtiva
-                      </div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start text-left h-auto py-2.5 px-3"
-                    onClick={() => handleQuickSuggestion(`Quais são as melhores formas de desenvolver ${person.name} profissionalmente?`)}
-                  >
-                    <div>
-                      <div className="font-medium text-sm mb-0.5">🎯 Desenvolvimento</div>
-                      <div className="text-xs text-muted-foreground">
-                        Plano de crescimento e desenvolvimento de carreira
-                      </div>
-                    </div>
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-blue-50 dark:hover:bg-blue-950 border-muted-foreground/20"
+                  onClick={() => handleQuickSuggestion(`Que perguntas fazer na próxima 1:1 com ${person.name}?`)}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="text-sm">💬</span>
+                    <span className="text-xs font-medium">Perguntas para 1:1</span>
+                  </div>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-green-50 dark:hover:bg-green-950 border-muted-foreground/20"
+                  onClick={() => handleQuickSuggestion(`Como dar feedback construtivo para ${person.name}?`)}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="text-sm">📝</span>
+                    <span className="text-xs font-medium">Dicas de feedback</span>
+                  </div>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-purple-50 dark:hover:bg-purple-950 border-muted-foreground/20"
+                  onClick={() => handleQuickSuggestion(`Como desenvolver ${person.name} profissionalmente?`)}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="text-sm">🎯</span>
+                    <span className="text-xs font-medium">Desenvolvimento</span>
+                  </div>
+                </Button>
               </div>
             </div>
           ) : (
@@ -146,8 +144,8 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
                 >
                   {message.role === 'assistant' && (
                     <div className="flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <div className="h-7 w-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       </div>
                     </div>
                   )}
@@ -158,7 +156,7 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
                   )}>
                     <div
                       className={cn(
-                        "rounded-lg px-4 py-2",
+                        "rounded-lg px-3 py-2 text-sm",
                         message.role === 'user'
                           ? "bg-blue-600 text-white"
                           : "bg-muted",
@@ -166,18 +164,25 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
                       )}
                     >
                       {message.isStreaming ? (
-                        <div className="flex items-center gap-2">
-                          <span className="whitespace-pre-wrap">{message.content}</span>
-                          <span className="inline-flex">
-                            <span className="animate-pulse">▊</span>
-                          </span>
+                        <div className="flex items-start gap-2">
+                          <MarkdownRenderer 
+                            content={message.content} 
+                            className="flex-1 [&>*]:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                          />
+                          <span className="animate-pulse text-blue-500">▊</span>
                         </div>
                       ) : (
-                        <div className="whitespace-pre-wrap">{message.content}</div>
+                        message.role === 'user' ? (
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                        ) : (
+                          <MarkdownRenderer 
+                            content={message.content} 
+                            className="[&>*]:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                          />
+                        )
                       )}
                     </div>
 
-                    {/* Error state */}
                     {message.error && (
                       <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
                         <AlertCircle className="h-3 w-3" />
@@ -185,36 +190,28 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
                       </div>
                     )}
 
-                    {/* Timestamp and feedback */}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        {format(message.timestamp, 'HH:mm', { locale: ptBR })}
-                      </span>
+                      <span>{format(message.timestamp, 'HH:mm', { locale: ptBR })}</span>
                       
-                      {/* Feedback buttons for AI messages */}
                       {message.role === 'assistant' && message.usageId && !message.error && !message.isStreaming && (
-                        <div className="flex items-center gap-1 ml-2">
+                        <div className="flex items-center gap-1">
                           {message.feedback ? (
-                            <span className="text-xs">
-                              {message.feedback === 'helpful' ? '👍' : '👎'} Obrigado!
-                            </span>
+                            <span>{message.feedback === 'helpful' ? '👍' : '👎'}</span>
                           ) : (
                             <>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0"
+                                className="h-5 w-5 p-0"
                                 onClick={() => handleFeedback(message.id, 'helpful')}
-                                title="Útil"
                               >
                                 <ThumbsUp className="h-3 w-3" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0"
+                                className="h-5 w-5 p-0"
                                 onClick={() => handleFeedback(message.id, 'not_helpful')}
-                                title="Não útil"
                               >
                                 <ThumbsDown className="h-3 w-3" />
                               </Button>
@@ -227,8 +224,8 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
 
                   {message.role === 'user' && (
                     <div className="flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                        <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      <div className="h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                       </div>
                     </div>
                   )}
@@ -239,19 +236,21 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
           )}
         </ScrollArea>
 
-        {/* Input area */}
-        <div className="border-t p-4">
+        {/* Input area - melhor design */}
+        <div className="border-t bg-muted/20 p-4">
           {error && (
-            <div className="flex items-center justify-between mb-3 text-sm text-red-600 dark:text-red-400">
-              <span>Erro ao enviar mensagem</span>
+            <div className="flex items-center justify-between mb-3 p-2.5 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <span className="text-sm text-red-600 dark:text-red-400">Erro ao enviar</span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={retryLastMessage}
-                className="h-7 px-2"
+                className="h-7 w-7 p-0 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900"
               >
-                <RefreshCw className="h-3 w-3 mr-1" />
-                Tentar novamente
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -264,52 +263,41 @@ export function AIAssistantSidebar({ person, className }: AIAssistantSidebarProp
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
               disabled={isLoading}
-              className="min-h-[56px] py-4 pl-4 pr-14 text-base resize-none rounded-2xl border-2 focus:border-blue-500 transition-colors"
+              className="h-11 pr-12 text-sm rounded-xl border-2 focus:border-blue-500 transition-colors shadow-sm bg-background"
             />
             <Button
               onClick={handleSendMessage}
               disabled={isLoading || !inputMessage.trim()}
-              size="icon"
+              size="sm"
               className={cn(
-                "absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full transition-all",
+                "absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 rounded-lg transition-all",
                 (isLoading || !inputMessage.trim())
-                  ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+                  ? "bg-muted text-muted-foreground"
+                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
               )}
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
               ) : (
                 <Send className="h-4 w-4" />
               )}
             </Button>
           </div>
 
-          <div className="flex items-center justify-between mt-3">
-            <Badge variant="secondary" className="text-xs">
-              <Bot className="h-3 w-3 mr-1" />
-              {isLoading ? 'Processando...' : 'Online'}
-            </Badge>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearMessages}
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-red-600"
-                  title="Limpar conversa"
-                >
-                  <Trash2 className="h-3 w-3 mr-1" />
-                  Limpar
-                </Button>
-              )}
-              <span className="text-xs text-muted-foreground">
-                Contexto: {person.name}
-              </span>
+          {messages.length > 0 && (
+            <div className="flex justify-center mt-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearMessages}
+                className="h-7 px-3 text-xs text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Limpar conversa
+              </Button>
             </div>
-          </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </InfoCard>
   )
 }
